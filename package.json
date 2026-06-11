@@ -1,0 +1,11 @@
+{
+  "name": "nextexa-lab",
+  "private": true,
+  "workspaces": ["client", "server"],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "npm run build -w client",
+    "start": "npm run start -w server",
+    "lint": "npm run lint -w client"
+  }
+}

@@ -1,0 +1,25 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { @apply bg-white text-slate-900 antialiased dark:bg-ink dark:text-slate-100; }
+  ::selection { @apply bg-electric text-white; }
+}
+
+@layer components {
+  .container-shell { @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12; }
+  .eyebrow { @apply mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-[.18em] text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300; }
+  .section-title { @apply text-3xl font-extrabold tracking-[-.04em] text-ink sm:text-4xl lg:text-5xl dark:text-white; }
+  .section-copy { @apply mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-400; }
+  .panel { @apply rounded-3xl border border-slate-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-white/[.04]; }
+  .input { @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-electric focus:ring-4 focus:ring-blue-500/10 dark:border-white/10 dark:bg-white/5; }
+}
+
+.grid-mask {
+  background-image: linear-gradient(rgba(59,130,246,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.07) 1px,transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, black, transparent);
+}
