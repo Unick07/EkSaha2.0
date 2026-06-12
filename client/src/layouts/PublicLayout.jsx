@@ -1,7 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import Navbar from "../components/navigation/Navbar";
+import Footer from "../components/navigation/Footer";
 
 export default function PublicLayout() {
   const location = useLocation();

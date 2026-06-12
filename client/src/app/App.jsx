@@ -1,15 +1,15 @@
 import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
-import PublicLayout from "./layouts/PublicLayout";
-import AppShell from "./layouts/AppShell";
-import { PageLoader } from "./components/ui";
+import PublicLayout from "../layouts/PublicLayout";
+import AppShell from "../layouts/AppShell";
+import { PageLoader } from "../components/common/ui";
 
-const Home = lazy(() => import("./pages/Home"));
+const Home = lazy(() => import("../pages/public/Home"));
 const from = (loader, name) => lazy(() => loader().then((module) => ({ default: module[name] })));
-const publicPages = () => import("./pages/PublicPages");
-const authPages = () => import("./pages/AuthPages");
-const dashboardPages = () => import("./pages/Dashboard");
-const adminPages = () => import("./pages/Admin");
+const publicPages = () => import("../pages/public");
+const authPages = () => import("../pages/auth");
+const dashboardPages = () => import("../pages/dashboard");
+const adminPages = () => import("../pages/admin");
 const ServicePage = from(publicPages, "ServicePage");
 const Pricing = from(publicPages, "Pricing");
 const About = from(publicPages, "About");

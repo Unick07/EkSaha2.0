@@ -1,9 +1,9 @@
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Calendar, Check, Clock, Mail, MapPin, Phone, Send } from "lucide-react";
 import toast from "react-hot-toast";
-import { Button, PlanCard, SectionHeading } from "../components/ui";
-import { plans, posts, services } from "../data/siteData";
-import { useAppStore } from "../features/useAppStore";
+import { Button, PlanCard, SectionHeading } from "../../components/common/ui";
+import { plans, posts, services } from "../../data/siteData";
+import { useAppStore } from "../../store/useAppStore";
 
 export function ServicePage() {
   const { slug } = useParams();

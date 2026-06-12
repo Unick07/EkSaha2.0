@@ -4,7 +4,7 @@
 @tailwind utilities;
 
 @layer base {
-  html { scroll-behavior: smooth; }
+  html { min-height: 100%; scroll-behavior: smooth; }
   body { @apply bg-white text-slate-900 antialiased dark:bg-ink dark:text-slate-100; }
   ::selection { @apply bg-electric text-white; }
 }

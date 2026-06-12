@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet, Navigate, useLocation } from "react-router-dom";
 import { Bell, BookOpen, ChartNoAxesCombined, CreditCard, FileText, Headphones, LayoutDashboard, LogOut, Menu, Moon, Package, Settings, Sun, Users, X } from "lucide-react";
-import { useAppStore } from "../features/useAppStore";
+import { useAppStore } from "../store/useAppStore";
 import { useAuth } from "../hooks/useAuth";
 
 const userLinks = [{ to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true }, { to: "/dashboard/services", label: "My services", icon: Package }, { to: "/dashboard/tickets", label: "Support tickets", icon: Headphones }, { to: "/dashboard/invoices", label: "Invoices", icon: FileText }, { to: "/dashboard/settings", label: "Account settings", icon: Settings }];

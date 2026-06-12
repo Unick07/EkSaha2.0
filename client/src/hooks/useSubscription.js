@@ -1,4 +1,4 @@
-import { useAppStore } from "../features/useAppStore";
+import { useAppStore } from "../store/useAppStore";
 import { plans } from "../data/siteData";
 
 export function useSubscription() {

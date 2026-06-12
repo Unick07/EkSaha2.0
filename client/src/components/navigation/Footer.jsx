@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
 export default function Footer() {
-  const subscribe = (event) => { event.preventDefault(); event.currentTarget.reset(); toast.success("You’re on the list."); };
+  const subscribe = (event) => { event.preventDefault(); event.currentTarget.reset(); toast.success("You're on the list."); };
   return <footer className="border-t border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-[#070b22]">
     <div className="container-shell py-16">
       <div className="grid gap-12 lg:grid-cols-[1.3fr_.7fr_.7fr_1.2fr]">

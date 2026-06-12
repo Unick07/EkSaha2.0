@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { ChevronDown, Menu, Moon, Sun, X } from "lucide-react";
-import { useAppStore } from "../features/useAppStore";
-import { services } from "../data/siteData";
-import { Button } from "./ui";
+import { useAppStore } from "../../store/useAppStore";
+import { services } from "../../data/siteData";
+import { Button } from "../common/ui";
 
 const links = [{ label: "Pricing", to: "/pricing" }, { label: "About", to: "/about" }, { label: "Insights", to: "/blog" }];
 

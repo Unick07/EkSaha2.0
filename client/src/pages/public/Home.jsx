@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { ArrowRight, CheckCircle2, ChevronDown, Play, Star } from "lucide-react";
-import { Button, FadeIn, PlanCard, SectionHeading } from "../components/ui";
-import { features, plans, services, testimonials } from "../data/siteData";
-import { useAppStore } from "../features/useAppStore";
+import { Button, FadeIn, PlanCard, SectionHeading } from "../../components/common/ui";
+import { features, plans, services, testimonials } from "../../data/siteData";
+import { useAppStore } from "../../store/useAppStore";
 
 const faqs = [
   ["What does “unlimited requests” mean?", "Add as many requests as you like to your workspace. We work through them by priority, with most tasks delivered in two to five business days."],

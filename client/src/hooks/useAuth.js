@@ -1,4 +1,4 @@
-import { useAppStore } from "../features/useAppStore";
+import { useAppStore } from "../store/useAppStore";
 
 export function useAuth() {
   const { user, login, logout } = useAppStore();

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { ArrowRight, CalendarDays, CheckCircle2, Clock3, CreditCard, Download, Globe2, Headphones, Plus, Search, Settings2, TrendingUp } from "lucide-react";
 import toast from "react-hot-toast";
-import { Button } from "../components/ui";
-import { useTickets } from "../hooks/useTickets";
+import { Button } from "../../components/common/ui";
+import { useTickets } from "../../hooks/useTickets";
 
 const serviceItems = [
   { title: "Organic growth", type: "SEO", status: "Active", progress: 68, width: "w-2/3", icon: Search },

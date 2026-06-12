@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Activity, ArrowDownRight, ArrowUpRight, Check, CircleDollarSign, Clock3, MoreHorizontal, Plus, Search, TicketCheck, Users } from "lucide-react";
 import toast from "react-hot-toast";
-import { Button } from "../components/ui";
+import { Button } from "../../components/common/ui";
 
 const revenue = [{m:"Jan",v:32},{m:"Feb",v:38},{m:"Mar",v:43},{m:"Apr",v:51},{m:"May",v:58},{m:"Jun",v:67},{m:"Jul",v:74},{m:"Aug",v:81},{m:"Sep",v:89},{m:"Oct",v:97},{m:"Nov",v:108},{m:"Dec",v:121}];
 const users = [

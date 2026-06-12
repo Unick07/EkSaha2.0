@@ -9,7 +9,9 @@ export function Button({ children, to, variant = "primary", className = "", ...p
     ghost: "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/10",
   };
   const classes = `inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition ${styles[variant]} ${className}`;
-  return to ? <Link className={classes} to={to} {...props}>{children}</Link> : <button className={classes} {...props}>{children}</button>;
+  return to
+    ? <Link className={classes} to={to} {...props}>{children}</Link>
+    : <button className={classes} {...props}>{children}</button>;
 }
 
 export function SectionHeading({ eyebrow, title, copy, center = false }) {

@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
-import { Button } from "../components/ui";
-import { useAuth } from "../hooks/useAuth";
-import { plans } from "../data/siteData";
+import { Button } from "../../components/common/ui";
+import { useAuth } from "../../hooks/useAuth";
+import { plans } from "../../data/siteData";
 
 function AuthShell({ title, copy, children }) {
   return <div className="grid min-h-screen lg:grid-cols-2"><div className="hidden bg-ink p-12 text-white lg:flex lg:flex-col lg:justify-between"><Link to="/" className="flex items-center gap-2.5 font-extrabold"><span className="grid size-9 place-items-center rounded-xl bg-electric">N</span>Nextexa Lab</Link><div><div className="max-w-lg text-4xl font-extrabold leading-tight">“The best extension of our team we could have asked for.”</div><div className="mt-6 text-sm text-slate-400">Maya Chen · Co-founder, Northstar</div></div><div className="text-xs text-slate-500">Trusted by 120+ ambitious teams</div></div><main className="flex items-center justify-center px-5 py-12"><div className="w-full max-w-md"><Link to="/" className="mb-10 flex items-center gap-2 font-extrabold lg:hidden"><span className="grid size-8 place-items-center rounded-lg bg-electric text-white">N</span>Nextexa Lab</Link><h1 className="text-3xl font-extrabold tracking-tight">{title}</h1><p className="mt-2 text-sm leading-6 text-slate-500">{copy}</p>{children}</div></main></div>;

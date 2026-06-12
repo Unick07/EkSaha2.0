@@ -22,6 +22,9 @@ export const useAppStore = create(
         }),
       logout: () => set({ user: null }),
     }),
-    { name: "nextexa-app", partialize: ({ dark, user }) => ({ dark, user }) },
+    {
+      name: "nextexa-app",
+      partialize: ({ dark, user }) => ({ dark, user }),
+    },
   ),
 );
