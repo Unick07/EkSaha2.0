@@ -6,6 +6,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import authRoutes from "./routes/auth.routes.js";
+import demoTicketRoutes from "./routes/demo-ticket.routes.js";
 import platformRoutes from "./routes/platform.routes.js";
 
 const app = express();
@@ -24,6 +25,7 @@ app.use(
   rateLimit({ windowMs: 15 * 60 * 1000, limit: 100 }),
   authRoutes,
 );
+app.use("/api/demo", demoTicketRoutes);
 app.use("/api", platformRoutes);
 
 app.get("/health", (_req, res) => {

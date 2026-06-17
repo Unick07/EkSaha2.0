@@ -31,7 +31,8 @@ const AdminUsers = from(adminPages, "AdminUsers");
 const AdminSubscriptions = from(adminPages, "AdminSubscriptions");
 const AdminTickets = from(adminPages, "AdminTickets");
 const AdminAnalytics = from(adminPages, "AdminAnalytics");
-const AdminGeneric = from(adminPages, "AdminGeneric");
+const ResourceManager = from(adminPages, "ResourceManager");
+const AdminSettings = from(adminPages, "AdminSettings");
 
 export default function App() {
   return <Suspense fallback={<PageLoader/>}><Routes>
@@ -60,12 +61,12 @@ export default function App() {
       <Route index element={<AdminOverview/>}/>
       <Route path="users" element={<AdminUsers/>}/>
       <Route path="subscriptions" element={<AdminSubscriptions/>}/>
-      <Route path="services" element={<AdminGeneric type="Services"/>}/>
+      <Route path="services" element={<ResourceManager type="Services"/>}/>
       <Route path="tickets" element={<AdminTickets/>}/>
-      <Route path="blog" element={<AdminGeneric type="Blog"/>}/>
-      <Route path="invoices" element={<AdminGeneric type="Invoices"/>}/>
+      <Route path="blog" element={<ResourceManager type="Blog"/>}/>
+      <Route path="invoices" element={<ResourceManager type="Invoices"/>}/>
       <Route path="analytics" element={<AdminAnalytics/>}/>
-      <Route path="settings" element={<AdminGeneric type="Settings"/>}/>
+      <Route path="settings" element={<AdminSettings/>}/>
     </Route>
   </Routes></Suspense>;
 }

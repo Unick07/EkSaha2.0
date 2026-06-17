@@ -8,9 +8,11 @@ export const useAppStore = create(
       user: null,
       billing: "monthly",
       sidebarOpen: false,
+      sidebarCollapsed: false,
       setBilling: (billing) => set({ billing }),
       toggleDark: () => set((state) => ({ dark: !state.dark })),
       setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
+      toggleSidebarCollapsed: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       login: (email) =>
         set({
           user: {
@@ -24,7 +26,7 @@ export const useAppStore = create(
     }),
     {
       name: "nextexa-app",
-      partialize: ({ dark, user }) => ({ dark, user }),
+      partialize: ({ dark, user, sidebarCollapsed }) => ({ dark, user, sidebarCollapsed }),
     },
   ),
 );

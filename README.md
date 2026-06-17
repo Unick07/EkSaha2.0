@@ -9,13 +9,13 @@ nextexa-lab/
 |-- client/
 |   |-- src/
 |   |   |-- app/             # Routing and application composition
-|   |   |-- components/      # Common, feedback, and navigation UI
+|   |   |-- components/      # Common, dashboard, feedback, and navigation UI
 |   |   |-- data/            # Static website content
 |   |   |-- hooks/           # Reusable application hooks
 |   |   |-- layouts/         # Public, user, and admin shells
 |   |   |-- pages/           # Route domains: public, auth, dashboard, admin
 |   |   |-- services/http/   # API client and interceptors
-|   |   |-- store/           # Zustand application state
+|   |   |-- store/           # Persisted app, user dashboard, and admin state
 |   |   `-- styles/          # Global Tailwind styles
 |   `-- package.json
 |-- server/

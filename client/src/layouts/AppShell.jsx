@@ -1,24 +1,57 @@
 import { Link, NavLink, Outlet, Navigate, useLocation } from "react-router-dom";
-import { Bell, BookOpen, ChartNoAxesCombined, CreditCard, FileText, Headphones, LayoutDashboard, LogOut, Menu, Moon, Package, Settings, Sun, Users, X } from "lucide-react";
+import { Bell, BookOpen, ChartNoAxesCombined, CheckCheck, CreditCard, FileText, Headphones, LayoutDashboard, LogOut, Menu, Moon, Package, PanelLeftClose, PanelLeftOpen, Settings, Sun, Users, X } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
+import { useAdminStore } from "../store/useAdminStore";
+import { useUserDashboardStore } from "../store/useUserDashboardStore";
 import { useAuth } from "../hooks/useAuth";
+import { Modal } from "../components/dashboard/Modal";
+import { useEffect, useState } from "react";
 
 const userLinks = [{ to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true }, { to: "/dashboard/services", label: "My services", icon: Package }, { to: "/dashboard/tickets", label: "Support tickets", icon: Headphones }, { to: "/dashboard/invoices", label: "Invoices", icon: FileText }, { to: "/dashboard/settings", label: "Account settings", icon: Settings }];
 const adminLinks = [{ to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true }, { to: "/admin/users", label: "Users", icon: Users }, { to: "/admin/subscriptions", label: "Subscriptions", icon: CreditCard }, { to: "/admin/services", label: "Services", icon: Package }, { to: "/admin/tickets", label: "Tickets", icon: Headphones }, { to: "/admin/blog", label: "Blog", icon: BookOpen }, { to: "/admin/invoices", label: "Invoices", icon: FileText }, { to: "/admin/analytics", label: "Analytics", icon: ChartNoAxesCombined }, { to: "/admin/settings", label: "Settings", icon: Settings }];
 
 export default function AppShell({ admin = false }) {
-  const { user, isAdmin, logout } = useAuth(); const { dark, toggleDark, sidebarOpen, setSidebarOpen } = useAppStore(); const location = useLocation();
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const { user, isAdmin, logout } = useAuth();
+  const { dark, toggleDark, sidebarOpen, setSidebarOpen, sidebarCollapsed, toggleSidebarCollapsed } = useAppStore();
+  const userNotifications = useUserDashboardStore((state) => state.notifications);
+  const markUserNotificationsRead = useUserDashboardStore((state) => state.markNotificationsRead);
+  const adminNotifications = useAdminStore((state) => state.notifications);
+  const ingestTickets = useAdminStore((state) => state.ingestTickets);
+  const markAdminNotificationsRead = useAdminStore((state) => state.markAdminNotificationsRead);
+  const location = useLocation();
+  useEffect(() => {
+    if (!admin || !isAdmin) return undefined;
+    const syncTickets = () => {
+      fetch("/api/demo/tickets")
+        .then((response) => response.json())
+        .then(ingestTickets)
+        .catch(() => {});
+    };
+    syncTickets();
+    const interval = window.setInterval(syncTickets, 10000);
+    return () => window.clearInterval(interval);
+  }, [admin, isAdmin, ingestTickets]);
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   if (admin && !isAdmin) return <Navigate to="/dashboard" replace />;
   const links = admin ? adminLinks : userLinks;
   const title = links.find(link => link.end ? location.pathname === link.to : location.pathname.startsWith(link.to))?.label || "Dashboard";
+  const collapsed = sidebarCollapsed && !sidebarOpen;
+  const notifications = admin ? adminNotifications : userNotifications;
+  const markNotificationsRead = admin ? markAdminNotificationsRead : markUserNotificationsRead;
+  const unread = notifications.filter((item) => !item.read).length;
   return <div className="min-h-screen bg-slate-50 dark:bg-[#070b22]">
-    <aside className={`fixed inset-y-0 left-0 z-50 w-72 transform border-r border-white/10 bg-ink p-5 text-white transition lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-      <div className="flex items-center justify-between"><Link to="/" className="flex items-center gap-2.5 font-extrabold"><span className="grid size-9 place-items-center rounded-xl bg-electric">N</span>Nextexa Lab</Link><button className="lg:hidden" onClick={() => setSidebarOpen(false)}><X/></button></div>
-      {admin && <div className="mt-7 rounded-xl border border-blue-400/20 bg-blue-500/10 px-4 py-3 text-xs font-bold uppercase tracking-wider text-blue-300">Admin workspace</div>}
-      <nav className="mt-7 space-y-1">{links.map(({ to, label, icon: Icon, end }) => <NavLink onClick={() => setSidebarOpen(false)} to={to} end={end} key={to} className={({ isActive }) => `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ${isActive ? "bg-electric text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}><Icon size={18}/>{label}</NavLink>)}</nav>
-      <div className="absolute bottom-5 left-5 right-5"><div className="mb-4 flex items-center gap-3 rounded-xl bg-white/5 p-3"><span className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 text-sm font-bold text-ink">{user.name[0]}</span><div className="min-w-0 flex-1"><div className="truncate text-sm font-bold">{user.name}</div><div className="truncate text-xs text-slate-500">{user.email}</div></div></div><button onClick={logout} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-400 hover:bg-white/5 hover:text-white"><LogOut size={17}/>Sign out</button></div>
+    {sidebarOpen && <button aria-label="Close sidebar overlay" className="fixed inset-0 z-40 bg-slate-950/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+    <aside className={`fixed inset-y-0 left-0 z-50 transform border-r border-white/10 bg-ink p-4 text-white transition-all duration-300 lg:translate-x-0 ${collapsed ? "lg:w-20" : "w-72"} ${sidebarOpen ? "translate-x-0 w-72" : "-translate-x-full"}`}>
+      <div className={`flex items-center ${collapsed ? "justify-center" : "justify-between"}`}><Link to="/" className="flex items-center gap-2.5 font-extrabold"><span className="grid size-9 shrink-0 place-items-center rounded-xl bg-electric">N</span>{!collapsed && <span>Nextexa Lab</span>}</Link><button className="lg:hidden" onClick={() => setSidebarOpen(false)}><X/></button></div>
+      {admin && !collapsed && <div className="mt-7 rounded-xl border border-blue-400/20 bg-blue-500/10 px-4 py-3 text-xs font-bold uppercase tracking-wider text-blue-300">Admin workspace</div>}
+      <nav className="mt-7 space-y-1">{links.map(({ to, label, icon: Icon, end }) => <NavLink title={collapsed ? label : undefined} onClick={() => setSidebarOpen(false)} to={to} end={end} key={to} className={({ isActive }) => `flex items-center rounded-xl py-3 text-sm font-semibold transition ${collapsed ? "justify-center px-2" : "gap-3 px-4"} ${isActive ? "bg-electric text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}><Icon size={18}/>{!collapsed && label}</NavLink>)}</nav>
+      <div className="absolute bottom-4 left-4 right-4">{!collapsed && <div className="mb-3 flex items-center gap-3 rounded-xl bg-white/5 p-3"><span className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 text-sm font-bold text-ink">{user.name[0]}</span><div className="min-w-0 flex-1"><div className="truncate text-sm font-bold">{user.name}</div><div className="truncate text-xs text-slate-500">{user.email}</div></div></div>}<button title={collapsed ? "Sign out" : undefined} onClick={logout} className={`flex w-full items-center rounded-xl py-3 text-sm text-slate-400 hover:bg-white/5 hover:text-white ${collapsed ? "justify-center px-2" : "gap-3 px-4"}`}><LogOut size={17}/>{!collapsed && "Sign out"}</button></div>
     </aside>
-    <div className="lg:pl-72"><header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200 bg-white/85 px-5 backdrop-blur dark:border-white/10 dark:bg-ink/85 sm:px-8"><div className="flex items-center gap-4"><button className="lg:hidden" onClick={() => setSidebarOpen(true)}><Menu/></button><div><h1 className="text-lg font-bold">{title}</h1><p className="hidden text-xs text-slate-500 sm:block">{admin ? "Manage your Nextexa operation" : "Welcome back, " + user.name.split(" ")[0]}</p></div></div><div className="flex items-center gap-2"><button onClick={toggleDark} className="grid size-10 place-items-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/10">{dark ? <Sun size={18}/> : <Moon size={18}/>}</button><button className="relative grid size-10 place-items-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/10"><Bell size={18}/><span className="absolute right-2 top-2 size-2 rounded-full bg-electric"/></button></div></header><main className="p-5 sm:p-8"><Outlet/></main></div>
+    <div className={`transition-all duration-300 ${collapsed ? "lg:pl-20" : "lg:pl-72"}`}><header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200 bg-white/85 px-5 backdrop-blur dark:border-white/10 dark:bg-ink/85 sm:px-8"><div className="flex items-center gap-3"><button className="grid size-10 place-items-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 lg:hidden" onClick={() => setSidebarOpen(true)}><Menu/></button><button title={collapsed ? "Show side panel" : "Hide side panel"} className="hidden size-10 place-items-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 lg:grid" onClick={toggleSidebarCollapsed}>{collapsed ? <PanelLeftOpen size={19}/> : <PanelLeftClose size={19}/>}</button><div><h1 className="text-lg font-bold">{title}</h1><p className="hidden text-xs text-slate-500 sm:block">{admin ? "Manage your Nextexa operation" : "Welcome back, " + user.name.split(" ")[0]}</p></div></div><div className="flex items-center gap-2"><button title="Toggle theme" onClick={toggleDark} className="grid size-10 place-items-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/10">{dark ? <Sun size={18}/> : <Moon size={18}/>}</button><button title="Notifications" onClick={() => setNotificationsOpen(true)} className="relative grid size-10 place-items-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/10"><Bell size={18}/>{unread > 0 && <span className="absolute right-1.5 top-1.5 grid size-4 place-items-center rounded-full bg-electric text-[9px] font-bold text-white">{unread}</span>}</button></div></header><main className="p-5 sm:p-8"><Outlet/></main></div>
+    <Modal open={notificationsOpen} onClose={() => setNotificationsOpen(false)} title="Notifications" description="Recent account and service activity.">
+      <div className="space-y-3">{notifications.map((item) => <div className={`rounded-2xl border p-4 ${item.read ? "border-slate-100 dark:border-white/5" : "border-blue-200 bg-blue-50 dark:border-blue-500/20 dark:bg-blue-500/10"}`} key={item.id}><div className="font-semibold">{item.title}</div><div className="mt-1 text-xs text-slate-500">{item.time}</div></div>)}</div>
+      <button className="mt-5 flex items-center gap-2 text-sm font-bold text-electric" onClick={markNotificationsRead}><CheckCheck size={16}/>Mark all as read</button>
+    </Modal>
   </div>;
 }
