@@ -7,6 +7,6 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 5173,
     strictPort: false,
-    proxy: { "/api": "http://localhost:5000" },
+    proxy: { "/api": "http://127.0.0.1:5000" },
   },
 });

@@ -117,6 +117,7 @@ export const useAdminStore = create(
           : item),
       })),
       deleteRecord: (collection, id) => set((state) => ({ [collection]: state[collection].filter((item) => item.id !== id) })),
+      ingestPosts: (posts) => set({ posts }),
       updateSettings: (settings) => set({ settings }),
     }),
     { name: "nextexa-admin-dashboard" },

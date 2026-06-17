@@ -41,6 +41,8 @@ export default function App() {
       <Route path="services/:slug" element={<ServicePage/>}/>
       <Route path="pricing" element={<Pricing/>}/>
       <Route path="about" element={<About/>}/>
+      <Route path="insights" element={<Blog/>}/>
+      <Route path="insights/:slug" element={<BlogPost/>}/>
       <Route path="blog" element={<Blog/>}/>
       <Route path="blog/:slug" element={<BlogPost/>}/>
       <Route path="contact" element={<Contact/>}/>

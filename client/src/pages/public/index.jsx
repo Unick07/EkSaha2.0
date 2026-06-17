@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Calendar, Check, Clock, Mail, MapPin, Phone, Send } from "lucide-react";
 import toast from "react-hot-toast";
@@ -19,8 +20,19 @@ const normalizeAdminPost = (post) => ({
 });
 
 function usePublishedPosts() {
+  const [serverPosts, setServerPosts] = useState([]);
   const adminPosts = useAdminStore((state) => state.posts);
-  const publishedAdminPosts = adminPosts
+  useEffect(() => {
+    fetch("/api/demo/posts?published=true", { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) throw new Error("Could not load public posts.");
+        return response.json();
+      })
+      .then(setServerPosts)
+      .catch(() => setServerPosts([]));
+  }, []);
+  const sourcePosts = serverPosts.length > 0 ? serverPosts : adminPosts;
+  const publishedAdminPosts = sourcePosts
     .filter((post) => post.status === "Published")
     .map(normalizeAdminPost);
 
@@ -51,13 +63,13 @@ export function About() {
 
 export function Blog() {
   const publishedPosts = usePublishedPosts();
-  return <><section className="bg-slate-50 py-24 text-center dark:bg-white/[.025]"><div className="container-shell"><span className="eyebrow">Nextexa field notes</span><h1 className="text-5xl font-extrabold tracking-[-.05em]">Ideas for better digital operations.</h1><p className="mx-auto mt-5 max-w-xl text-slate-500">Practical thinking on growth, websites and resilient IT for small teams.</p></div></section><section className="py-20"><div className="container-shell grid gap-6 lg:grid-cols-3">{publishedPosts.map((post, i) => <Link to={`/blog/${post.slug}`} className="panel group overflow-hidden" key={`${post.source}-${post.slug}`}><div className={`h-48 bg-gradient-to-br ${services[i % services.length].accent}`} /><div className="p-6"><div className="text-xs font-bold uppercase tracking-wider text-electric">{post.category}</div><h2 className="mt-3 text-xl font-bold leading-7 group-hover:text-electric">{post.title}</h2><p className="mt-3 text-sm leading-6 text-slate-500">{post.excerpt}</p><div className="mt-6 flex gap-4 text-xs text-slate-400"><span className="flex gap-1"><Calendar size={13}/>{post.date}</span><span className="flex gap-1"><Clock size={13}/>{post.read}</span></div></div></Link>)}</div>{publishedPosts.length === 0 && <div className="container-shell"><div className="panel p-10 text-center text-slate-500">No published insights yet.</div></div>}</section></>;
+  return <><section className="bg-slate-50 py-24 text-center dark:bg-white/[.025]"><div className="container-shell"><span className="eyebrow">Nextexa field notes</span><h1 className="text-5xl font-extrabold tracking-[-.05em]">Ideas for better digital operations.</h1><p className="mx-auto mt-5 max-w-xl text-slate-500">Practical thinking on growth, websites and resilient IT for small teams.</p></div></section><section className="py-20"><div className="container-shell grid gap-6 lg:grid-cols-3">{publishedPosts.map((post, i) => <Link to={`/insights/${post.slug}`} className="panel group overflow-hidden" key={`${post.source}-${post.slug}`}><div className={`h-48 bg-gradient-to-br ${services[i % services.length].accent}`} /><div className="p-6"><div className="text-xs font-bold uppercase tracking-wider text-electric">{post.category}</div><h2 className="mt-3 text-xl font-bold leading-7 group-hover:text-electric">{post.title}</h2><p className="mt-3 text-sm leading-6 text-slate-500">{post.excerpt}</p><div className="mt-6 flex gap-4 text-xs text-slate-400"><span className="flex gap-1"><Calendar size={13}/>{post.date}</span><span className="flex gap-1"><Clock size={13}/>{post.read}</span></div></div></Link>)}</div>{publishedPosts.length === 0 && <div className="container-shell"><div className="panel p-10 text-center text-slate-500">No published insights yet.</div></div>}</section></>;
 }
 
 export function BlogPost() {
   const { slug } = useParams(); const publishedPosts = usePublishedPosts(); const post = publishedPosts.find(p => p.slug === slug) || publishedPosts[0];
   if (!post) return <NotFound />;
-  return <article><header className="bg-ink py-24 text-white"><div className="container-shell max-w-4xl"><Link to="/blog" className="flex items-center gap-2 text-sm text-blue-300"><ArrowLeft size={15}/> Back to insights</Link><div className="mt-10 text-sm font-bold uppercase tracking-wider text-blue-300">{post.category}</div><h1 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-6xl">{post.title}</h1><div className="mt-6 flex gap-5 text-sm text-slate-400"><span>{post.date}</span><span>{post.read} read</span></div></div></header><div className="container-shell max-w-3xl py-20 text-lg leading-8 text-slate-600 dark:text-slate-300"><p className="text-xl leading-9">{post.excerpt}</p>{post.content.split("\n").filter(Boolean).map((paragraph, index) => <p className="mt-5" key={`${post.slug}-${index}`}>{paragraph}</p>)}</div></article>;
+  return <article><header className="bg-ink py-24 text-white"><div className="container-shell max-w-4xl"><Link to="/insights" className="flex items-center gap-2 text-sm text-blue-300"><ArrowLeft size={15}/> Back to insights</Link><div className="mt-10 text-sm font-bold uppercase tracking-wider text-blue-300">{post.category}</div><h1 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-6xl">{post.title}</h1><div className="mt-6 flex gap-5 text-sm text-slate-400"><span>{post.date}</span><span>{post.read} read</span></div></div></header><div className="container-shell max-w-3xl py-20 text-lg leading-8 text-slate-600 dark:text-slate-300"><p className="text-xl leading-9">{post.excerpt}</p>{post.content.split("\n").filter(Boolean).map((paragraph, index) => <p className="mt-5" key={`${post.slug}-${index}`}>{paragraph}</p>)}</div></article>;
 }
 
 export function Contact() {
