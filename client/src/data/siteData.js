@@ -75,6 +75,17 @@ export const testimonials = [
   { quote: "Our site is faster, support tickets are down, and qualified organic traffic is finally moving in the right direction.", name: "Priya Shah", role: "COO, Layerpath" },
 ];
 
+export const trustedCompanies = [
+  { name: "Northstar", sector: "SaaS Growth", initials: "NS" },
+  { name: "Alder & Co.", sector: "Retail Ops", initials: "AC" },
+  { name: "Layerpath", sector: "Cloud Systems", initials: "LP" },
+  { name: "Brightway", sector: "Paid Media", initials: "BW" },
+  { name: "Modulo", sector: "Web Platforms", initials: "MD" },
+  { name: "Orbitlane", sector: "IT Support", initials: "OL" },
+  { name: "Stackline", sector: "Analytics", initials: "SL" },
+  { name: "NovaWorks", sector: "SEO Systems", initials: "NW" },
+];
+
 export const posts = [
   { slug: "technical-seo-checklist", category: "SEO", title: "The technical SEO checklist we use before every launch", excerpt: "A practical framework for shipping websites that search engines and humans can navigate.", date: "May 28, 2026", read: "7 min" },
   { slug: "subscription-digital-team", category: "Strategy", title: "When a subscription digital team makes sense", excerpt: "How to compare an in-house hire, agency retainer, freelancers, and a subscription partner.", date: "May 15, 2026", read: "5 min" },

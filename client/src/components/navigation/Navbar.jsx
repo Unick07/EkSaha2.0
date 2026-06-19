@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { ArrowRight, ChevronDown, Menu, Moon, Sparkles, Sun, X } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { services } from "../../data/siteData";
@@ -22,6 +22,8 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const { dark, toggleDark, user } = useAppStore();
+  const location = useLocation();
+  const isLanding = location.pathname === "/";
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -29,7 +31,7 @@ export default function Navbar() {
 
   const dashboardPath = user ? (user.role === "admin" ? "/admin" : "/dashboard") : "/login";
 
-  return <header className="sticky top-0 z-50 px-3 py-3 sm:px-5">
+  return <header className={`${isLanding ? "fixed inset-x-0 top-0" : "sticky top-0"} z-50 px-3 py-3 sm:px-5`}>
     <div className="container-shell">
       <nav className="relative flex h-16 items-center justify-between rounded-3xl border border-border/70 bg-surface/85 px-3 shadow-xl shadow-slate-950/5 backdrop-blur-2xl dark:shadow-black/20 lg:px-4">
         <Link to="/" className="group flex items-center gap-3 rounded-2xl pr-3 font-extrabold tracking-tight" onClick={() => setOpen(false)}>
