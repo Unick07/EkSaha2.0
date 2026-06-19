@@ -25,7 +25,7 @@ export const useAppStore = create(
       logout: () => set({ user: null }),
     }),
     {
-      name: "nextexa-app",
+      name: "eksaha-app",
       partialize: ({ dark, user, sidebarCollapsed }) => ({ dark, user, sidebarCollapsed }),
     },
   ),

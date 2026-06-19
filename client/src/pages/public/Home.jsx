@@ -23,7 +23,7 @@ export default function Home() {
           <div className="eyebrow border-blue-400/20 bg-blue-400/10 text-blue-200"><span className="size-1.5 rounded-full bg-cyan shadow-[0_0_12px_#67E8F9]" />Your on-demand digital team</div>
           <h1 className="text-5xl font-extrabold leading-[1.02] tracking-[-.055em] sm:text-6xl lg:text-7xl">Grow faster without growing your <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">headcount.</span></h1>
           <p className="mx-auto mt-7 max-w-2xl text-lg leading-8 text-slate-300">SEO, web, paid media and IT support in one flexible subscription. Senior specialists, clear priorities, measurable outcomes.</p>
-          <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row"><Button to="/pricing" className="px-7 py-4">View plans <ArrowRight size={17} /></Button><Button to="/contact" variant="secondary" className="border-white/15 bg-white/5 px-7 py-4 text-white hover:bg-white/10"><Play size={16} /> Book a free call</Button></div>
+          <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row"><Button to="/pricing" className="px-7 py-4">View plans <ArrowRight size={17} /></Button><Button to="/contact" variant="secondary" className="border-primary-foreground/25 bg-primary-foreground/10 px-7 py-4 text-primary-foreground hover:bg-primary-foreground/20"><Play size={16} /> Book a free call</Button></div>
           <p className="mt-5 flex items-center justify-center gap-2 text-xs text-slate-400"><CheckCircle2 size={14} className="text-cyan" /> Start in 5 days · No long contracts · Cancel anytime</p>
         </div>
         <div className="mx-auto mt-16 grid max-w-4xl grid-cols-3 divide-x divide-white/10 rounded-2xl border border-white/10 bg-white/[.04] p-5 backdrop-blur">
@@ -45,7 +45,7 @@ export default function Home() {
     </section>
 
     <section className="bg-slate-50 py-24 dark:bg-white/[.025] sm:py-32"><div className="container-shell">
-      <SectionHeading center eyebrow="Why Nextexa" title="Built for momentum, not meetings." copy="A simpler operating model that keeps your best ideas moving from backlog to impact." />
+      <SectionHeading center eyebrow="Why EkSaha" title="Built for momentum, not meetings." copy="A simpler operating model that keeps your best ideas moving from backlog to impact." />
       <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{features.map(({ icon: Icon, title, copy }, index) => <FadeIn key={title} delay={index * .06} className="panel p-6"><span className="grid size-11 place-items-center rounded-xl bg-blue-50 text-electric dark:bg-blue-500/10"><Icon size={21} /></span><h3 className="mt-5 font-bold">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-500">{copy}</p></FadeIn>)}</div>
     </div></section>
 
@@ -61,7 +61,7 @@ export default function Home() {
 
     <section className="py-24 sm:py-32"><div className="container-shell">
       <SectionHeading center eyebrow="Simple pricing" title="One subscription. A full team." copy="Start where you are. Upgrade, downgrade, or pause as priorities change." />
-      <div className="mx-auto mt-8 flex w-fit rounded-xl bg-slate-100 p-1 dark:bg-white/5">{["monthly", "yearly"].map(item => <button key={item} onClick={() => setBilling(item)} className={`rounded-lg px-5 py-2 text-sm font-bold capitalize transition ${billing === item ? "bg-white text-ink shadow-sm dark:bg-white/10 dark:text-white" : "text-slate-500"}`}>{item}{item === "yearly" && <span className="ml-2 text-xs text-emerald-500">-20%</span>}</button>)}</div>
+      <div className="mx-auto mt-8 flex w-fit rounded-xl border border-border bg-surface-raised p-1">{["monthly", "yearly"].map(item => <button key={item} onClick={() => setBilling(item)} className={`rounded-lg px-5 py-2 text-sm font-bold capitalize transition ${billing === item ? "bg-primary text-primary-foreground shadow-sm" : "text-muted hover:bg-surface hover:text-text"}`}>{item}{item === "yearly" && <span className="ml-2 text-xs text-emerald-500">-20%</span>}</button>)}</div>
       <div className="mt-10 grid gap-6 lg:grid-cols-3">{plans.map(plan => <PlanCard key={plan.name} plan={plan} billing={billing} />)}</div>
     </div></section>
 
@@ -70,6 +70,6 @@ export default function Home() {
       <div className="space-y-3">{faqs.map(([question, answer], index) => <div className="panel overflow-hidden" key={question}><button onClick={() => setFaq(faq === index ? -1 : index)} className="flex w-full items-center justify-between gap-4 p-5 text-left font-bold">{question}<ChevronDown className={`shrink-0 transition ${faq === index ? "rotate-180" : ""}`} size={18} /></button>{faq === index && <p className="px-5 pb-5 text-sm leading-6 text-slate-500">{answer}</p>}</div>)}</div>
     </div></section>
 
-    <section className="py-20"><div className="container-shell"><div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-blue-600 to-blue-800 px-7 py-14 text-center text-white shadow-glow sm:px-12"><div className="absolute -right-20 -top-20 size-72 rounded-full border-[40px] border-white/5" /><h2 className="relative text-3xl font-extrabold tracking-tight sm:text-4xl">Your next growth chapter can start this week.</h2><p className="relative mx-auto mt-4 max-w-xl text-blue-100">Tell us where you’re headed. We’ll show you the clearest path there.</p><Button to="/contact" variant="secondary" className="relative mt-8 border-white bg-white text-blue-700 hover:bg-blue-50">Book your free strategy call <ArrowRight size={16} /></Button></div></div></section>
+    <section className="py-20"><div className="container-shell"><div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary to-accent px-7 py-14 text-center text-primary-foreground shadow-glow sm:px-12"><div className="absolute -right-20 -top-20 size-72 rounded-full border-[40px] border-primary-foreground/10" /><h2 className="relative text-3xl font-extrabold tracking-tight sm:text-4xl">Your next growth chapter can start this week.</h2><p className="relative mx-auto mt-4 max-w-xl opacity-85">Tell us where you’re headed. We’ll show you the clearest path there.</p><Button to="/contact" variant="secondary" className="relative mt-8 border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20">Book your free strategy call <ArrowRight size={16} /></Button></div></div></section>
   </div>;
 }

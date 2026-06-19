@@ -1,11 +1,11 @@
-# Nextexa Lab
+# EkSaha
 
 Full-stack subscription IT services platform built with React, Express, and MongoDB.
 
 ## Project Structure
 
 ```text
-nextexa-lab/
+eksaha/
 |-- client/
 |   |-- src/
 |   |   |-- app/             # Routing and application composition
@@ -58,7 +58,7 @@ npm audit
 
 ## Demo Access
 
-- User: `user@nextexa.dev` / `password`
-- Admin: `admin@nextexa.dev` / `password`
+- User: `user@eksaha.dev` / `password`
+- Admin: `admin@eksaha.dev` / `password`
 
 Without external payment or OAuth credentials, those integrations remain in demo mode.

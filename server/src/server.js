@@ -8,5 +8,5 @@ const databaseConnected = await connectDatabase();
 console.log(databaseConnected ? "MongoDB connected" : "Running without MongoDB");
 
 app.listen(port, () => {
-  console.log(`Nextexa API listening on port ${port}`);
+  console.log(`EkSaha API listening on port ${port}`);
 });

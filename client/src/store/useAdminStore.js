@@ -25,7 +25,7 @@ const today = () => new Intl.DateTimeFormat("en", { month: "short", day: "numeri
 
 const normalizePost = (post) => ({
   slug: slugify(post.slug || post.title || `post-${Date.now()}`),
-  excerpt: post.excerpt || "A fresh insight from the Nextexa Lab team.",
+  excerpt: post.excerpt || "A fresh insight from the EkSaha team.",
   content: post.content || post.excerpt || "This post is ready for content.",
   category: post.category || "Insights",
   status: post.status || "Draft",
@@ -56,7 +56,7 @@ export const useAdminStore = create(
       notifications: [
         { id: "admin-note-1", title: "Critical ticket awaiting assignment", time: "Today", read: false, href: "/admin/tickets" },
       ],
-      settings: { company: "Nextexa Lab", email: "support@nextexa.lab", currency: "USD", role: "Support Agent" },
+      settings: { company: "EkSaha", email: "support@eksaha.com", currency: "USD", role: "Support Agent" },
       addUser: (user) => set((state) => ({ users: [{ id: Date.now(), joined: "Jun 12, 2026", status: "Active", ...user }, ...state.users] })),
       updateUser: (id, changes) => set((state) => ({ users: state.users.map((user) => user.id === id ? { ...user, ...changes } : user) })),
       deleteUser: (id) => set((state) => ({ users: state.users.filter((user) => user.id !== id) })),
@@ -120,6 +120,6 @@ export const useAdminStore = create(
       ingestPosts: (posts) => set({ posts }),
       updateSettings: (settings) => set({ settings }),
     }),
-    { name: "nextexa-admin-dashboard" },
+    { name: "eksaha-admin-dashboard" },
   ),
 );

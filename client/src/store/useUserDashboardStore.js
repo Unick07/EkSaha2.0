@@ -11,7 +11,7 @@ export const useUserDashboardStore = create(
   persist(
     (set) => ({
       tickets: initialTickets,
-      profile: { name: "Jordan Lee", email: "user@nextexa.dev", company: "Northstar Labs", timezone: "Eastern Time (US)" },
+      profile: { name: "Jordan Lee", email: "user@eksaha.dev", company: "Northstar Labs", timezone: "Eastern Time (US)" },
       paymentMethod: { brand: "Visa", last4: "4242", expiry: "08/28" },
       notifications: [
         { id: 1, title: "Ticket NX-1048 updated", time: "20 minutes ago", read: false },
@@ -30,6 +30,6 @@ export const useUserDashboardStore = create(
       updatePaymentMethod: (paymentMethod) => set({ paymentMethod }),
       markNotificationsRead: () => set((state) => ({ notifications: state.notifications.map((item) => ({ ...item, read: true })) })),
     }),
-    { name: "nextexa-user-dashboard" },
+    { name: "eksaha-user-dashboard" },
   ),
 );

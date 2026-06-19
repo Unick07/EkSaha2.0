@@ -21,7 +21,7 @@ const normalizePost = (post) => ({
   id: post.id || Date.now(),
   title: post.title || "Untitled post",
   slug: slugify(post.slug || post.title || `post-${Date.now()}`),
-  excerpt: post.excerpt || "A fresh insight from the Nextexa Lab team.",
+  excerpt: post.excerpt || "A fresh insight from the EkSaha team.",
   content: post.content || post.excerpt || "This post is ready for content.",
   category: post.category || "Insights",
   status: post.status || "Draft",

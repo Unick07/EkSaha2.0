@@ -70,7 +70,7 @@ export const plans = [
 ];
 
 export const testimonials = [
-  { quote: "Nextexa gave us the capabilities of a full digital team without the hiring cycle. Pipeline doubled in one quarter.", name: "Maya Chen", role: "Co-founder, Northstar" },
+  { quote: "EkSaha gave us the capabilities of a full digital team without the hiring cycle. Pipeline doubled in one quarter.", name: "Maya Chen", role: "Co-founder, Northstar" },
   { quote: "The clarity is rare. We always know what is being worked on, why it matters, and how it is performing.", name: "Ethan Brooks", role: "CEO, Alder & Co." },
   { quote: "Our site is faster, support tickets are down, and qualified organic traffic is finally moving in the right direction.", name: "Priya Shah", role: "COO, Layerpath" },
 ];
