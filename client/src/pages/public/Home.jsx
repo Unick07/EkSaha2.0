@@ -22,38 +22,47 @@ function TrustedCompanies() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: .65 }}
-        className="panel overflow-hidden p-5 shadow-2xl shadow-slate-950/10"
+        className="overflow-hidden rounded-[2rem] bg-surface/95 p-6 shadow-2xl shadow-slate-950/10 backdrop-blur xl:p-8"
       >
-        <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 lg:flex-row lg:items-center">
+        <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
           <div>
             <div className="text-xs font-bold uppercase tracking-[.2em] text-primary">Trusted collaborations</div>
             <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-text">Partnering with teams that move fast.</h2>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center text-xs font-bold text-muted sm:min-w-[360px]">
-            {[["120+", "teams"], ["34", "active partners"], ["4.9/5", "avg rating"]].map(([value, label]) => <div className="rounded-2xl border border-border bg-surface-raised px-3 py-3" key={label}>
+            {[["120+", "teams"], ["34", "active partners"], ["4.9/5", "avg rating"]].map(([value, label]) => <div className="rounded-2xl bg-surface-raised/70 px-3 py-3 shadow-sm shadow-slate-950/5" key={label}>
               <div className="text-base text-text">{value}</div>
               <div className="mt-1 uppercase tracking-wider">{label}</div>
             </div>)}
           </div>
         </div>
 
-        <div className="relative mt-6 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
+        <div className="relative mt-8 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
           <motion.div
-            className="flex w-max gap-4"
+            className="flex w-max items-center gap-10"
             animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 26, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
           >
-            {marqueeCompanies.map((company, index) => <motion.div
+            {marqueeCompanies.map((company, index) => <motion.a
+              href={company.url}
+              aria-label={company.name}
+              target={company.url ? "_blank" : undefined}
+              rel={company.url ? "noreferrer" : undefined}
               whileHover={{ y: -4, scale: 1.02 }}
-              className="flex min-w-56 items-center gap-4 rounded-2xl border border-border bg-surface-raised/80 px-4 py-4 shadow-sm"
+              className={`group flex h-24 items-center justify-center rounded-3xl bg-transparent px-4 transition duration-300 hover:bg-surface-raised/70 hover:shadow-xl hover:shadow-slate-950/10 ${company.showName ? "min-w-72 gap-4" : "min-w-48"}`}
               key={`${company.name}-${index}`}
             >
-              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-primary to-accent text-sm font-extrabold text-primary-foreground shadow-glow">{company.initials}</span>
-              <span>
-                <span className="block font-extrabold text-text">{company.name}</span>
-                <span className="mt-1 block text-xs font-semibold uppercase tracking-wider text-muted">{company.sector}</span>
-              </span>
-            </motion.div>)}
+              <img
+                src={company.logo}
+                alt={company.name}
+                className={`${company.showName ? "max-h-16 max-w-20 group-hover:[filter:brightness(0)_saturate(100%)_invert(42%)_sepia(93%)_saturate(1991%)_hue-rotate(206deg)_brightness(98%)_contrast(96%)]" : "max-h-16 max-w-40 saturate-0 group-hover:saturate-100"} object-contain opacity-75 transition duration-300 group-hover:opacity-100`}
+                loading="lazy"
+              />
+              {company.showName && <span className="text-left">
+                <span className="block text-lg font-extrabold tracking-tight text-text transition duration-300 group-hover:text-primary">{company.name}</span>
+                <span className="mt-1 block text-[10px] font-bold uppercase tracking-[.2em] text-muted">{company.sector}</span>
+              </span>}
+            </motion.a>)}
           </motion.div>
         </div>
       </motion.div>
@@ -119,6 +128,6 @@ export default function Home() {
       <div className="space-y-3">{faqs.map(([question, answer], index) => <div className="panel overflow-hidden" key={question}><button onClick={() => setFaq(faq === index ? -1 : index)} className="flex w-full items-center justify-between gap-4 p-5 text-left font-bold">{question}<ChevronDown className={`shrink-0 transition ${faq === index ? "rotate-180" : ""}`} size={18} /></button>{faq === index && <p className="px-5 pb-5 text-sm leading-6 text-slate-500">{answer}</p>}</div>)}</div>
     </div></section>
 
-    <section className="py-20"><div className="container-shell"><div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary to-accent px-7 py-14 text-center text-primary-foreground shadow-glow sm:px-12"><div className="absolute -right-20 -top-20 size-72 rounded-full border-[40px] border-primary-foreground/10" /><h2 className="relative text-3xl font-extrabold tracking-tight sm:text-4xl">Your next growth chapter can start this week.</h2><p className="relative mx-auto mt-4 max-w-xl opacity-85">Tell us where you’re headed. We’ll show you the clearest path there.</p><Button to="/contact" variant="secondary" className="relative mt-8 border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20">Book your free strategy call <ArrowRight size={16} /></Button></div></div></section>
+    <section className="py-20"><div className="container-shell"><div className="relative overflow-hidden rounded-[2rem] border border-primary/15 bg-ink px-7 py-14 text-center text-slate-100 shadow-2xl shadow-slate-950/20 sm:px-12"><div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(59,130,246,.22),transparent_34%),radial-gradient(circle_at_88%_12%,rgba(103,232,249,.16),transparent_30%)]" /><div className="absolute -right-20 -top-20 size-72 rounded-full border-[42px] border-blue-400/10" /><div className="absolute -bottom-24 left-1/2 size-80 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" /><h2 className="relative text-3xl font-extrabold tracking-tight sm:text-4xl">Your next growth chapter can start this week.</h2><p className="relative mx-auto mt-4 max-w-xl text-slate-300">Tell us where you’re headed. We’ll show you the clearest path there.</p><Button to="/contact" className="relative mt-8 shadow-lg shadow-blue-950/20">Book your free strategy call <ArrowRight size={16} /></Button></div></div></section>
   </div>;
 }

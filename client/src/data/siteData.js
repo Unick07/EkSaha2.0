@@ -76,14 +76,15 @@ export const testimonials = [
 ];
 
 export const trustedCompanies = [
-  { name: "Northstar", sector: "SaaS Growth", initials: "NS" },
-  { name: "Alder & Co.", sector: "Retail Ops", initials: "AC" },
-  { name: "Layerpath", sector: "Cloud Systems", initials: "LP" },
-  { name: "Brightway", sector: "Paid Media", initials: "BW" },
-  { name: "Modulo", sector: "Web Platforms", initials: "MD" },
-  { name: "Orbitlane", sector: "IT Support", initials: "OL" },
-  { name: "Stackline", sector: "Analytics", initials: "SL" },
-  { name: "NovaWorks", sector: "SEO Systems", initials: "NW" },
+  { name: "Algories Technology", sector: "Technology Partner", logo: "/logos/algories-technology-transparent.png", url: "https://www.facebook.com/algoriestechnology?__tn__=-UC*F", showName: true },
+  { name: "Northstar", sector: "SaaS Growth", logo: "/logos/northstar.svg" },
+  { name: "Alder & Co.", sector: "Retail Ops", logo: "/logos/alder-co.svg" },
+  { name: "Layerpath", sector: "Cloud Systems", logo: "/logos/layerpath.svg" },
+  { name: "Brightway", sector: "Paid Media", logo: "/logos/brightway.svg" },
+  { name: "Modulo", sector: "Web Platforms", logo: "/logos/modulo.svg" },
+  { name: "Orbitlane", sector: "IT Support", logo: "/logos/orbitlane.svg" },
+  { name: "Stackline", sector: "Analytics", logo: "/logos/stackline.svg" },
+  { name: "NovaWorks", sector: "SEO Systems", logo: "/logos/novaworks.svg" },
 ];
 
 export const posts = [
