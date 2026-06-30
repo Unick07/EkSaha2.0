@@ -135,6 +135,21 @@ async function handleDemoTickets(request, env, path) {
   return null;
 }
 
+async function serveAsset(request, env) {
+  if (!env.ASSETS) {
+    console.error("Static assets binding is not available", { url: request.url });
+    return new Response("Static assets binding is not available.", { status: 404 });
+  }
+
+  const response = await env.ASSETS.fetch(request);
+  if (response.status !== 404) return response;
+
+  const url = new URL(request.url);
+  url.pathname = "/index.html";
+  url.search = "";
+  return env.ASSETS.fetch(new Request(url, request));
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -146,7 +161,6 @@ export default {
       return json({ status: "ok", database: env.DB ? "connected" : "missing" }, {}, env, request);
     }
 
-    if (env.ASSETS) return env.ASSETS.fetch(request);
-    return new Response("Static assets binding is not available.", { status: 404 });
+    return serveAsset(request, env);
   },
 };
