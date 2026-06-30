@@ -13,15 +13,7 @@ export const useAppStore = create(
       toggleDark: () => set((state) => ({ dark: !state.dark })),
       setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
       toggleSidebarCollapsed: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
-      login: (email) =>
-        set({
-          user: {
-            name: email.startsWith("admin") ? "Alex Morgan" : "Jordan Lee",
-            email,
-            role: email.startsWith("admin") ? "admin" : "user",
-            plan: "Growth",
-          },
-        }),
+      login: (user) => set({ user }),
       logout: () => set({ user: null }),
     }),
     {

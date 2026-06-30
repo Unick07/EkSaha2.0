@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { Button } from "../../components/common/ui";
 import { useAuth } from "../../hooks/useAuth";
 import { plans } from "../../data/siteData";
+import api from "../../services/http/api";
 
 function AuthShell({ title, copy, children }) {
   return <div className="grid min-h-screen bg-background text-text lg:grid-cols-2">
@@ -34,18 +35,27 @@ export function Login() {
 
   if (user) return <Navigate to={user.role === "admin" ? "/admin" : "/dashboard"} replace />;
 
-  const submit = (event) => {
+  const submit = async (event) => {
     event.preventDefault();
-    const email = new FormData(event.currentTarget).get("email");
-    login(email);
-    toast.success("Welcome back.");
-    navigate(email.startsWith("admin") ? "/admin" : "/dashboard");
+    const form = new FormData(event.currentTarget);
+    const email = form.get("email");
+    const password = form.get("password");
+
+    try {
+      const { data } = await api.post("/auth/login", { email, password });
+      localStorage.setItem("accessToken", data.accessToken);
+      login(data.user);
+      toast.success("Welcome back.");
+      navigate(data.user.role === "admin" ? "/admin" : "/dashboard");
+    } catch {
+      toast.error("Invalid email or password");
+    }
   };
 
   return <AuthShell title="Welcome back" copy="Sign in to manage your services, requests and account.">
     <form onSubmit={submit} className="mt-8 space-y-5">
       <label className="block text-sm font-semibold">Email<input name="email" required type="email" defaultValue="user@eksaha.dev" className="input mt-2" /></label>
-      <label className="block text-sm font-semibold">Password<div className="relative mt-2"><input required type={show ? "text" : "password"} defaultValue="password" className="input pr-12" /><button type="button" onClick={() => setShow(!show)} className="icon-button absolute right-2 top-1.5 size-9 rounded-xl border-0">{show ? <EyeOff size={17} /> : <Eye size={17} />}</button></div></label>
+      <label className="block text-sm font-semibold">Password<div className="relative mt-2"><input name="password" required type={show ? "text" : "password"} defaultValue="password" className="input pr-12" /><button type="button" onClick={() => setShow(!show)} className="icon-button absolute right-2 top-1.5 size-9 rounded-xl border-0">{show ? <EyeOff size={17} /> : <Eye size={17} />}</button></div></label>
       <div className="flex justify-end"><Link className="text-action" to="/forgot-password">Forgot password?</Link></div>
       <Button className="w-full">Sign in <ArrowRight size={16} /></Button>
       <button type="button" className="soft-button w-full">Continue with Google</button>
@@ -60,12 +70,29 @@ export function Signup() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const submit = (event) => {
+  const submit = async (event) => {
     event.preventDefault();
-    const email = new FormData(event.currentTarget).get("email");
-    login(email);
-    toast.success("Your workspace is ready.");
-    navigate("/dashboard");
+    const form = new FormData(event.currentTarget);
+    const name = form.get("name");
+    const email = form.get("email");
+    const password = form.get("password");
+
+    try {
+      const { data: availablePlans } = await api.get("/plans");
+      const selectedPlan = availablePlans.find((plan) => plan.name === selected);
+      const { data } = await api.post("/auth/signup", {
+        name,
+        email,
+        password,
+        planId: selectedPlan?.id || null,
+      });
+      localStorage.setItem("accessToken", data.accessToken);
+      login(data.user);
+      toast.success("Your workspace is ready.");
+      navigate("/dashboard");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Could not create your account.");
+    }
   };
 
   return <AuthShell title={step === 1 ? "Choose your starting point" : "Create your account"} copy="You can switch plans or service priorities whenever your business needs change.">
@@ -76,9 +103,9 @@ export function Signup() {
       </button>)}
       <Button onClick={() => setStep(2)} className="mt-3 w-full">Continue with {selected}<ArrowRight size={16} /></Button>
     </div> : <form onSubmit={submit} className="mt-8 space-y-5">
-      <label className="block text-sm font-semibold">Full name<input required className="input mt-2" placeholder="Jordan Lee" /></label>
+      <label className="block text-sm font-semibold">Full name<input name="name" required className="input mt-2" placeholder="Jordan Lee" /></label>
       <label className="block text-sm font-semibold">Work email<input name="email" required type="email" className="input mt-2" placeholder="you@company.com" /></label>
-      <label className="block text-sm font-semibold">Password<input required type="password" minLength="8" className="input mt-2" placeholder="At least 8 characters" /></label>
+      <label className="block text-sm font-semibold">Password<input name="password" required type="password" minLength="8" className="input mt-2" placeholder="At least 8 characters" /></label>
       <div className="rounded-xl border border-border bg-surface-raised p-4 text-sm"><div className="flex items-center gap-2 font-semibold"><CheckCircle2 size={16} className="text-emerald-500" />{selected} plan selected</div></div>
       <Button className="w-full">Create account</Button>
       <button type="button" onClick={() => setStep(1)} className="soft-button w-full">Back to plans</button>
