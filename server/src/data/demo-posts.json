@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1781703255135,
+    "title": "afdovn",
+    "slug": "lakd-vp",
+    "excerpt": "advniopafv",
+    "content": "adfojnvr",
+    "category": "vvv",
+    "status": "Published",
+    "updated": "Jun 17, 2026",
+    "read": "4 min"
+  },
+  {
+    "id": 1,
+    "title": "Technical SEO checklist",
+    "slug": "technical-seo-checklist-admin",
+    "excerpt": "A launch checklist for technical SEO quality control.",
+    "content": "Use this checklist before publishing important pages.",
+    "category": "SEO",
+    "status": "Published",
+    "updated": "May 28, 2026",
+    "read": "7 min"
+  },
+  {
+    "id": 2,
+    "title": "Subscription digital teams",
+    "slug": "subscription-digital-teams-admin",
+    "excerpt": "How subscription support compares with agencies and hires.",
+    "content": "Subscription teams can reduce coordination costs while keeping momentum high.",
+    "category": "Strategy",
+    "status": "Draft",
+    "updated": "May 15, 2026",
+    "read": "5 min"
+  }
+]

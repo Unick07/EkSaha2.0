@@ -1,0 +1,6 @@
+<svg width="240" height="96" viewBox="0 0 240 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="96" rx="24" fill="none"/>
+  <path d="M27 70L54 22L81 70H66L54 48L42 70H27Z" fill="#7C3AED"/>
+  <circle cx="54" cy="48" r="9" fill="#22D3EE"/>
+  <text x="105" y="56" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="800">Alder &amp; Co.</text>
+</svg>

@@ -1,0 +1,10 @@
+node_modules
+.env.example
+dist
+.env
+.env.example
+.env.local
+*.log
+*-debug.png
+.DS_Store
+coverage
