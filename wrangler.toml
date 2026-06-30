@@ -1,0 +1,16 @@
+name = "eksaha"
+main = "worker/index.js"
+compatibility_date = "2026-06-23"
+
+[assets]
+directory = "./client/dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "eksaha-db"
+database_id = "a31db9fd-1f2d-4b10-9373-79325b0c905c"
+
+[vars]
+CLIENT_URL = "https://eksaha.com"
+RESEND_FROM_EMAIL = "hello@eksaha.com"
+RESEND_TO_EMAIL = "dvitixhub@gmail.com"
