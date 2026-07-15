@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { Button } from "../../components/common/ui";
 import ActionMenu from "../../components/dashboard/ActionMenu";
 import { ConfirmDialog, Modal } from "../../components/dashboard/Modal";
+import api from "../../services/http/api";
 import { useAdminStore } from "../../store/useAdminStore";
 
 const formatToday = () => new Date().toLocaleDateString("en-US", {
@@ -64,28 +65,37 @@ export function ResourceManager({ type }) {
   const ingestPosts = useAdminStore((state) => state.ingestPosts);
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const [loading, setLoading] = useState(type === "Blog");
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     if (type !== "Blog") return;
-    fetch("/api/demo/posts", { cache: "no-store" })
-      .then((response) => {
-        if (!response.ok) throw new Error("Could not load blog posts.");
-        return response.json();
+    let active = true;
+    setLoading(true);
+    setLoadError("");
+    api.get("/posts")
+      .then(({ data }) => {
+        if (active) ingestPosts(data);
       })
-      .then(ingestPosts)
-      .catch((error) => toast.error(error.message));
+      .catch((error) => {
+        const message = error.response?.data?.message || "Could not load blog posts.";
+        if (active) setLoadError(message);
+        toast.error(message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [ingestPosts, type]);
 
   const syncBlogPost = async (data) => {
     const isEditing = Boolean(editing?.id);
-    const response = await fetch(isEditing ? `/api/demo/posts/${editing.id}` : "/api/demo/posts", {
-      method: isEditing ? "PATCH" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) throw new Error("Public insights sync failed.");
-    const post = await response.json();
+    const response = isEditing
+      ? await api.patch(`/posts/${editing.id}`, data)
+      : await api.post("/posts", data);
+    const post = response.data;
     if (isEditing) {
       updateRecord(config.collection, editing.id, post);
     } else {
@@ -103,7 +113,7 @@ export function ResourceManager({ type }) {
         setEditing(null);
         toast.success("Blog saved and visible in public insights.");
       } catch (error) {
-        toast.error(error.message);
+        toast.error(error.response?.data?.message || error.message || "Public insights sync failed.");
       }
       return;
     }
@@ -118,12 +128,11 @@ export function ResourceManager({ type }) {
   const confirmDelete = async () => {
     if (type === "Blog") {
       try {
-        const response = await fetch(`/api/demo/posts/${deleting.id}`, { method: "DELETE" });
-        if (!response.ok) throw new Error("Could not delete the public post.");
+        await api.delete(`/posts/${deleting.id}`);
         deleteRecord(config.collection, deleting.id);
         toast.success("Blog removed from public insights.");
       } catch (error) {
-        toast.error(error.message);
+        toast.error(error.response?.data?.message || error.message || "Could not delete the public post.");
       } finally {
         setDeleting(null);
       }
@@ -143,6 +152,9 @@ export function ResourceManager({ type }) {
       </div>
       <Button onClick={() => setEditing({})}><Plus size={16} />Create new</Button>
     </div>
+
+    {type === "Blog" && loading && <div className="panel mb-5 p-5 text-sm text-muted">Loading blog posts...</div>}
+    {type === "Blog" && loadError && <div className="panel mb-5 border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{loadError}</div>}
 
     <div className="panel overflow-hidden">
       <div className="overflow-x-auto">
