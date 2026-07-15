@@ -39,6 +39,15 @@ export async function handleAuth(request, env, path) {
       INSERT INTO users (id, name, email, password_hash, role, plan_id, stripe_customer_id, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [id, body.name.trim(), email, await hashPassword(body.password), "user", body.planId || null, null, timestamp, timestamp]);
+    if (body.planId) {
+      const subId = generateId();
+      const now = nowIso();
+      await run(env.DB,
+        `INSERT INTO subscriptions (id, user_id, plan_id, status, billing_cycle, start_date, created_at, updated_at)
+         VALUES (?, ?, ?, 'trialing', 'monthly', ?, ?, ?)`,
+        [subId, id, body.planId, now, now, now],
+      );
+    }
     const user = await first(env.DB, "SELECT * FROM users WHERE id = ?", [id]);
     const tokens = await tokensFor(user, env);
 
