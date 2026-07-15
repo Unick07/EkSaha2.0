@@ -1,24 +1,47 @@
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { useEffect } from "react";
-import { useAdminStore } from "../../store/useAdminStore";
+import api from "../../services/http/api";
+
+const formatValue = (value) => value ? String(value).replace(/_/g, " ") : "";
 
 export default function Tickets() {
-  const { tickets, updateTicket, ingestTickets } = useAdminStore();
-  useEffect(() => {
-    fetch("/api/demo/tickets")
-      .then((response) => response.json())
-      .then(ingestTickets)
-      .catch(() => toast.error("Could not sync latest tickets."));
-  }, [ingestTickets]);
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const updateAdminTicket = (id, changes, message) => {
-    updateTicket(id, changes);
-    fetch(`/api/demo/tickets/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(changes),
-    }).catch(() => toast.error("Ticket updated locally, but server sync failed."));
-    toast.success(message);
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError("");
+    api.get("/tickets")
+      .then(({ data }) => {
+        if (active) setTickets(data);
+      })
+      .catch((caught) => {
+        const message = caught.response?.data?.message || "Could not load tickets.";
+        if (active) setError(message);
+        toast.error(message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const updateAdminTicket = async (id, changes, message) => {
+    const previous = tickets;
+    setTickets((items) => items.map((ticket) => ticket.id === id ? { ...ticket, ...changes } : ticket));
+    try {
+      const { data } = await api.patch(`/tickets/${id}`, changes);
+      setTickets((items) => items.map((ticket) => ticket.id === id ? data : ticket));
+      toast.success(message);
+    } catch (caught) {
+      setTickets(previous);
+      toast.error(caught.response?.data?.message || "Ticket update failed.");
+    }
   };
-  return <div><div className="mb-7"><h2 className="text-2xl font-bold">Support queue</h2><p className="mt-1 text-sm text-muted">Triage, assign and resolve customer requests. User-created tickets appear here instantly.</p></div><div className="grid gap-4">{tickets.map(ticket=><div className={`panel flex flex-col justify-between gap-5 p-5 lg:flex-row lg:items-center ${ticket.source === "User dashboard" ? "border-primary ring-4 ring-primary/15" : ""}`} key={ticket.id}><div className="flex items-start gap-4"><span className={`mt-1 size-2 rounded-full ${ticket.priority==="Critical"?"bg-red-500":ticket.priority==="High"?"bg-orange-500":"bg-primary"}`}/><div><div className="flex flex-wrap items-center gap-2"><span className="font-semibold">{ticket.subject}</span>{ticket.source === "User dashboard" && <span className="info-pill uppercase tracking-wider">New user ticket</span>}</div><div className="mt-1 text-xs text-muted">{ticket.id} | {ticket.user} | {ticket.priority} priority{ticket.createdAt ? ` | ${ticket.createdAt}` : ""}</div></div></div><div className="flex flex-col gap-3 sm:flex-row"><select value={ticket.assignee} onChange={(e)=>updateAdminTicket(ticket.id,{assignee:e.target.value,source:undefined},"Ticket assigned.")} className="input py-2 sm:w-40"><option>Unassigned</option><option>Amelia</option><option>Noah</option><option>Lina</option><option>Sam</option></select><select value={ticket.status} onChange={(e)=>updateAdminTicket(ticket.id,{status:e.target.value,source:undefined},"Ticket status updated.")} className="input py-2 sm:w-40"><option>Open</option><option>In Progress</option><option>Resolved</option></select></div></div>)}</div></div>;
+
+  return <div><div className="mb-7"><h2 className="text-2xl font-bold">Support queue</h2><p className="mt-1 text-sm text-muted">Triage, assign and resolve customer requests.</p></div>{loading && <div className="panel p-5 text-sm text-muted">Loading tickets...</div>}{error && <div className="panel border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>}{!loading && !error && <div className="grid gap-4">{tickets.map((ticket) => <div className="panel flex flex-col justify-between gap-5 p-5 lg:flex-row lg:items-center" key={ticket.id}><div className="flex items-start gap-4"><span className={`mt-1 size-2 rounded-full ${ticket.priority === "critical" ? "bg-red-500" : ticket.priority === "high" ? "bg-orange-500" : "bg-primary"}`}/><div><div className="font-semibold">{ticket.subject}</div><div className="mt-1 text-xs capitalize text-muted">{ticket.id} | {ticket.user || "Unknown user"} | {formatValue(ticket.priority)} priority{ticket.createdAt ? ` | ${new Date(ticket.createdAt).toLocaleDateString()}` : ""}</div></div></div><div className="flex flex-col gap-3 sm:flex-row"><select value={ticket.assignee || "Unassigned"} onChange={(event) => updateAdminTicket(ticket.id, { assignedTo: event.target.value === "Unassigned" ? null : event.target.value }, "Ticket assigned.")} className="input py-2 sm:w-40"><option>Unassigned</option></select><select value={ticket.status} onChange={(event) => updateAdminTicket(ticket.id, { status: event.target.value }, "Ticket status updated.")} className="input py-2 sm:w-40"><option value="open">Open</option><option value="in_progress">In Progress</option><option value="resolved">Resolved</option></select></div></div>)}{tickets.length === 0 && <div className="panel p-6 text-sm text-muted">No tickets found.</div>}</div>}</div>;
 }
