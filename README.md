@@ -62,3 +62,4 @@ npm audit
 - Admin: `admin@eksaha.dev` / `password`
 
 Without external payment or OAuth credentials, those integrations remain in demo mode.
+# EkSaha
