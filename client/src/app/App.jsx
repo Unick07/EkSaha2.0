@@ -33,7 +33,6 @@ const AdminSubscriptions = from(adminPages, "AdminSubscriptions");
 const AdminTickets = from(adminPages, "AdminTickets");
 const AdminTeam = from(adminPages, "AdminTeam");
 const AdminAnalytics = from(adminPages, "AdminAnalytics");
-const AdminBlogReadOnly = from(adminPages, "AdminBlogReadOnly");
 const ResourceManager = from(adminPages, "ResourceManager");
 const AdminSettings = from(adminPages, "AdminSettings");
 
@@ -75,15 +74,17 @@ export default function App() {
       <Route path="settings" element={<AdminSettings/>}/>
     </Route>
     <Route path="/support" element={<AppShell variant="support"/>}>
-      <Route index element={<Navigate to="/support/tickets" replace/>}/>
+      <Route index element={<Navigate to="/support/users" replace/>}/>
+      <Route path="users" element={<AdminUsers/>}/>
+      <Route path="services" element={<ResourceManager type="Services"/>}/>
       <Route path="tickets" element={<AdminTickets/>}/>
-      <Route path="users" element={<AdminUsersReadOnly/>}/>
-      <Route path="blog" element={<AdminBlogReadOnly/>}/>
+      <Route path="blog" element={<ResourceManager type="Blog"/>}/>
       <Route path="settings" element={<AccountSettings/>}/>
     </Route>
     <Route path="/billing" element={<AppShell variant="billing"/>}>
       <Route index element={<Navigate to="/billing/subscriptions" replace/>}/>
       <Route path="subscriptions" element={<AdminSubscriptions/>}/>
+      <Route path="services" element={<ResourceManager type="Services"/>}/>
       <Route path="invoices" element={<ResourceManager type="Invoices"/>}/>
       <Route path="users" element={<AdminUsersReadOnly/>}/>
       <Route path="settings" element={<AccountSettings/>}/>

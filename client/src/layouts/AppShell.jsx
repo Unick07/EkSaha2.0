@@ -10,11 +10,11 @@ import { useState } from "react";
 
 const userLinks = [{ to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true }, { to: "/dashboard/services", label: "My services", icon: Package }, { to: "/dashboard/tickets", label: "Support tickets", icon: Headphones }, { to: "/dashboard/invoices", label: "Invoices", icon: FileText }, { to: "/dashboard/settings", label: "Account settings", icon: Settings }];
 const adminLinks = [{ to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true }, { to: "/admin/users", label: "Users", icon: Users }, { to: "/admin/team", label: "Team", icon: ShieldCheck }, { to: "/admin/subscriptions", label: "Subscriptions", icon: CreditCard }, { to: "/admin/services", label: "Services", icon: Package }, { to: "/admin/tickets", label: "Tickets", icon: Headphones }, { to: "/admin/blog", label: "Blog", icon: BookOpen }, { to: "/admin/invoices", label: "Invoices", icon: FileText }, { to: "/admin/analytics", label: "Analytics", icon: ChartNoAxesCombined }, { to: "/admin/settings", label: "Settings", icon: Settings }];
-const supportLinks = [{ to: "/support/tickets", label: "Tickets", icon: Headphones, end: true }, { to: "/support/users", label: "Users", icon: Users }, { to: "/support/blog", label: "Blog", icon: BookOpen }, { to: "/support/settings", label: "Account settings", icon: Settings }];
-const billingLinks = [{ to: "/billing/subscriptions", label: "Subscriptions", icon: CreditCard, end: true }, { to: "/billing/invoices", label: "Invoices", icon: FileText }, { to: "/billing/users", label: "Users", icon: Users }, { to: "/billing/settings", label: "Account settings", icon: Settings }];
+const supportLinks = [{ to: "/support/users", label: "Users", icon: Users, end: true }, { to: "/support/services", label: "Services", icon: Package }, { to: "/support/tickets", label: "Tickets", icon: Headphones }, { to: "/support/blog", label: "Blog", icon: BookOpen }, { to: "/support/settings", label: "Account settings", icon: Settings }];
+const billingLinks = [{ to: "/billing/subscriptions", label: "Subscriptions", icon: CreditCard, end: true }, { to: "/billing/services", label: "Services", icon: Package }, { to: "/billing/invoices", label: "Invoices", icon: FileText }, { to: "/billing/users", label: "Users (View only)", icon: Users }, { to: "/billing/settings", label: "Account settings", icon: Settings }];
 
 const linksByVariant = { user: userLinks, admin: adminLinks, support: supportLinks, billing: billingLinks };
-const workspaceLabel = { admin: "Admin workspace", support: "Support workspace", billing: "Billing workspace" };
+const workspaceLabel = { admin: "ADMIN WORKSPACE", support: "SUPPORT WORKSPACE", billing: "BILLING WORKSPACE" };
 const subtitleByVariant = {
   admin: "Manage your EkSaha operation",
   support: "Support workspace — tickets, customers and insights",
