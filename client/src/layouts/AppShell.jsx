@@ -5,7 +5,7 @@ import { useAdminStore } from "../store/useAdminStore";
 import { useUserDashboardStore } from "../store/useUserDashboardStore";
 import { useAuth } from "../hooks/useAuth";
 import { Modal } from "../components/dashboard/Modal";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const userLinks = [{ to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true }, { to: "/dashboard/services", label: "My services", icon: Package }, { to: "/dashboard/tickets", label: "Support tickets", icon: Headphones }, { to: "/dashboard/invoices", label: "Invoices", icon: FileText }, { to: "/dashboard/settings", label: "Account settings", icon: Settings }];
 const adminLinks = [{ to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true }, { to: "/admin/users", label: "Users", icon: Users }, { to: "/admin/subscriptions", label: "Subscriptions", icon: CreditCard }, { to: "/admin/services", label: "Services", icon: Package }, { to: "/admin/tickets", label: "Tickets", icon: Headphones }, { to: "/admin/blog", label: "Blog", icon: BookOpen }, { to: "/admin/invoices", label: "Invoices", icon: FileText }, { to: "/admin/analytics", label: "Analytics", icon: ChartNoAxesCombined }, { to: "/admin/settings", label: "Settings", icon: Settings }];
@@ -17,21 +17,8 @@ export default function AppShell({ admin = false }) {
   const userNotifications = useUserDashboardStore((state) => state.notifications);
   const markUserNotificationsRead = useUserDashboardStore((state) => state.markNotificationsRead);
   const adminNotifications = useAdminStore((state) => state.notifications);
-  const ingestTickets = useAdminStore((state) => state.ingestTickets);
   const markAdminNotificationsRead = useAdminStore((state) => state.markAdminNotificationsRead);
   const location = useLocation();
-  useEffect(() => {
-    if (!admin || !isAdmin) return undefined;
-    const syncTickets = () => {
-      fetch("/api/demo/tickets")
-        .then((response) => response.json())
-        .then(ingestTickets)
-        .catch(() => {});
-    };
-    syncTickets();
-    const interval = window.setInterval(syncTickets, 10000);
-    return () => window.clearInterval(interval);
-  }, [admin, isAdmin, ingestTickets]);
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   if (admin && !isAdmin) return <Navigate to="/dashboard" replace />;
   const links = admin ? adminLinks : userLinks;

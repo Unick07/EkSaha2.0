@@ -1,50 +1,77 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Plus, Send } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "../../components/common/ui";
 import { Modal } from "../../components/dashboard/Modal";
-import { useAdminStore } from "../../store/useAdminStore";
-import { useUserDashboardStore } from "../../store/useUserDashboardStore";
+import api from "../../services/http/api";
 
 export default function Tickets() {
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  const { tickets, createTicket, replyTicket } = useUserDashboardStore();
-  const receiveUserTicket = useAdminStore((state) => state.receiveUserTicket);
   const selected = tickets.find((ticket) => ticket.id === selectedId);
 
-  const create = (event) => {
+  const loadTickets = useCallback((showSpinner = false) => {
+    if (showSpinner) setLoading(true);
+    return api.get("/tickets")
+      .then(({ data }) => {
+        setTickets(data);
+        setError("");
+      })
+      .catch((caught) => {
+        const message = caught.response?.data?.message || "Could not load tickets.";
+        setError(message);
+      })
+      .finally(() => {
+        if (showSpinner) setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    loadTickets(true);
+    const interval = window.setInterval(() => loadTickets(false), 15000);
+    return () => window.clearInterval(interval);
+  }, [loadTickets]);
+
+  const create = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const ticket = {
-      id: `NX-${Date.now().toString().slice(-5)}`,
-      subject: data.get("subject"),
-      priority: data.get("priority"),
-      message: data.get("message"),
-      user: "Jordan Lee",
-    };
-    createTicket(ticket);
-    receiveUserTicket(ticket);
-    fetch("/api/demo/tickets", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(ticket),
-    }).catch(() => toast.error("Ticket saved locally, but admin sync failed."));
-    setCreateOpen(false);
-    toast.success("Ticket created.");
+    try {
+      const { data: ticket } = await api.post("/tickets", {
+        subject: data.get("subject"),
+        priority: data.get("priority"),
+        message: data.get("message"),
+      });
+      setTickets((items) => [ticket, ...items]);
+      setCreateOpen(false);
+      toast.success("Ticket created.");
+    } catch (caught) {
+      toast.error(caught.response?.data?.message || "Could not create ticket.");
+    }
   };
-  const reply = (event) => {
+
+  const reply = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    replyTicket(selected.id, data.get("reply"));
-    event.currentTarget.reset();
-    toast.success("Reply added.");
+    const body = data.get("reply");
+    try {
+      const { data: ticket } = await api.post(`/tickets/${selected.id}/messages`, { body });
+      setTickets((items) => items.map((item) => item.id === ticket.id ? ticket : item));
+      event.currentTarget.reset();
+      toast.success("Reply added.");
+    } catch (caught) {
+      toast.error(caught.response?.data?.message || "Could not send reply.");
+    }
   };
 
   return <div>
     <div className="mb-7 flex items-center justify-between"><div><h2 className="text-2xl font-bold">Support tickets</h2><p className="mt-1 text-sm text-slate-500">Ask for help and follow every conversation.</p></div><Button onClick={() => setCreateOpen(true)}><Plus size={16}/>New ticket</Button></div>
-    <div className="panel overflow-hidden"><div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left text-sm"><thead className="bg-surface-raised text-xs uppercase tracking-wider text-muted"><tr><th className="p-5">Ticket</th><th>Priority</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>{tickets.map(ticket => <tr className="border-t border-border" key={ticket.id}><td className="p-5"><div className="font-semibold">{ticket.subject}</div><div className="mt-1 text-xs text-muted">{ticket.id}</div></td><td><span className="rounded-full bg-surface-raised px-2.5 py-1 text-xs font-semibold">{ticket.priority}</span></td><td><span className="info-pill">{ticket.status}</span></td><td className="text-muted">{ticket.updated}</td><td><button onClick={() => setSelectedId(ticket.id)} className="text-action">View</button></td></tr>)}</tbody></table></div></div>
-    <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New support ticket"><form onSubmit={create} className="space-y-4"><input name="subject" required className="input" placeholder="What do you need help with?"/><select name="priority" className="input"><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select><textarea name="message" required className="input min-h-32 resize-none" placeholder="Add details..."/><Button className="w-full">Create ticket</Button></form></Modal>
-    <Modal open={Boolean(selected)} onClose={() => setSelectedId(null)} title={selected?.subject} description={`${selected?.id} | ${selected?.status} | ${selected?.priority} priority`}><div className="space-y-3">{selected?.messages.map((message,index) => <div className="rounded-2xl bg-surface-raised p-4 text-sm leading-6" key={`${message}-${index}`}>{message}</div>)}</div><form onSubmit={reply} className="mt-5 flex gap-2"><input name="reply" required className="input" placeholder="Write a reply..."/><Button><Send size={16}/></Button></form></Modal>
+    {loading && <div className="panel p-5 text-sm text-muted">Loading tickets...</div>}
+    {error && <div className="panel border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>}
+    {!loading && !error && <div className="panel overflow-hidden"><div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left text-sm"><thead className="bg-surface-raised text-xs uppercase tracking-wider text-muted"><tr><th className="p-5">Ticket</th><th>Priority</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>{tickets.map(ticket => <tr className="border-t border-border" key={ticket.id}><td className="p-5"><div className="font-semibold">{ticket.subject}</div><div className="mt-1 text-xs text-muted">{ticket.id}</div></td><td className="capitalize">{ticket.priority}</td><td><span className="info-pill capitalize">{String(ticket.status).replace(/_/g, " ")}</span></td><td className="text-muted">{ticket.updatedAt ? new Date(ticket.updatedAt).toLocaleDateString() : ""}</td><td><button onClick={() => setSelectedId(ticket.id)} className="text-action">View</button></td></tr>)}</tbody></table></div>{tickets.length === 0 && <div className="p-6 text-sm text-muted">No tickets yet. Create one to get help from our team.</div>}</div>}
+    <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New support ticket"><form onSubmit={create} className="space-y-4"><input name="subject" required className="input" placeholder="What do you need help with?"/><select name="priority" className="input"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical</option></select><textarea name="message" required className="input min-h-32 resize-none" placeholder="Add details..."/><Button className="w-full">Create ticket</Button></form></Modal>
+    <Modal open={Boolean(selected)} onClose={() => setSelectedId(null)} title={selected?.subject} description={`${selected?.id} | ${selected?.status} | ${selected?.priority} priority`}><div className="space-y-3">{selected?.messages.map((message) => <div className="rounded-2xl bg-surface-raised p-4 text-sm leading-6" key={message.id}>{message.body}</div>)}</div><form onSubmit={reply} className="mt-5 flex gap-2"><input name="reply" required className="input" placeholder="Write a reply..."/><Button><Send size={16}/></Button></form></Modal>
   </div>;
 }

@@ -5,7 +5,7 @@ import { handleSubscriptions } from "./routes/subscriptions.js";
 import { handleTickets } from "./routes/tickets.js";
 import { handleInvoices } from "./routes/invoices.js";
 import { handleAdmin } from "./routes/admin.js";
-import { all, first, generateId, intBool, normalizePost, normalizeTicket, nowIso, run } from "./lib/db.js";
+import { all, first, generateId, intBool, normalizePost, nowIso, run } from "./lib/db.js";
 import { corsHeaders, error, json, readJson } from "./lib/http.js";
 
 async function routeApi(request, env) {
@@ -48,9 +48,6 @@ async function handleDemo(request, env, path) {
   if (path.startsWith("/demo/posts")) {
     return handleDemoPosts(request, env, demoPath);
   }
-  if (path.startsWith("/demo/tickets")) {
-    return handleDemoTickets(request, env, demoPath);
-  }
   return null;
 }
 
@@ -89,47 +86,6 @@ async function handleDemoPosts(request, env, path) {
   if (request.method === "DELETE" && id) {
     await run(env.DB, "DELETE FROM blog_posts WHERE id = ?", [id]);
     return json({ ok: true }, {}, env, request);
-  }
-
-  return null;
-}
-
-async function handleDemoTickets(request, env, path) {
-  if (request.method === "GET" && path === "/tickets") {
-    const rows = await all(env.DB, "SELECT tickets.*, users.name AS user_name FROM tickets LEFT JOIN users ON users.id = tickets.user_id ORDER BY tickets.updated_at DESC");
-    return json(rows.map((row) => normalizeTicket(row)), {}, env, request);
-  }
-
-  if (request.method === "POST" && path === "/tickets") {
-    const body = await readJson(request);
-    const id = body.id || `NX-${Date.now().toString().slice(-5)}`;
-    const timestamp = nowIso();
-    await run(env.DB, `
-      INSERT INTO tickets (id, user_id, subject, priority, status, assigned_to, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [id, null, body.subject || "Untitled support request", (body.priority || "Medium").toLowerCase(), "open", null, timestamp, timestamp]);
-    if (body.message) {
-      await run(env.DB, `
-        INSERT INTO ticket_messages (id, ticket_id, sender_id, body, attachments, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `, [generateId(), id, null, body.message, "[]", timestamp, timestamp]);
-    }
-    return json(normalizeTicket(await first(env.DB, "SELECT * FROM tickets WHERE id = ?", [id])), { status: 201 }, env, request);
-  }
-
-  const id = path.match(/^\/tickets\/([^/]+)$/)?.[1];
-  if (request.method === "PATCH" && id) {
-    const existing = await first(env.DB, "SELECT * FROM tickets WHERE id = ?", [id]);
-    if (!existing) return error("Ticket not found", 404, env, request);
-    const body = await readJson(request);
-    await run(env.DB, "UPDATE tickets SET subject = ?, priority = ?, status = ?, updated_at = ? WHERE id = ?", [
-      body.subject ?? existing.subject,
-      body.priority ? body.priority.toLowerCase() : existing.priority,
-      body.status ? body.status.toLowerCase() : existing.status,
-      nowIso(),
-      id,
-    ]);
-    return json(normalizeTicket(await first(env.DB, "SELECT * FROM tickets WHERE id = ?", [id])), {}, env, request);
   }
 
   return null;

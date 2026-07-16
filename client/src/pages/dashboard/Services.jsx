@@ -3,35 +3,27 @@ import { CheckCircle2, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "../../components/common/ui";
 import { Modal } from "../../components/dashboard/Modal";
-import { useAdminStore } from "../../store/useAdminStore";
-import { useUserDashboardStore } from "../../store/useUserDashboardStore";
+import api from "../../services/http/api";
 import { serviceItems } from "./data";
 
 export default function Services() {
   const [selected, setSelected] = useState(null);
   const [requestOpen, setRequestOpen] = useState(false);
-  const { createTicket } = useUserDashboardStore();
-  const receiveUserTicket = useAdminStore((state) => state.receiveUserTicket);
 
-  const createRequest = (event) => {
+  const createRequest = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const ticket = {
-      id: `NX-${Date.now().toString().slice(-5)}`,
-      subject: data.get("subject"),
-      priority: data.get("priority"),
-      message: data.get("details"),
-      user: "Jordan Lee",
-    };
-    createTicket(ticket);
-    receiveUserTicket(ticket);
-    fetch("/api/demo/tickets", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(ticket),
-    }).catch(() => toast.error("Request saved locally, but admin sync failed."));
-    setRequestOpen(false);
-    toast.success("Service request created.");
+    try {
+      await api.post("/tickets", {
+        subject: data.get("subject"),
+        priority: data.get("priority"),
+        message: data.get("details"),
+      });
+      setRequestOpen(false);
+      toast.success("Service request created.");
+    } catch (caught) {
+      toast.error(caught.response?.data?.message || "Could not create service request.");
+    }
   };
 
   return <div>

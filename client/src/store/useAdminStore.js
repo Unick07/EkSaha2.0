@@ -22,7 +22,6 @@ const normalizePost = (post) => ({
 
 const emptyAdminState = {
   users: [],
-  tickets: [],
   services: [],
   posts: [],
   invoices: [],
@@ -37,9 +36,6 @@ export const useAdminStore = create(
       addUser: (user) => set((state) => ({ users: [{ id: Date.now(), ...user }, ...state.users] })),
       updateUser: (id, changes) => set((state) => ({ users: state.users.map((user) => user.id === id ? { ...user, ...changes } : user) })),
       deleteUser: (id) => set((state) => ({ users: state.users.filter((user) => user.id !== id) })),
-      updateTicket: (id, changes) => set((state) => ({ tickets: state.tickets.map((ticket) => ticket.id === id ? { ...ticket, ...changes } : ticket) })),
-      ingestTickets: (tickets) => set({ tickets, notifications: [] }),
-      receiveUserTicket: (ticket) => set((state) => ({ tickets: [ticket, ...state.tickets.filter((item) => item.id !== ticket.id)] })),
       markAdminNotificationsRead: () => set((state) => ({
         notifications: state.notifications.map((item) => ({ ...item, read: true })),
       })),

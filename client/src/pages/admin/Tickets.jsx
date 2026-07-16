@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import api from "../../services/http/api";
 
@@ -9,26 +9,28 @@ export default function Tickets() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    let active = true;
-    setLoading(true);
-    setError("");
-    api.get("/tickets")
+  const loadTickets = useCallback((showSpinner = false) => {
+    if (showSpinner) setLoading(true);
+    return api.get("/tickets")
       .then(({ data }) => {
-        if (active) setTickets(data);
+        setTickets(data);
+        setError("");
       })
       .catch((caught) => {
         const message = caught.response?.data?.message || "Could not load tickets.";
-        if (active) setError(message);
-        toast.error(message);
+        setError(message);
+        if (showSpinner) toast.error(message);
       })
       .finally(() => {
-        if (active) setLoading(false);
+        if (showSpinner) setLoading(false);
       });
-    return () => {
-      active = false;
-    };
   }, []);
+
+  useEffect(() => {
+    loadTickets(true);
+    const interval = window.setInterval(() => loadTickets(false), 15000);
+    return () => window.clearInterval(interval);
+  }, [loadTickets]);
 
   const updateAdminTicket = async (id, changes, message) => {
     const previous = tickets;
