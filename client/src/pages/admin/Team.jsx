@@ -84,7 +84,7 @@ export default function Team() {
   };
 
   return <div>
-    <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h2 className="text-2xl font-bold">Team management</h2><p className="mt-1 text-sm text-muted">Manage admin, support and billing access.</p></div><Button onClick={() => setAddOpen(true)}><Plus size={16}/>Add team member</Button></div>
+    <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h2 className="text-2xl font-bold">Team Management</h2><p className="mt-1 text-sm text-muted">Manage internal admin, support and billing access — not customer accounts.</p></div><Button onClick={() => setAddOpen(true)}><Plus size={16}/>Add team member</Button></div>
     {loading && <div className="panel p-5 text-sm text-muted">Loading team...</div>}
     {error && <div className="panel border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>}
     {!loading && !error && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
