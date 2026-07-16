@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, Navigate, useLocation } from "react-router-dom";
-import { Bell, BookOpen, ChartNoAxesCombined, CheckCheck, CreditCard, FileText, Headphones, LayoutDashboard, LogOut, Menu, Moon, Package, PanelLeftClose, PanelLeftOpen, Settings, Sun, Users, X } from "lucide-react";
+import { Bell, BookOpen, ChartNoAxesCombined, CheckCheck, CreditCard, FileText, Headphones, LayoutDashboard, LogOut, Menu, Moon, Package, PanelLeftClose, PanelLeftOpen, Settings, ShieldCheck, Sun, Users, X } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useAdminStore } from "../store/useAdminStore";
 import { useUserDashboardStore } from "../store/useUserDashboardStore";
@@ -8,7 +8,7 @@ import { Modal } from "../components/dashboard/Modal";
 import { useState } from "react";
 
 const userLinks = [{ to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true }, { to: "/dashboard/services", label: "My services", icon: Package }, { to: "/dashboard/tickets", label: "Support tickets", icon: Headphones }, { to: "/dashboard/invoices", label: "Invoices", icon: FileText }, { to: "/dashboard/settings", label: "Account settings", icon: Settings }];
-const adminLinks = [{ to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true }, { to: "/admin/users", label: "Users", icon: Users }, { to: "/admin/subscriptions", label: "Subscriptions", icon: CreditCard }, { to: "/admin/services", label: "Services", icon: Package }, { to: "/admin/tickets", label: "Tickets", icon: Headphones }, { to: "/admin/blog", label: "Blog", icon: BookOpen }, { to: "/admin/invoices", label: "Invoices", icon: FileText }, { to: "/admin/analytics", label: "Analytics", icon: ChartNoAxesCombined }, { to: "/admin/settings", label: "Settings", icon: Settings }];
+const adminLinks = [{ to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true }, { to: "/admin/users", label: "Users", icon: Users }, { to: "/admin/subscriptions", label: "Subscriptions", icon: CreditCard }, { to: "/admin/services", label: "Services", icon: Package }, { to: "/admin/tickets", label: "Tickets", icon: Headphones }, { to: "/admin/blog", label: "Blog", icon: BookOpen }, { to: "/admin/invoices", label: "Invoices", icon: FileText }, { to: "/admin/analytics", label: "Analytics", icon: ChartNoAxesCombined }, { to: "/admin/team", label: "Team", icon: ShieldCheck }, { to: "/admin/settings", label: "Settings", icon: Settings }];
 
 export default function AppShell({ admin = false }) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);

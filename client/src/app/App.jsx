@@ -30,6 +30,7 @@ const AdminOverview = from(adminPages, "AdminOverview");
 const AdminUsers = from(adminPages, "AdminUsers");
 const AdminSubscriptions = from(adminPages, "AdminSubscriptions");
 const AdminTickets = from(adminPages, "AdminTickets");
+const AdminTeam = from(adminPages, "AdminTeam");
 const AdminAnalytics = from(adminPages, "AdminAnalytics");
 const ResourceManager = from(adminPages, "ResourceManager");
 const AdminSettings = from(adminPages, "AdminSettings");
@@ -65,6 +66,7 @@ export default function App() {
       <Route path="subscriptions" element={<AdminSubscriptions/>}/>
       <Route path="services" element={<ResourceManager type="Services"/>}/>
       <Route path="tickets" element={<AdminTickets/>}/>
+      <Route path="team" element={<AdminTeam/>}/>
       <Route path="blog" element={<ResourceManager type="Blog"/>}/>
       <Route path="invoices" element={<ResourceManager type="Invoices"/>}/>
       <Route path="analytics" element={<AdminAnalytics/>}/>
