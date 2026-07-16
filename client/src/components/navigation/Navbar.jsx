@@ -4,6 +4,7 @@ import { ArrowRight, ChevronDown, Menu, Moon, Sparkles, Sun, X } from "lucide-re
 import { useAppStore } from "../../store/useAppStore";
 import { services } from "../../data/siteData";
 import { Button } from "../common/ui";
+import { homeForRole } from "../../lib/roles";
 
 const links = [
   { label: "Pricing", to: "/pricing" },
@@ -29,7 +30,7 @@ export default function Navbar() {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
-  const dashboardPath = user ? (user.role === "admin" ? "/admin" : "/dashboard") : "/login";
+  const dashboardPath = user ? homeForRole(user.role) : "/login";
 
   return <header className={`${isLanding ? "fixed inset-x-0 top-0" : "sticky top-0"} z-50 px-3 py-3 sm:px-5`}>
     <div className="container-shell">

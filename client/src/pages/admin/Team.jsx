@@ -46,13 +46,14 @@ export default function Team() {
 
   const addMember = async (event) => {
     event.preventDefault();
-    const data = Object.fromEntries(new FormData(event.currentTarget));
+    const form = event.currentTarget;
+    const data = Object.fromEntries(new FormData(form));
     try {
-      const { data: member } = await api.post("/admin/team", data);
-      setMembers((items) => [member, ...items]);
+      await api.post("/admin/team", data);
+      toast.success("Team member added successfully");
       setAddOpen(false);
-      event.currentTarget.reset();
-      toast.success("Team member added.");
+      form.reset();
+      await loadTeam();
     } catch (caught) {
       toast.error(caught.response?.data?.message || "Could not add team member.");
     }

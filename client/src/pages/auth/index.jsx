@@ -6,6 +6,7 @@ import { Button } from "../../components/common/ui";
 import { useAuth } from "../../hooks/useAuth";
 import { plans } from "../../data/siteData";
 import api from "../../services/http/api";
+import { homeForRole } from "../../lib/roles";
 
 function AuthShell({ title, copy, children }) {
   return <div className="grid min-h-screen bg-background text-text lg:grid-cols-2">
@@ -33,7 +34,7 @@ export function Login() {
   const { login, user } = useAuth();
   const navigate = useNavigate();
 
-  if (user) return <Navigate to={user.role === "admin" ? "/admin" : "/dashboard"} replace />;
+  if (user) return <Navigate to={homeForRole(user.role)} replace />;
 
   const submit = async (event) => {
     event.preventDefault();
@@ -46,7 +47,7 @@ export function Login() {
       localStorage.setItem("accessToken", data.accessToken);
       login(data.user);
       toast.success("Welcome back.");
-      navigate(data.user.role === "admin" ? "/admin" : "/dashboard");
+      navigate(homeForRole(data.user.role));
     } catch {
       toast.error("Invalid email or password");
     }

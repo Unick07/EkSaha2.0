@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import PublicLayout from "../layouts/PublicLayout";
 import AppShell from "../layouts/AppShell";
 import { PageLoader } from "../components/common/ui";
@@ -28,10 +28,12 @@ const Invoices = from(dashboardPages, "Invoices");
 const AccountSettings = from(dashboardPages, "AccountSettings");
 const AdminOverview = from(adminPages, "AdminOverview");
 const AdminUsers = from(adminPages, "AdminUsers");
+const AdminUsersReadOnly = from(adminPages, "AdminUsersReadOnly");
 const AdminSubscriptions = from(adminPages, "AdminSubscriptions");
 const AdminTickets = from(adminPages, "AdminTickets");
 const AdminTeam = from(adminPages, "AdminTeam");
 const AdminAnalytics = from(adminPages, "AdminAnalytics");
+const AdminBlogReadOnly = from(adminPages, "AdminBlogReadOnly");
 const ResourceManager = from(adminPages, "ResourceManager");
 const AdminSettings = from(adminPages, "AdminSettings");
 
@@ -53,14 +55,14 @@ export default function App() {
     <Route path="/signup" element={<Signup/>}/>
     <Route path="/forgot-password" element={<ForgotPassword/>}/>
     <Route path="/reset-password/:token" element={<ResetPassword/>}/>
-    <Route path="/dashboard" element={<AppShell/>}>
+    <Route path="/dashboard" element={<AppShell variant="user"/>}>
       <Route index element={<Overview/>}/>
       <Route path="services" element={<MyServices/>}/>
       <Route path="tickets" element={<Tickets/>}/>
       <Route path="invoices" element={<Invoices/>}/>
       <Route path="settings" element={<AccountSettings/>}/>
     </Route>
-    <Route path="/admin" element={<AppShell admin/>}>
+    <Route path="/admin" element={<AppShell variant="admin"/>}>
       <Route index element={<AdminOverview/>}/>
       <Route path="users" element={<AdminUsers/>}/>
       <Route path="subscriptions" element={<AdminSubscriptions/>}/>
@@ -71,6 +73,20 @@ export default function App() {
       <Route path="invoices" element={<ResourceManager type="Invoices"/>}/>
       <Route path="analytics" element={<AdminAnalytics/>}/>
       <Route path="settings" element={<AdminSettings/>}/>
+    </Route>
+    <Route path="/support" element={<AppShell variant="support"/>}>
+      <Route index element={<Navigate to="/support/tickets" replace/>}/>
+      <Route path="tickets" element={<AdminTickets/>}/>
+      <Route path="users" element={<AdminUsersReadOnly/>}/>
+      <Route path="blog" element={<AdminBlogReadOnly/>}/>
+      <Route path="settings" element={<AccountSettings/>}/>
+    </Route>
+    <Route path="/billing" element={<AppShell variant="billing"/>}>
+      <Route index element={<Navigate to="/billing/subscriptions" replace/>}/>
+      <Route path="subscriptions" element={<AdminSubscriptions/>}/>
+      <Route path="invoices" element={<ResourceManager type="Invoices"/>}/>
+      <Route path="users" element={<AdminUsersReadOnly/>}/>
+      <Route path="settings" element={<AccountSettings/>}/>
     </Route>
   </Routes></Suspense>;
 }
