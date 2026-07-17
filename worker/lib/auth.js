@@ -88,8 +88,12 @@ export async function currentUser(request, env) {
   const auth = request.headers.get("Authorization") || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
   if (!token) return null;
-  const payload = await verifyJwt(token, env, { kind: "ACCESS" });
-  return first(env.DB, "SELECT * FROM users WHERE id = ?", [payload.sub]);
+  try {
+    const payload = await verifyJwt(token, env, { kind: "ACCESS" });
+    return first(env.DB, "SELECT * FROM users WHERE id = ?", [payload.sub]);
+  } catch {
+    return null;
+  }
 }
 
 export async function requireUser(request, env) {

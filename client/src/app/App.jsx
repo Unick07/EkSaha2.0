@@ -1,8 +1,9 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import PublicLayout from "../layouts/PublicLayout";
 import AppShell from "../layouts/AppShell";
 import { PageLoader } from "../components/common/ui";
+import { useAppStore } from "../store/useAppStore";
 
 const Home = lazy(() => import("../pages/public/Home"));
 const from = (loader, name) => lazy(() => loader().then((module) => ({ default: module[name] })));
@@ -37,6 +38,10 @@ const ResourceManager = from(adminPages, "ResourceManager");
 const AdminSettings = from(adminPages, "AdminSettings");
 
 export default function App() {
+  const restoreSession = useAppStore((state) => state.restoreSession);
+  useEffect(() => {
+    restoreSession();
+  }, [restoreSession]);
   return <Suspense fallback={<PageLoader/>}><Routes>
     <Route element={<PublicLayout/>}>
       <Route index element={<Home/>}/>

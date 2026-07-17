@@ -1,5 +1,5 @@
 import { generateId, normalizeUser, nowIso, run, first } from "../lib/db.js";
-import { hashPassword, refreshPayloadFromCookie, sha256, signJwt, verifyPassword } from "../lib/auth.js";
+import { hashPassword, refreshPayloadFromCookie, requireUser, sha256, signJwt, verifyPassword } from "../lib/auth.js";
 import { clearCookie, error, json, readJson, setCookie } from "../lib/http.js";
 
 const refreshMaxAge = 30 * 24 * 60 * 60;
@@ -90,6 +90,11 @@ export async function handleAuth(request, env, path) {
     } catch {
       return error("Refresh token invalid", 401, env, request);
     }
+  }
+
+  if (request.method === "GET" && path === "/me") {
+    const user = await requireUser(request, env);
+    return json(publicUser(user), {}, env, request);
   }
 
   if (request.method === "POST" && path === "/logout") {
