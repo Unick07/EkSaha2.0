@@ -48,7 +48,7 @@ export const useAdminStore = create(
           : item),
       })),
       deleteRecord: (collection, id) => set((state) => ({ [collection]: state[collection].filter((item) => item.id !== id) })),
-      ingestPosts: (posts) => set({ posts }),
+      ingestRecords: (collection, records) => set({ [collection]: records }),
       updateSettings: (settings) => set({ settings }),
     }),
     {

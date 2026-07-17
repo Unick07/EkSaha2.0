@@ -13,6 +13,21 @@ const formatToday = () => new Date().toLocaleDateString("en-US", {
   year: "numeric",
 });
 
+const formatDate = (value) => value ? new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+
+const formatAmount = (item) => {
+  const amount = Number(item.amount || 0).toFixed(2);
+  const currency = (item.currency || "usd").toLowerCase();
+  return currency === "usd" ? `$${amount}` : `${amount} ${currency.toUpperCase()}`;
+};
+
+const capitalize = (value) => value ? String(value).charAt(0).toUpperCase() + String(value).slice(1) : "";
+
+// Types backed by a real D1-backed endpoint — same API the admin, support and
+// billing workspaces all call, so every workspace shows identical live data.
+const API_ENDPOINTS = { Blog: "/posts", Invoices: "/invoices" };
+const DELETE_SUPPORTED = { Blog: true };
+
 const configs = {
   Services: {
     collection: "services",
@@ -46,39 +61,45 @@ const configs = {
     singular: "Invoice",
     columns: ["Invoice", "Customer", "Amount", "Status", "Date"],
     fields: [
-      { name: "id", label: "Invoice ID", defaultValue: `INV-${Date.now().toString().slice(-4)}` },
-      { name: "customer", label: "Customer" },
-      { name: "amount", label: "Amount", placeholder: "$999.00" },
-      { name: "status", label: "Status", options: ["Draft", "Open", "Paid", "Void"] },
-      { name: "date", label: "Date", defaultValue: "Jun 12, 2026" },
+      { name: "userId", label: "Customer", dynamicOptions: "customers", hideWhenEditing: true },
+      { name: "amount", label: "Amount (USD)", type: "number", placeholder: "999.00" },
+      { name: "status", label: "Status", options: ["draft", "open", "paid", "void"] },
     ],
-    values: (item) => [item.id, item.customer, item.amount, item.status, item.date],
+    values: (item) => [
+      item.id,
+      item.customerName ? `${item.customerName}${item.customerEmail ? ` (${item.customerEmail})` : ""}` : (item.userId || "Unknown customer"),
+      formatAmount(item),
+      capitalize(item.status),
+      formatDate(item.createdAt),
+    ],
   },
 };
 
 export function ResourceManager({ type }) {
   const config = configs[type];
+  const endpoint = API_ENDPOINTS[type];
   const records = useAdminStore((state) => state[config.collection]);
   const addRecord = useAdminStore((state) => state.addRecord);
   const updateRecord = useAdminStore((state) => state.updateRecord);
   const deleteRecord = useAdminStore((state) => state.deleteRecord);
-  const ingestPosts = useAdminStore((state) => state.ingestPosts);
+  const ingestRecords = useAdminStore((state) => state.ingestRecords);
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
-  const [loading, setLoading] = useState(type === "Blog");
+  const [loading, setLoading] = useState(Boolean(endpoint));
   const [loadError, setLoadError] = useState("");
+  const [customers, setCustomers] = useState([]);
 
   useEffect(() => {
-    if (type !== "Blog") return;
+    if (!endpoint) return undefined;
     let active = true;
     setLoading(true);
     setLoadError("");
-    api.get("/posts")
+    api.get(endpoint)
       .then(({ data }) => {
-        if (active) ingestPosts(data);
+        if (active) ingestRecords(config.collection, data);
       })
       .catch((error) => {
-        const message = error.response?.data?.message || "Could not load blog posts.";
+        const message = error.response?.data?.message || `Could not load ${type.toLowerCase()}.`;
         if (active) setLoadError(message);
         toast.error(message);
       })
@@ -88,32 +109,38 @@ export function ResourceManager({ type }) {
     return () => {
       active = false;
     };
-  }, [ingestPosts, type]);
+  }, [config.collection, endpoint, ingestRecords, type]);
 
-  const syncBlogPost = async (data) => {
-    const isEditing = Boolean(editing?.id);
-    const response = isEditing
-      ? await api.patch(`/posts/${editing.id}`, data)
-      : await api.post("/posts", data);
-    const post = response.data;
-    if (isEditing) {
-      updateRecord(config.collection, editing.id, post);
-    } else {
-      ingestPosts([post, ...records]);
-    }
-  };
+  useEffect(() => {
+    if (type !== "Invoices") return undefined;
+    let active = true;
+    api.get("/admin/users", { params: { roles: "user" } })
+      .then(({ data }) => {
+        if (active) setCustomers(data);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [type]);
 
   const save = async (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
 
-    if (type === "Blog") {
+    if (endpoint) {
+      const isEditing = Boolean(editing?.id);
       try {
-        await syncBlogPost(data);
+        const response = isEditing
+          ? await api.patch(`${endpoint}/${editing.id}`, data)
+          : await api.post(endpoint, data);
+        const record = response.data;
+        if (isEditing) updateRecord(config.collection, editing.id, record);
+        else ingestRecords(config.collection, [record, ...records]);
         setEditing(null);
-        toast.success("Blog saved and visible in public insights.");
+        toast.success(type === "Blog" ? "Blog saved and visible in public insights." : `${config.singular} saved.`);
       } catch (error) {
-        toast.error(error.response?.data?.message || error.message || "Public insights sync failed.");
+        toast.error(error.response?.data?.message || error.message || `Could not save this ${config.singular.toLowerCase()}.`);
       }
       return;
     }
@@ -126,9 +153,9 @@ export function ResourceManager({ type }) {
   };
 
   const confirmDelete = async () => {
-    if (type === "Blog") {
+    if (endpoint && DELETE_SUPPORTED[type]) {
       try {
-        await api.delete(`/posts/${deleting.id}`);
+        await api.delete(`${endpoint}/${deleting.id}`);
         deleteRecord(config.collection, deleting.id);
         toast.success("Blog removed from public insights.");
       } catch (error) {
@@ -144,6 +171,8 @@ export function ResourceManager({ type }) {
     toast.success("Record deleted.");
   };
 
+  const canDelete = !endpoint || DELETE_SUPPORTED[type];
+
   return <div>
     <div className="mb-7 flex items-center justify-between">
       <div>
@@ -153,8 +182,8 @@ export function ResourceManager({ type }) {
       <Button onClick={() => setEditing({})}><Plus size={16} />Create new</Button>
     </div>
 
-    {type === "Blog" && loading && <div className="panel mb-5 p-5 text-sm text-muted">Loading blog posts...</div>}
-    {type === "Blog" && loadError && <div className="panel mb-5 border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{loadError}</div>}
+    {endpoint && loading && <div className="panel mb-5 p-5 text-sm text-muted">Loading {type.toLowerCase()}...</div>}
+    {endpoint && loadError && <div className="panel mb-5 border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{loadError}</div>}
 
     <div className="panel overflow-hidden">
       <div className="overflow-x-auto">
@@ -168,28 +197,40 @@ export function ResourceManager({ type }) {
               <td>
                 <ActionMenu actions={[
                   { label: "Edit", icon: Edit3, onClick: () => setEditing(record) },
-                  { label: "Delete", icon: Trash2, danger: true, onClick: () => setDeleting(record) },
+                  ...(canDelete ? [{ label: "Delete", icon: Trash2, danger: true, onClick: () => setDeleting(record) }] : []),
                 ]} />
               </td>
             </tr>)}
           </tbody>
         </table>
+        {records.length === 0 && !loading && <div className="border-t border-slate-100 p-6 text-sm text-slate-500 dark:border-white/10">No {type.toLowerCase()} yet.</div>}
       </div>
     </div>
 
     <Modal open={Boolean(editing)} onClose={() => setEditing(null)} title={`${editing?.id ? "Edit" : "Create"} ${config.singular}`}>
       <form className="space-y-4" onSubmit={save}>
-        {config.fields.map((field) => <label className="block text-sm font-semibold" key={field.name}>
-          {field.label}
-          {field.options ? <select className="input mt-2" name={field.name} defaultValue={editing?.[field.name] || field.options[0]}>
-            {field.options.map((option) => <option key={option}>{option}</option>)}
-          </select> : field.multiline ? <textarea required className="input mt-2 min-h-40 resize-none" name={field.name} defaultValue={editing?.[field.name] || field.defaultValue || ""} placeholder={field.placeholder} /> : <input required className="input mt-2" type={field.type || "text"} name={field.name} defaultValue={editing?.[field.name] || field.defaultValue || ""} placeholder={field.placeholder} />}
-        </label>)}
+        {config.fields.filter((field) => !(field.hideWhenEditing && editing?.id)).map((field) => {
+          const options = field.dynamicOptions === "customers"
+            ? customers.map((customer) => ({ value: customer.id, label: `${customer.name} (${customer.email})` }))
+            : field.options;
+          const firstOptionValue = options ? (typeof options[0] === "object" ? options[0]?.value : options[0]) : undefined;
+          return <label className="block text-sm font-semibold" key={field.name}>
+            {field.label}
+            {options ? <select required className="input mt-2" name={field.name} defaultValue={editing?.[field.name] || firstOptionValue}>
+              {options.length === 0 && <option value="">No customers found</option>}
+              {options.map((option) => {
+                const value = typeof option === "object" ? option.value : option;
+                const text = typeof option === "object" ? option.label : option;
+                return <option key={value} value={value}>{text}</option>;
+              })}
+            </select> : field.multiline ? <textarea required className="input mt-2 min-h-40 resize-none" name={field.name} defaultValue={editing?.[field.name] || field.defaultValue || ""} placeholder={field.placeholder} /> : <input required className="input mt-2" type={field.type || "text"} name={field.name} defaultValue={editing?.[field.name] || field.defaultValue || ""} placeholder={field.placeholder} />}
+          </label>;
+        })}
         <Button className="w-full">Save {config.singular.toLowerCase()}</Button>
       </form>
     </Modal>
 
-    <ConfirmDialog open={Boolean(deleting)} onClose={() => setDeleting(null)} title={`Delete ${config.singular.toLowerCase()}?`} description="This record will be removed from the workspace." confirmLabel="Delete" danger onConfirm={confirmDelete} />
+    {canDelete && <ConfirmDialog open={Boolean(deleting)} onClose={() => setDeleting(null)} title={`Delete ${config.singular.toLowerCase()}?`} description="This record will be removed from the workspace." confirmLabel="Delete" danger onConfirm={confirmDelete} />}
   </div>;
 }
 

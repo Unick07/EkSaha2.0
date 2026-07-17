@@ -113,6 +113,8 @@ export function normalizeInvoice(row) {
   return {
     id: row.id,
     userId: row.user_id ?? row.userId ?? null,
+    customerName: row.user_name || row.customerName || undefined,
+    customerEmail: row.user_email || row.customerEmail || undefined,
     amount: row.amount,
     currency: row.currency,
     status: row.status,
