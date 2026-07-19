@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "../../components/common/ui";
@@ -34,6 +34,14 @@ export function Login() {
   const [show, setShow] = useState(false);
   const { login, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("error") === "google_oauth_failed") {
+      toast.error("Google sign-in failed. Please try again or use your email and password.");
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   if (user) return <Navigate to={homeForRole(user.role)} replace />;
 
@@ -60,7 +68,7 @@ export function Login() {
       <label className="block text-sm font-semibold">Password<div className="relative mt-2"><input name="password" required type={show ? "text" : "password"} className="input pr-12" /><button type="button" onClick={() => setShow(!show)} className="icon-button absolute right-2 top-1.5 size-9 rounded-xl border-0">{show ? <EyeOff size={17} /> : <Eye size={17} />}</button></div></label>
       <div className="flex justify-end"><Link className="text-action" to="/forgot-password">Forgot password?</Link></div>
       <Button className="w-full">Sign in <ArrowRight size={16} /></Button>
-      <button type="button" className="soft-button w-full">Continue with Google</button>
+      <button type="button" onClick={() => { window.location.href = "/api/auth/google"; }} className="soft-button w-full">Continue with Google</button>
     </form>
     <p className="mt-7 text-center text-sm text-muted">New to EkSaha? <Link to="/signup" className="font-bold text-primary">Create an account</Link></p>
   </AuthShell>;

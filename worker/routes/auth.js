@@ -1,8 +1,13 @@
 import { generateId, normalizeUser, nowIso, run, first } from "../lib/db.js";
 import { hashPassword, isStrongPassword, refreshPayloadFromCookie, requireUser, sha256, signJwt, verifyPassword } from "../lib/auth.js";
-import { clearCookie, error, json, readJson, setCookie } from "../lib/http.js";
+import { clearCookie, error, getCookie, json, readJson, setCookie } from "../lib/http.js";
 
 const refreshMaxAge = 30 * 24 * 60 * 60;
+const googleStateMaxAge = 10 * 60;
+
+function googleRedirectUri(env) {
+  return `${env.CLIENT_URL || "https://eksaha.com"}/api/auth/google/callback`;
+}
 
 function publicUser(user) {
   return normalizeUser(user);
@@ -75,6 +80,82 @@ export async function handleAuth(request, env, path) {
       env,
       request,
     );
+  }
+
+  if (request.method === "GET" && path === "/google") {
+    const state = generateId();
+    const params = new URLSearchParams({
+      client_id: env.GOOGLE_CLIENT_ID,
+      redirect_uri: googleRedirectUri(env),
+      response_type: "code",
+      scope: "openid email profile",
+      access_type: "offline",
+      state,
+    });
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`,
+        "Set-Cookie": setCookie("googleOAuthState", state, { maxAge: googleStateMaxAge }),
+      },
+    });
+  }
+
+  if (request.method === "GET" && path === "/google/callback") {
+    const clientUrl = env.CLIENT_URL || "https://eksaha.com";
+    const failureRedirect = () => Response.redirect(`${clientUrl}/login?error=google_oauth_failed`, 302);
+    const requestUrl = new URL(request.url);
+    const code = requestUrl.searchParams.get("code");
+    const state = requestUrl.searchParams.get("state");
+    const expectedState = getCookie(request, "googleOAuthState");
+
+    if (!code || !state || !expectedState || state !== expectedState) {
+      return failureRedirect();
+    }
+
+    try {
+      const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          code,
+          client_id: env.GOOGLE_CLIENT_ID,
+          client_secret: env.GOOGLE_CLIENT_SECRET,
+          redirect_uri: googleRedirectUri(env),
+          grant_type: "authorization_code",
+        }),
+      });
+      if (!tokenResponse.ok) throw new Error("Google token exchange failed");
+      const tokenData = await tokenResponse.json();
+
+      const profileResponse = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` },
+      });
+      if (!profileResponse.ok) throw new Error("Could not fetch Google profile");
+      const profile = await profileResponse.json();
+      const email = profile.email?.toLowerCase()?.trim();
+      if (!email) throw new Error("Google account has no email");
+
+      let user = await first(env.DB, "SELECT * FROM users WHERE email = ?", [email]);
+      if (!user) {
+        const id = generateId();
+        const timestamp = nowIso();
+        await run(env.DB, `
+          INSERT INTO users (id, name, email, password_hash, role, plan_id, stripe_customer_id, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [id, profile.name || email.split("@")[0], email, null, "user", null, null, timestamp, timestamp]);
+        user = await first(env.DB, "SELECT * FROM users WHERE id = ?", [id]);
+      }
+
+      const tokens = await tokensFor(user, env);
+      const headers = new Headers({ Location: `${clientUrl}/dashboard?accessToken=${encodeURIComponent(tokens.accessToken)}` });
+      headers.append("Set-Cookie", setCookie("refreshToken", tokens.refreshToken, { maxAge: refreshMaxAge }));
+      headers.append("Set-Cookie", clearCookie("googleOAuthState"));
+      return new Response(null, { status: 302, headers });
+    } catch (caught) {
+      console.error(caught);
+      return failureRedirect();
+    }
   }
 
   if (request.method === "POST" && path === "/refresh") {
