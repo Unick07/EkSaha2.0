@@ -84,6 +84,7 @@ export async function handleAuth(request, env, path) {
 
   if (request.method === "GET" && path === "/google") {
     const state = generateId();
+    const planId = new URL(request.url).searchParams.get("planId");
     const params = new URLSearchParams({
       client_id: env.GOOGLE_CLIENT_ID,
       redirect_uri: googleRedirectUri(env),
@@ -92,22 +93,20 @@ export async function handleAuth(request, env, path) {
       access_type: "offline",
       state,
     });
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`,
-        "Set-Cookie": setCookie("googleOAuthState", state, { maxAge: googleStateMaxAge }),
-      },
-    });
+    const headers = new Headers({ Location: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}` });
+    headers.append("Set-Cookie", setCookie("googleOAuthState", state, { maxAge: googleStateMaxAge }));
+    if (planId) headers.append("Set-Cookie", setCookie("googleOAuthPlanId", planId, { maxAge: googleStateMaxAge }));
+    return new Response(null, { status: 302, headers });
   }
 
   if (request.method === "GET" && path === "/google/callback") {
     const clientUrl = env.CLIENT_URL || "https://eksaha.com";
-    const failureRedirect = () => Response.redirect(`${clientUrl}/login?error=google_oauth_failed`, 302);
+    const failureRedirect = () => Response.redirect(`${clientUrl}/login?error=google_failed`, 302);
     const requestUrl = new URL(request.url);
     const code = requestUrl.searchParams.get("code");
     const state = requestUrl.searchParams.get("state");
     const expectedState = getCookie(request, "googleOAuthState");
+    const pendingPlanId = getCookie(request, "googleOAuthPlanId");
 
     if (!code || !state || !expectedState || state !== expectedState) {
       return failureRedirect();
@@ -140,17 +139,27 @@ export async function handleAuth(request, env, path) {
       if (!user) {
         const id = generateId();
         const timestamp = nowIso();
+        const plan = pendingPlanId ? await first(env.DB, "SELECT id FROM plans WHERE id = ?", [pendingPlanId]) : null;
         await run(env.DB, `
           INSERT INTO users (id, name, email, password_hash, role, plan_id, stripe_customer_id, created_at, updated_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [id, profile.name || email.split("@")[0], email, null, "user", null, null, timestamp, timestamp]);
+        `, [id, profile.name || email.split("@")[0], email, null, "user", plan?.id || null, null, timestamp, timestamp]);
+        if (plan) {
+          await run(env.DB, `
+            INSERT INTO subscriptions (id, user_id, plan_id, status, billing_cycle, start_date, created_at, updated_at)
+            VALUES (?, ?, ?, 'trialing', 'monthly', ?, ?, ?)
+          `, [generateId(), id, plan.id, timestamp, timestamp, timestamp]);
+        }
         user = await first(env.DB, "SELECT * FROM users WHERE id = ?", [id]);
       }
 
       const tokens = await tokensFor(user, env);
-      const headers = new Headers({ Location: `${clientUrl}/dashboard?accessToken=${encodeURIComponent(tokens.accessToken)}` });
+      const headers = new Headers({
+        Location: `${clientUrl}/auth/callback?token=${encodeURIComponent(tokens.accessToken)}&role=${encodeURIComponent(user.role)}`,
+      });
       headers.append("Set-Cookie", setCookie("refreshToken", tokens.refreshToken, { maxAge: refreshMaxAge }));
       headers.append("Set-Cookie", clearCookie("googleOAuthState"));
+      headers.append("Set-Cookie", clearCookie("googleOAuthPlanId"));
       return new Response(null, { status: 302, headers });
     } catch (caught) {
       console.error(caught);

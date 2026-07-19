@@ -37,7 +37,7 @@ export function Login() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    if (searchParams.get("error") === "google_oauth_failed") {
+    if (searchParams.get("error") === "google_failed") {
       toast.error("Google sign-in failed. Please try again or use your email and password.");
       setSearchParams({}, { replace: true });
     }
@@ -112,6 +112,16 @@ export function Signup() {
     }
   };
 
+  const continueWithGoogle = async () => {
+    try {
+      const { data: availablePlans } = await api.get("/plans");
+      const selectedPlan = availablePlans.find((plan) => plan.name === selected);
+      window.location.href = selectedPlan?.id ? `/api/auth/google?planId=${encodeURIComponent(selectedPlan.id)}` : "/api/auth/google";
+    } catch {
+      window.location.href = "/api/auth/google";
+    }
+  };
+
   return <AuthShell title={step === 1 ? "Choose your starting point" : "Create your account"} copy="You can switch plans or service priorities whenever your business needs change.">
     {step === 1 ? <div className="mt-8 space-y-3">
       {plans.map((plan) => <button onClick={() => setSelected(plan.name)} className={`w-full rounded-2xl border p-5 text-left transition ${selected === plan.name ? "border-primary bg-primary/10 ring-4 ring-primary/15" : "border-border bg-surface hover:bg-surface-raised"}`} key={plan.name}>
@@ -133,6 +143,7 @@ export function Signup() {
       </label>
       <div className="rounded-xl border border-border bg-surface-raised p-4 text-sm"><div className="flex items-center gap-2 font-semibold"><CheckCircle2 size={16} className="text-emerald-500" />{selected} plan selected</div></div>
       <Button className="w-full">Create account</Button>
+      <button type="button" onClick={continueWithGoogle} className="soft-button w-full">Continue with Google</button>
       <button type="button" onClick={() => setStep(1)} className="soft-button w-full">Back to plans</button>
     </form>}
     <p className="mt-7 text-center text-sm text-muted">Already have an account? <Link className="font-bold text-primary" to="/login">Sign in</Link></p>

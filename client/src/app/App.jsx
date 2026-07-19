@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import PublicLayout from "../layouts/PublicLayout";
 import AppShell from "../layouts/AppShell";
@@ -22,6 +22,7 @@ const Login = from(authPages, "Login");
 const Signup = from(authPages, "Signup");
 const ForgotPassword = from(authPages, "ForgotPassword");
 const ResetPassword = from(authPages, "ResetPassword");
+const Callback = lazy(() => import("../pages/auth/Callback"));
 const Overview = from(dashboardPages, "Overview");
 const MyServices = from(dashboardPages, "MyServices");
 const Tickets = from(dashboardPages, "Tickets");
@@ -39,26 +40,10 @@ const AdminSettings = from(adminPages, "AdminSettings");
 
 export default function App() {
   const restoreSession = useAppStore((state) => state.restoreSession);
-  // The Google OAuth callback does a hard redirect to /dashboard?accessToken=...
-  // Capture that token before the router renders, otherwise AppShell's
-  // "no user yet" guard bounces the fresh redirect straight back to /login.
-  const [processingOAuth, setProcessingOAuth] = useState(
-    () => new URLSearchParams(window.location.search).has("accessToken"),
-  );
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const oauthToken = params.get("accessToken");
-    if (oauthToken) {
-      localStorage.setItem("accessToken", oauthToken);
-      window.history.replaceState(null, "", window.location.pathname);
-      restoreSession().finally(() => setProcessingOAuth(false));
-    } else {
-      restoreSession();
-    }
+    restoreSession();
   }, [restoreSession]);
-
-  if (processingOAuth) return <PageLoader/>;
 
   return <Suspense fallback={<PageLoader/>}><Routes>
     <Route element={<PublicLayout/>}>
@@ -77,6 +62,7 @@ export default function App() {
     <Route path="/signup" element={<Signup/>}/>
     <Route path="/forgot-password" element={<ForgotPassword/>}/>
     <Route path="/reset-password/:token" element={<ResetPassword/>}/>
+    <Route path="/auth/callback" element={<Callback/>}/>
     <Route path="/dashboard" element={<AppShell variant="user"/>}>
       <Route index element={<Overview/>}/>
       <Route path="services" element={<MyServices/>}/>
