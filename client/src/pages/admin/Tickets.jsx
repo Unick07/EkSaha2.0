@@ -1,13 +1,22 @@
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import api from "../../services/http/api";
+import { Modal } from "../../components/dashboard/Modal";
+import TicketThread from "../../components/dashboard/TicketThread";
+import { useAuth } from "../../hooks/useAuth";
 
 const formatValue = (value) => value ? String(value).replace(/_/g, " ") : "";
+const formatDate = (value) => value ? new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+const ticketNumber = (id) => `NX-${(id || "").replace(/[^a-zA-Z0-9]/g, "").slice(-4).toUpperCase()}`;
 
 export default function Tickets() {
+  const { user } = useAuth();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [viewingId, setViewingId] = useState(null);
+  const viewing = tickets.find((ticket) => ticket.id === viewingId);
 
   const loadTickets = useCallback((showSpinner = false) => {
     if (showSpinner) setLoading(true);
@@ -32,6 +41,12 @@ export default function Tickets() {
     return () => window.clearInterval(interval);
   }, [loadTickets]);
 
+  useEffect(() => {
+    api.get("/admin/users", { params: { roles: "admin,support,billing" } })
+      .then(({ data }) => setTeamMembers(data))
+      .catch(() => {});
+  }, []);
+
   const updateAdminTicket = async (id, changes, message) => {
     const previous = tickets;
     setTickets((items) => items.map((ticket) => ticket.id === id ? { ...ticket, ...changes } : ticket));
@@ -45,5 +60,43 @@ export default function Tickets() {
     }
   };
 
-  return <div><div className="mb-7"><h2 className="text-2xl font-bold">Support queue</h2><p className="mt-1 text-sm text-muted">Triage, assign and resolve customer requests.</p></div>{loading && <div className="panel p-5 text-sm text-muted">Loading tickets...</div>}{error && <div className="panel border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>}{!loading && !error && <div className="grid gap-4">{tickets.map((ticket) => <div className="panel flex flex-col justify-between gap-5 p-5 lg:flex-row lg:items-center" key={ticket.id}><div className="flex items-start gap-4"><span className={`mt-1 size-2 rounded-full ${ticket.priority === "critical" ? "bg-red-500" : ticket.priority === "high" ? "bg-orange-500" : "bg-primary"}`}/><div><div className="font-semibold">{ticket.subject}</div><div className="mt-1 text-xs capitalize text-muted">{ticket.id} | {ticket.user || "Unknown user"} | {formatValue(ticket.priority)} priority{ticket.createdAt ? ` | ${new Date(ticket.createdAt).toLocaleDateString()}` : ""}</div></div></div><div className="flex flex-col gap-3 sm:flex-row"><select value={ticket.assignee || "Unassigned"} onChange={(event) => updateAdminTicket(ticket.id, { assignedTo: event.target.value === "Unassigned" ? null : event.target.value }, "Ticket assigned.")} className="input py-2 sm:w-40"><option>Unassigned</option></select><select value={ticket.status} onChange={(event) => updateAdminTicket(ticket.id, { status: event.target.value }, "Ticket status updated.")} className="input py-2 sm:w-40"><option value="open">Open</option><option value="in_progress">In Progress</option><option value="resolved">Resolved</option></select></div></div>)}{tickets.length === 0 && <div className="panel p-6 text-sm text-muted">No tickets found.</div>}</div>}</div>;
+  return <div>
+    <div className="mb-7"><h2 className="text-2xl font-bold">Support queue</h2><p className="mt-1 text-sm text-muted">Triage, assign and resolve customer requests.</p></div>
+    {loading && <div className="panel p-5 text-sm text-muted">Loading tickets...</div>}
+    {error && <div className="panel border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>}
+    {!loading && !error && <div className="grid gap-4">{tickets.map((ticket) => <div className="panel flex flex-col justify-between gap-5 p-5 lg:flex-row lg:items-center" key={ticket.id}>
+      <div className="flex items-start gap-4">
+        <span className={`mt-1 size-2 rounded-full ${ticket.priority === "critical" ? "bg-red-500" : ticket.priority === "high" ? "bg-orange-500" : "bg-primary"}`}/>
+        <div>
+          <div className="flex items-center gap-2"><span className="font-semibold">{ticket.subject}</span><span className="rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted">{ticket.category}</span></div>
+          <div className="mt-1 text-xs capitalize text-muted">Ticket #{ticketNumber(ticket.id)} | {ticket.user || "Unknown customer"} | {formatValue(ticket.priority)} priority{ticket.createdAt ? ` | ${formatDate(ticket.createdAt)}` : ""}</div>
+        </div>
+      </div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <select value={ticket.assignedTo || ""} onChange={(event) => updateAdminTicket(ticket.id, { assignedTo: event.target.value || null }, "Ticket assigned.")} className="input py-2 sm:w-44">
+          <option value="">Unassigned</option>
+          {teamMembers.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}
+        </select>
+        <select value={ticket.status} onChange={(event) => updateAdminTicket(ticket.id, { status: event.target.value }, "Ticket status updated.")} className="input py-2 sm:w-40"><option value="open">Open</option><option value="in_progress">In Progress</option><option value="resolved">Resolved</option></select>
+        <button onClick={() => setViewingId(ticket.id)} className="text-action">View</button>
+      </div>
+    </div>)}{tickets.length === 0 && <div className="panel p-6 text-sm text-muted">No tickets found.</div>}</div>}
+
+    <Modal open={Boolean(viewing)} onClose={() => setViewingId(null)} title={viewing?.subject} description={`Ticket #${ticketNumber(viewing?.id)} | ${viewing?.user || "Unknown customer"}`} size="lg">
+      {viewing && <div className="space-y-5">
+        <div className="grid gap-3 rounded-2xl border border-border bg-surface-raised p-4 text-sm sm:grid-cols-2">
+          <div><span className="text-muted">Status</span><div className="font-semibold capitalize">{formatValue(viewing.status)}</div></div>
+          <div><span className="text-muted">Priority</span><div className="font-semibold capitalize">{viewing.priority}</div></div>
+          <div><span className="text-muted">Category</span><div className="font-semibold">{viewing.category}</div></div>
+          <div><span className="text-muted">Assigned to</span><div className="font-semibold">{viewing.assignee || "Unassigned"}</div></div>
+          <div><span className="text-muted">Created</span><div className="font-semibold">{formatDate(viewing.createdAt)}</div></div>
+          <div><span className="text-muted">Last updated</span><div className="font-semibold">{formatDate(viewing.updatedAt)}</div></div>
+        </div>
+        <div>
+          <h4 className="mb-3 text-sm font-bold">Conversation</h4>
+          <TicketThread ticketId={viewing.id} currentUserId={user?.id} onSent={() => loadTickets(false)}/>
+        </div>
+      </div>}
+    </Modal>
+  </div>;
 }

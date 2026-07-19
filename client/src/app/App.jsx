@@ -91,6 +91,7 @@ export default function App() {
       <Route path="subscriptions" element={<AdminSubscriptions/>}/>
       <Route path="services" element={<ResourceManager type="Services"/>}/>
       <Route path="invoices" element={<ResourceManager type="Invoices"/>}/>
+      <Route path="tickets" element={<AdminTickets/>}/>
       <Route path="users" element={<AdminUsersReadOnly/>}/>
       <Route path="settings" element={<AccountSettings/>}/>
     </Route>

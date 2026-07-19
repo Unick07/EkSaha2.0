@@ -6,12 +6,13 @@ import { useUserDashboardStore } from "../store/useUserDashboardStore";
 import { useAuth } from "../hooks/useAuth";
 import { Modal } from "../components/dashboard/Modal";
 import { homeForRole } from "../lib/roles";
-import { useState } from "react";
+import api from "../services/http/api";
+import { useEffect, useState } from "react";
 
 const userLinks = [{ to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true }, { to: "/dashboard/services", label: "My services", icon: Package }, { to: "/dashboard/tickets", label: "Support tickets", icon: Headphones }, { to: "/dashboard/invoices", label: "Invoices", icon: FileText }, { to: "/dashboard/settings", label: "Account settings", icon: Settings }];
 const adminLinks = [{ to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true }, { to: "/admin/users", label: "Users", icon: Users }, { to: "/admin/team", label: "Team", icon: ShieldCheck }, { to: "/admin/subscriptions", label: "Subscriptions", icon: CreditCard }, { to: "/admin/services", label: "Services", icon: Package }, { to: "/admin/tickets", label: "Tickets", icon: Headphones }, { to: "/admin/blog", label: "Blog", icon: BookOpen }, { to: "/admin/invoices", label: "Invoices", icon: FileText }, { to: "/admin/analytics", label: "Analytics", icon: ChartNoAxesCombined }, { to: "/admin/settings", label: "Settings", icon: Settings }];
 const supportLinks = [{ to: "/support/users", label: "Users", icon: Users, end: true }, { to: "/support/services", label: "Services", icon: Package }, { to: "/support/tickets", label: "Tickets", icon: Headphones }, { to: "/support/blog", label: "Blog", icon: BookOpen }, { to: "/support/settings", label: "Account settings", icon: Settings }];
-const billingLinks = [{ to: "/billing/subscriptions", label: "Subscriptions", icon: CreditCard, end: true }, { to: "/billing/services", label: "Services", icon: Package }, { to: "/billing/invoices", label: "Invoices", icon: FileText }, { to: "/billing/users", label: "Users (View only)", icon: Users }, { to: "/billing/settings", label: "Account settings", icon: Settings }];
+const billingLinks = [{ to: "/billing/subscriptions", label: "Subscriptions", icon: CreditCard, end: true }, { to: "/billing/services", label: "Services", icon: Package }, { to: "/billing/invoices", label: "Invoices", icon: FileText }, { to: "/billing/tickets", label: "Billing tickets", icon: Headphones }, { to: "/billing/users", label: "Users (View only)", icon: Users }, { to: "/billing/settings", label: "Account settings", icon: Settings }];
 
 const linksByVariant = { user: userLinks, admin: adminLinks, support: supportLinks, billing: billingLinks };
 const workspaceLabel = { admin: "ADMIN WORKSPACE", support: "SUPPORT WORKSPACE", billing: "BILLING WORKSPACE" };
@@ -29,7 +30,23 @@ export default function AppShell({ variant = "user" }) {
   const markUserNotificationsRead = useUserDashboardStore((state) => state.markNotificationsRead);
   const adminNotifications = useAdminStore((state) => state.notifications);
   const markAdminNotificationsRead = useAdminStore((state) => state.markAdminNotificationsRead);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const location = useLocation();
+
+  useEffect(() => {
+    if (!user) return undefined;
+    let active = true;
+    const load = () => api.get("/notifications/unread-count")
+      .then(({ data }) => { if (active) setUnreadMessages(data?.count || 0); })
+      .catch(() => {});
+    load();
+    const interval = window.setInterval(load, 20000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, [user]);
+
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   if (user.role !== variant) return <Navigate to={homeForRole(user.role)} replace />;
   const isStaff = variant !== "user";
@@ -38,7 +55,7 @@ export default function AppShell({ variant = "user" }) {
   const collapsed = sidebarCollapsed && !sidebarOpen;
   const notifications = isStaff ? adminNotifications : userNotifications;
   const markNotificationsRead = isStaff ? markAdminNotificationsRead : markUserNotificationsRead;
-  const unread = notifications.filter((item) => !item.read).length;
+  const unread = unreadMessages;
   return <div className="min-h-screen bg-background text-text">
     {sidebarOpen && <button aria-label="Close sidebar overlay" className="fixed inset-0 z-40 bg-slate-950/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
     <aside className={`fixed inset-y-0 left-0 z-50 flex transform flex-col border-r border-border bg-surface p-4 text-text shadow-2xl transition-all duration-300 lg:translate-x-0 ${collapsed ? "lg:w-20" : "w-72"} ${sidebarOpen ? "translate-x-0 w-72" : "-translate-x-full"}`}>

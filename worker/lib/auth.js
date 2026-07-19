@@ -53,6 +53,15 @@ export async function verifyJwt(token, env, { kind = "ACCESS" } = {}) {
   return payload;
 }
 
+export function isStrongPassword(password) {
+  return typeof password === "string"
+    && password.length >= 8
+    && /[A-Z]/.test(password)
+    && /[a-z]/.test(password)
+    && /[0-9]/.test(password)
+    && /[!@#$%^&*]/.test(password);
+}
+
 export async function hashPassword(password) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const key = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]);

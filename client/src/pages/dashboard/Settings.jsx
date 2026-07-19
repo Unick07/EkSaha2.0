@@ -1,28 +1,102 @@
-import { useState } from "react";
-import { CreditCard, Settings2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "../../components/common/ui";
-import { Modal } from "../../components/dashboard/Modal";
-import { useUserDashboardStore } from "../../store/useUserDashboardStore";
+import api from "../../services/http/api";
+import { useAuth } from "../../hooks/useAuth";
+import { PASSWORD_RULES, failedPasswordRules, passwordStrength } from "../../lib/password";
 
 export default function Settings() {
-  const [billingOpen, setBillingOpen] = useState(false);
-  const { profile, paymentMethod, updateProfile, updatePaymentMethod } = useUserDashboardStore();
-  const saveProfile = (event) => {
+  const { user, login } = useAuth();
+  const [profile, setProfile] = useState(user);
+  const [loading, setLoading] = useState(true);
+  const [newPassword, setNewPassword] = useState("");
+  const strength = passwordStrength(newPassword);
+
+  useEffect(() => {
+    let active = true;
+    api.get("/auth/me")
+      .then(({ data }) => {
+        if (active) {
+          setProfile(data);
+          login(data);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [login]);
+
+  const saveProfile = async (event) => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
-    updateProfile(data);
-    toast.success("Profile settings saved.");
-  };
-  const savePayment = (event) => {
-    event.preventDefault();
-    const data = Object.fromEntries(new FormData(event.currentTarget));
-    updatePaymentMethod(data);
-    setBillingOpen(false);
-    toast.success("Payment method updated.");
+    try {
+      const { data: updated } = await api.patch("/users/me", { name: data.name, email: data.email });
+      setProfile(updated);
+      login(updated);
+      toast.success("Profile settings saved.");
+    } catch (caught) {
+      toast.error(caught.response?.data?.message || "Could not save profile settings.");
+    }
   };
 
-  return <div className="mx-auto max-w-3xl"><form onSubmit={saveProfile} className="panel p-7"><div className="flex items-center gap-4 border-b border-slate-100 pb-6 dark:border-white/10"><span className="grid size-16 place-items-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 text-xl font-bold text-white">{profile.name.split(" ").map((part) => part[0]).join("").slice(0,2)}</span><div><h2 className="font-bold">Profile details</h2><p className="text-sm text-slate-500">Keep your contact information current.</p></div></div><div className="mt-6 grid gap-5 sm:grid-cols-2"><label className="text-sm font-semibold">Full name<input name="name" className="input mt-2" defaultValue={profile.name}/></label><label className="text-sm font-semibold">Email<input name="email" type="email" className="input mt-2" defaultValue={profile.email}/></label><label className="text-sm font-semibold">Company<input name="company" className="input mt-2" defaultValue={profile.company}/></label><label className="text-sm font-semibold">Timezone<select name="timezone" className="input mt-2" defaultValue={profile.timezone}><option>Eastern Time (US)</option><option>Pacific Time (US)</option><option>UTC</option><option>Asia/Kathmandu</option></select></label></div><div className="mt-8 flex justify-end"><Button>Save changes</Button></div></form><div className="panel mt-6 p-7"><div className="flex gap-3"><CreditCard className="text-electric"/><div><h3 className="font-bold">Payment method</h3><p className="mt-1 text-sm text-slate-500">{paymentMethod.brand} ending in {paymentMethod.last4} | Expires {paymentMethod.expiry}</p></div></div><Button onClick={() => setBillingOpen(true)} variant="secondary" className="mt-5"><Settings2 size={16}/>Update billing</Button></div>
-    <Modal open={billingOpen} onClose={() => setBillingOpen(false)} title="Update payment method"><form className="space-y-4" onSubmit={savePayment}><select name="brand" className="input" defaultValue={paymentMethod.brand}><option>Visa</option><option>Mastercard</option><option>American Express</option></select><input name="last4" required pattern="[0-9]{4}" maxLength="4" className="input" defaultValue={paymentMethod.last4} placeholder="Last four digits"/><input name="expiry" required className="input" defaultValue={paymentMethod.expiry} placeholder="MM/YY"/><Button className="w-full">Save payment method</Button></form></Modal>
+  const changePassword = async (event) => {
+    event.preventDefault();
+    const data = Object.fromEntries(new FormData(event.currentTarget));
+    if (data.newPassword !== data.confirmPassword) {
+      toast.error("New password and confirmation do not match.");
+      return;
+    }
+    const failedRules = failedPasswordRules(data.newPassword);
+    if (failedRules.length > 0) {
+      toast.error(`Password needs ${failedRules.map((rule) => rule.label).join(", ")}.`);
+      return;
+    }
+    try {
+      await api.patch("/users/me/password", { currentPassword: data.currentPassword, newPassword: data.newPassword });
+      toast.success("Password updated.");
+      event.currentTarget.reset();
+      setNewPassword("");
+    } catch (caught) {
+      toast.error(caught.response?.data?.message || "Could not update password.");
+    }
+  };
+
+  if (loading) return <div className="mx-auto max-w-3xl panel p-7 text-sm text-muted">Loading account settings...</div>;
+
+  return <div className="mx-auto max-w-3xl space-y-6">
+    <form onSubmit={saveProfile} className="panel p-7">
+      <div className="flex items-center gap-4 border-b border-slate-100 pb-6 dark:border-white/10">
+        <span className="grid size-16 place-items-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 text-xl font-bold text-white">{(profile?.name || "?").split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase()}</span>
+        <div><h2 className="font-bold">Profile details</h2><p className="text-sm text-slate-500">Keep your contact information current.</p></div>
+      </div>
+      <div className="mt-6 grid gap-5 sm:grid-cols-2">
+        <label className="text-sm font-semibold">Full name<input name="name" required className="input mt-2" defaultValue={profile?.name}/></label>
+        <label className="text-sm font-semibold">Email<input name="email" required type="email" className="input mt-2" defaultValue={profile?.email}/></label>
+      </div>
+      <div className="mt-8 flex justify-end"><Button>Save changes</Button></div>
+    </form>
+
+    <form onSubmit={changePassword} className="panel p-7">
+      <h3 className="font-bold">Change password</h3>
+      <p className="mt-1 text-sm text-slate-500">Choose a strong password you don't use anywhere else.</p>
+      <div className="mt-6 grid gap-5 sm:grid-cols-2">
+        <label className="text-sm font-semibold sm:col-span-2">Current password<input name="currentPassword" required type="password" className="input mt-2"/></label>
+        <label className="text-sm font-semibold">New password
+          <input name="newPassword" required type="password" minLength={8} className="input mt-2" value={newPassword} onChange={(event) => setNewPassword(event.target.value)}/>
+          {newPassword && <div className="mt-2">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
+              <div className={`h-full rounded-full transition-all ${strength.barColor}`} style={{ width: `${(strength.passed / PASSWORD_RULES.length) * 100}%` }} />
+            </div>
+            <div className={`mt-1.5 text-xs font-bold ${strength.textColor}`}>{strength.label}</div>
+          </div>}
+        </label>
+        <label className="text-sm font-semibold">Confirm new password<input name="confirmPassword" required type="password" className="input mt-2"/></label>
+      </div>
+      <div className="mt-8 flex justify-end"><Button>Update password</Button></div>
+    </form>
   </div>;
 }

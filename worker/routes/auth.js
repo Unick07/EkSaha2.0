@@ -1,5 +1,5 @@
 import { generateId, normalizeUser, nowIso, run, first } from "../lib/db.js";
-import { hashPassword, refreshPayloadFromCookie, requireUser, sha256, signJwt, verifyPassword } from "../lib/auth.js";
+import { hashPassword, isStrongPassword, refreshPayloadFromCookie, requireUser, sha256, signJwt, verifyPassword } from "../lib/auth.js";
 import { clearCookie, error, json, readJson, setCookie } from "../lib/http.js";
 
 const refreshMaxAge = 30 * 24 * 60 * 60;
@@ -20,15 +20,6 @@ async function tokensFor(user, env) {
     nowIso(),
   ]);
   return { accessToken, refreshToken };
-}
-
-function isStrongPassword(password) {
-  return typeof password === "string"
-    && password.length >= 8
-    && /[A-Z]/.test(password)
-    && /[a-z]/.test(password)
-    && /[0-9]/.test(password)
-    && /[!@#$%^&*]/.test(password);
 }
 
 export async function handleAuth(request, env, path) {

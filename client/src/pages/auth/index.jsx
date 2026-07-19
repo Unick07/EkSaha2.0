@@ -7,27 +7,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { plans } from "../../data/siteData";
 import api from "../../services/http/api";
 import { homeForRole } from "../../lib/roles";
-
-const PASSWORD_RULES = [
-  { test: (value) => value.length >= 8, label: "at least 8 characters" },
-  { test: (value) => /[A-Z]/.test(value), label: "one uppercase letter" },
-  { test: (value) => /[a-z]/.test(value), label: "one lowercase letter" },
-  { test: (value) => /[0-9]/.test(value), label: "one number" },
-  { test: (value) => /[!@#$%^&*]/.test(value), label: "one special character (!@#$%^&*)" },
-];
-
-const STRENGTH_LEVELS = [
-  { label: "Weak", barColor: "bg-red-500", textColor: "text-red-600 dark:text-red-400" },
-  { label: "Fair", barColor: "bg-amber-500", textColor: "text-amber-600 dark:text-amber-400" },
-  { label: "Strong", barColor: "bg-blue-500", textColor: "text-blue-600 dark:text-blue-400" },
-  { label: "Very Strong", barColor: "bg-emerald-500", textColor: "text-emerald-600 dark:text-emerald-400" },
-];
-
-function passwordStrength(value) {
-  const passed = PASSWORD_RULES.filter((rule) => rule.test(value)).length;
-  const level = STRENGTH_LEVELS[Math.max(0, Math.min(passed, 5) - 2)] || STRENGTH_LEVELS[0];
-  return { passed, ...level };
-}
+import { PASSWORD_RULES, failedPasswordRules, passwordStrength } from "../../lib/password";
 
 function AuthShell({ title, copy, children }) {
   return <div className="grid min-h-screen bg-background text-text lg:grid-cols-2">
@@ -100,7 +80,7 @@ export function Signup() {
     const name = form.get("name");
     const email = form.get("email");
 
-    const failedRules = PASSWORD_RULES.filter((rule) => !rule.test(password));
+    const failedRules = failedPasswordRules(password);
     if (failedRules.length > 0) {
       toast.error(`Password needs ${failedRules.map((rule) => rule.label).join(", ")}.`);
       return;
