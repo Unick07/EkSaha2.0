@@ -78,6 +78,23 @@ export async function handleAdmin(request, env, path) {
     return json(normalizeUser(await first(env.DB, "SELECT * FROM users WHERE id = ?", [roleChangeId])), {}, env, request);
   }
 
+  const assignId = path.match(/^\/admin\/users\/([^/]+)\/assign$/)?.[1];
+  if (request.method === "PATCH" && assignId) {
+    await requireRole(request, env, ["admin", "support"]);
+    const existing = await first(env.DB, "SELECT * FROM users WHERE id = ?", [assignId]);
+    if (!existing) return error("User not found", 404, env, request);
+    const body = await readJson(request);
+    const assignedTo = body.assignedTo || null;
+    if (assignedTo) {
+      const strategist = await first(env.DB, "SELECT * FROM users WHERE id = ?", [assignedTo]);
+      if (!strategist || !["admin", "support"].includes(strategist.role)) {
+        return error("Assigned team member must have an admin or support role", 400, env, request);
+      }
+    }
+    await run(env.DB, "UPDATE users SET assigned_to = ?, updated_at = ? WHERE id = ?", [assignedTo, nowIso(), assignId]);
+    return json(normalizeUser(await first(env.DB, "SELECT * FROM users WHERE id = ?", [assignId])), {}, env, request);
+  }
+
   const userId = path.match(/^\/admin\/users\/([^/]+)$/)?.[1];
   if (request.method === "PATCH" && userId) {
     const admin = await requireRole(request, env, ["admin"]);

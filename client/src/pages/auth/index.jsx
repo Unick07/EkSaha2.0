@@ -8,6 +8,27 @@ import { plans } from "../../data/siteData";
 import api from "../../services/http/api";
 import { homeForRole } from "../../lib/roles";
 
+const PASSWORD_RULES = [
+  { test: (value) => value.length >= 8, label: "at least 8 characters" },
+  { test: (value) => /[A-Z]/.test(value), label: "one uppercase letter" },
+  { test: (value) => /[a-z]/.test(value), label: "one lowercase letter" },
+  { test: (value) => /[0-9]/.test(value), label: "one number" },
+  { test: (value) => /[!@#$%^&*]/.test(value), label: "one special character (!@#$%^&*)" },
+];
+
+const STRENGTH_LEVELS = [
+  { label: "Weak", barColor: "bg-red-500", textColor: "text-red-600 dark:text-red-400" },
+  { label: "Fair", barColor: "bg-amber-500", textColor: "text-amber-600 dark:text-amber-400" },
+  { label: "Strong", barColor: "bg-blue-500", textColor: "text-blue-600 dark:text-blue-400" },
+  { label: "Very Strong", barColor: "bg-emerald-500", textColor: "text-emerald-600 dark:text-emerald-400" },
+];
+
+function passwordStrength(value) {
+  const passed = PASSWORD_RULES.filter((rule) => rule.test(value)).length;
+  const level = STRENGTH_LEVELS[Math.max(0, Math.min(passed, 5) - 2)] || STRENGTH_LEVELS[0];
+  return { passed, ...level };
+}
+
 function AuthShell({ title, copy, children }) {
   return <div className="grid min-h-screen bg-background text-text lg:grid-cols-2">
     <div className="hidden bg-surface p-12 lg:flex lg:flex-col lg:justify-between">
@@ -55,8 +76,8 @@ export function Login() {
 
   return <AuthShell title="Welcome back" copy="Sign in to manage your services, requests and account.">
     <form onSubmit={submit} className="mt-8 space-y-5">
-      <label className="block text-sm font-semibold">Email<input name="email" required type="email" defaultValue="user@eksaha.dev" className="input mt-2" /></label>
-      <label className="block text-sm font-semibold">Password<div className="relative mt-2"><input name="password" required type={show ? "text" : "password"} defaultValue="password" className="input pr-12" /><button type="button" onClick={() => setShow(!show)} className="icon-button absolute right-2 top-1.5 size-9 rounded-xl border-0">{show ? <EyeOff size={17} /> : <Eye size={17} />}</button></div></label>
+      <label className="block text-sm font-semibold">Email<input name="email" required type="email" className="input mt-2" /></label>
+      <label className="block text-sm font-semibold">Password<div className="relative mt-2"><input name="password" required type={show ? "text" : "password"} className="input pr-12" /><button type="button" onClick={() => setShow(!show)} className="icon-button absolute right-2 top-1.5 size-9 rounded-xl border-0">{show ? <EyeOff size={17} /> : <Eye size={17} />}</button></div></label>
       <div className="flex justify-end"><Link className="text-action" to="/forgot-password">Forgot password?</Link></div>
       <Button className="w-full">Sign in <ArrowRight size={16} /></Button>
       <button type="button" className="soft-button w-full">Continue with Google</button>
@@ -68,15 +89,22 @@ export function Login() {
 export function Signup() {
   const [step, setStep] = useState(1);
   const [selected, setSelected] = useState("Growth");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const { login } = useAuth();
+  const strength = passwordStrength(password);
 
   const submit = async (event) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const name = form.get("name");
     const email = form.get("email");
-    const password = form.get("password");
+
+    const failedRules = PASSWORD_RULES.filter((rule) => !rule.test(password));
+    if (failedRules.length > 0) {
+      toast.error(`Password needs ${failedRules.map((rule) => rule.label).join(", ")}.`);
+      return;
+    }
 
     try {
       const { data: availablePlans } = await api.get("/plans");
@@ -104,9 +132,17 @@ export function Signup() {
       </button>)}
       <Button onClick={() => setStep(2)} className="mt-3 w-full">Continue with {selected}<ArrowRight size={16} /></Button>
     </div> : <form onSubmit={submit} className="mt-8 space-y-5">
-      <label className="block text-sm font-semibold">Full name<input name="name" required className="input mt-2" placeholder="Jordan Lee" /></label>
-      <label className="block text-sm font-semibold">Work email<input name="email" required type="email" className="input mt-2" placeholder="you@company.com" /></label>
-      <label className="block text-sm font-semibold">Password<input name="password" required type="password" minLength="8" className="input mt-2" placeholder="At least 8 characters" /></label>
+      <label className="block text-sm font-semibold">Full name<input name="name" required className="input mt-2" placeholder="Your full name" /></label>
+      <label className="block text-sm font-semibold">Email<input name="email" required type="email" className="input mt-2" placeholder="your@email.com" /></label>
+      <label className="block text-sm font-semibold">Password
+        <input name="password" required type="password" minLength="8" className="input mt-2" placeholder="At least 8 characters" value={password} onChange={(event) => setPassword(event.target.value)} />
+        {password && <div className="mt-2">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
+            <div className={`h-full rounded-full transition-all ${strength.barColor}`} style={{ width: `${(strength.passed / PASSWORD_RULES.length) * 100}%` }} />
+          </div>
+          <div className={`mt-1.5 text-xs font-bold ${strength.textColor}`}>{strength.label}</div>
+        </div>}
+      </label>
       <div className="rounded-xl border border-border bg-surface-raised p-4 text-sm"><div className="flex items-center gap-2 font-semibold"><CheckCircle2 size={16} className="text-emerald-500" />{selected} plan selected</div></div>
       <Button className="w-full">Create account</Button>
       <button type="button" onClick={() => setStep(1)} className="soft-button w-full">Back to plans</button>

@@ -50,6 +50,7 @@ export function normalizeUser(row) {
     role: row.role,
     planId: row.plan_id ?? row.planId ?? null,
     plan: row.plan_name || row.plan || undefined,
+    assignedTo: row.assigned_to ?? row.assignedTo ?? null,
     stripeCustomerId: row.stripe_customer_id ?? row.stripeCustomerId ?? null,
     createdAt: row.created_at ?? row.createdAt ?? null,
     updatedAt: row.updated_at ?? row.updatedAt ?? null,

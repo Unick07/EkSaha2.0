@@ -22,12 +22,24 @@ async function tokensFor(user, env) {
   return { accessToken, refreshToken };
 }
 
+function isStrongPassword(password) {
+  return typeof password === "string"
+    && password.length >= 8
+    && /[A-Z]/.test(password)
+    && /[a-z]/.test(password)
+    && /[0-9]/.test(password)
+    && /[!@#$%^&*]/.test(password);
+}
+
 export async function handleAuth(request, env, path) {
   if (request.method === "POST" && path === "/signup") {
     const body = await readJson(request);
     const email = body.email?.toLowerCase()?.trim();
-    if (!body.name || !email || !body.password || body.password.length < 8) {
+    if (!body.name || !email || !body.password) {
       return error("Valid name, email and password are required", 400, env, request);
+    }
+    if (!isStrongPassword(body.password)) {
+      return error("Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number and a special character (!@#$%^&*)", 400, env, request);
     }
     if (await first(env.DB, "SELECT id FROM users WHERE email = ?", [email])) {
       return error("Email already registered", 409, env, request);
