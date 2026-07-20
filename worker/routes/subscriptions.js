@@ -33,6 +33,21 @@ export async function handleSubscriptions(request, env, path) {
     return json(normalize(await first(env.DB, `${selectJoined} WHERE subscriptions.user_id = ? ORDER BY subscriptions.created_at DESC LIMIT 1`, [user.id])), {}, env, request);
   }
 
+  if (request.method === "POST" && path === "/subscriptions/me") {
+    const user = await requireUser(request, env);
+    const body = await readJson(request);
+    const plan = await first(env.DB, "SELECT * FROM plans WHERE id = ?", [body.planId]);
+    if (!plan) return error("Plan not found", 404, env, request);
+    const id = generateId();
+    const timestamp = nowIso();
+    await run(env.DB, `
+      INSERT INTO subscriptions (id, user_id, plan_id, status, billing_cycle, start_date, created_at, updated_at)
+      VALUES (?, ?, ?, 'trialing', 'monthly', ?, ?, ?)
+    `, [id, user.id, plan.id, timestamp, timestamp, timestamp]);
+    await run(env.DB, "UPDATE users SET plan_id = ?, updated_at = ? WHERE id = ?", [plan.id, timestamp, user.id]);
+    return json(normalize(await first(env.DB, `${selectJoined} WHERE subscriptions.id = ?`, [id])), { status: 201 }, env, request);
+  }
+
   if (request.method === "GET" && path === "/subscriptions") {
     await requireRole(request, env, ["admin", "billing"]);
     return json((await all(env.DB, `${selectJoined} ORDER BY subscriptions.created_at DESC`)).map(normalize), {}, env, request);

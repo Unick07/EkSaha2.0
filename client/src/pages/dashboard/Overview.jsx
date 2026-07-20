@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, CalendarDays, Clock3, Send, TrendingUp } from "lucide-react";
+import { ArrowRight, CalendarDays, Clock3, Send, Sparkles, TrendingUp } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "../../components/common/ui";
 import { Modal } from "../../components/dashboard/Modal";
@@ -73,9 +73,19 @@ export default function Overview() {
           <h2 className="mt-2 text-3xl font-extrabold">{subscriptionLoading ? "Loading..." : (subscription?.plan?.name || "No active plan")}</h2>
           <p className="mt-2 text-sm opacity-85">{subscriptionLoading ? "" : (subscription ? `${capitalize(subscription.status)} - ${capitalize(subscription.billingCycle)} billing` : "Choose a plan to get started")}</p>
         </div>
-        <Button to="/pricing" variant="secondary" className="border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20">Manage plan <ArrowRight size={16}/></Button>
+        <Button to="/pricing" variant="secondary" className="border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20">{subscriptionLoading || subscription ? "Manage plan" : "Choose your plan"} <ArrowRight size={16}/></Button>
       </div>
     </div>
+    {!subscriptionLoading && !subscription && <div className="panel flex flex-col items-start justify-between gap-4 border-2 border-dashed border-primary/40 bg-primary/5 p-6 sm:flex-row sm:items-center">
+      <div className="flex items-start gap-4">
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/15 text-primary"><Sparkles size={20}/></span>
+        <div>
+          <h3 className="font-bold">Choose a plan to unlock your dashboard</h3>
+          <p className="mt-1 text-sm text-slate-500">You're signed in, but no plan is attached to your account yet — this is common right after signing up with Google. Pick a plan to get full access to services, tickets and billing.</p>
+        </div>
+      </div>
+      <Button to="/pricing" className="w-full shrink-0 sm:w-auto">Choose your plan <ArrowRight size={16}/></Button>
+    </div>}
     <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{stats.map(([Icon, value, label, copy]) => <div className="panel p-5" key={label}><Icon size={20} className="text-electric"/><div className="mt-5 text-2xl font-extrabold">{value}</div><div className="mt-1 text-sm font-semibold">{label}</div><div className="mt-1 text-xs text-slate-500">{copy}</div></div>)}</div>
     <div className="grid gap-7 xl:grid-cols-[1.3fr_.7fr]">
       <div className="panel p-6">
