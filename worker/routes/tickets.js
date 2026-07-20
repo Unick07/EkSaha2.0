@@ -18,7 +18,7 @@ function normalizeCategory(value) {
 
 // Admins see everything. Everyone else sees their own tickets (role "user"),
 // tickets assigned to them, or tickets in the category their role owns.
-function canAccessTicket(user, ticket) {
+export function canAccessTicket(user, ticket) {
   if (user.role === "admin") return true;
   if (user.role === "user") return ticket.user_id === user.id;
   if (ticket.assigned_to === user.id) return true;

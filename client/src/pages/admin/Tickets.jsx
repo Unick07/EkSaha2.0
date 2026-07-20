@@ -1,17 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import api from "../../services/http/api";
 import { Modal } from "../../components/dashboard/Modal";
 import TicketThread from "../../components/dashboard/TicketThread";
 import { useAuth } from "../../hooks/useAuth";
+import { ticketNumber } from "../../lib/tickets";
 
 const formatValue = (value) => value ? String(value).replace(/_/g, " ") : "";
 const formatDate = (value) => value ? new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
-const ticketNumber = (id) => `NX-${(id || "").replace(/[^a-zA-Z0-9]/g, "").slice(-4).toUpperCase()}`;
 const unreadCount = (ticket, userId) => (ticket.messages || []).filter((message) => message.senderId !== userId && !message.read).length;
 
 export default function Tickets() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -61,7 +63,7 @@ export default function Tickets() {
     }
   };
 
-  const viewTicket = async (ticket) => {
+  const viewTicket = useCallback(async (ticket) => {
     setViewingId(ticket.id);
     if (unreadCount(ticket, user?.id) === 0) return;
     try {
@@ -70,7 +72,16 @@ export default function Tickets() {
     } catch {
       // Non-critical: the thread's own fetch also marks messages read.
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    const ticketParam = searchParams.get("ticket");
+    if (!ticketParam || tickets.length === 0) return;
+    const target = tickets.find((ticket) => ticket.id === ticketParam);
+    if (target) viewTicket(target);
+    setSearchParams((params) => { params.delete("ticket"); return params; }, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tickets]);
 
   return <div>
     <div className="mb-7"><h2 className="text-2xl font-bold">Support queue</h2><p className="mt-1 text-sm text-muted">Triage, assign and resolve customer requests.</p></div>

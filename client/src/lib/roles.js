@@ -6,3 +6,12 @@ export const roleHome = {
 };
 
 export const homeForRole = (role) => roleHome[role] || "/dashboard";
+
+const ticketsRouteByRole = {
+  admin: "/admin/tickets",
+  support: "/support/tickets",
+  billing: "/billing/tickets",
+  user: "/dashboard/tickets",
+};
+
+export const ticketsRouteForRole = (role) => ticketsRouteByRole[role] || "/dashboard/tickets";

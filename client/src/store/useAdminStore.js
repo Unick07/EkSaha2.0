@@ -25,7 +25,6 @@ const emptyAdminState = {
   services: [],
   posts: [],
   invoices: [],
-  notifications: [],
   settings: { company: "EkSaha", email: "", currency: "USD", role: "" },
 };
 
@@ -36,9 +35,6 @@ export const useAdminStore = create(
       addUser: (user) => set((state) => ({ users: [{ id: Date.now(), ...user }, ...state.users] })),
       updateUser: (id, changes) => set((state) => ({ users: state.users.map((user) => user.id === id ? { ...user, ...changes } : user) })),
       deleteUser: (id) => set((state) => ({ users: state.users.filter((user) => user.id !== id) })),
-      markAdminNotificationsRead: () => set((state) => ({
-        notifications: state.notifications.map((item) => ({ ...item, read: true })),
-      })),
       addRecord: (collection, record) => set((state) => ({
         [collection]: [{ id: Date.now(), ...(collection === "posts" ? normalizePost(record) : record) }, ...state[collection]],
       })),
