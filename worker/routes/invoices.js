@@ -35,39 +35,101 @@ function money(value, currency) {
   return `${Number(value || 0).toFixed(2)} ${(currency || "usd").toUpperCase()}`;
 }
 
-function invoiceEmailHtml({ number, customerName, items, subtotal, taxPercent, total, dueDate, currency, createdAt, notes }) {
-  const rows = items.map((item) => `
-    <tr>
-      <td style="padding:10px 0;border-bottom:1px solid #eee;">${item.description}</td>
-      <td style="padding:10px 0;border-bottom:1px solid #eee;text-align:right;">${money(item.amount, currency)}</td>
+function formatEmailDate(value) {
+  if (!value) return "";
+  return new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+const BRAND_BLUE = "#3B82F6";
+
+function invoiceEmailHtml({ number, customerName, customerEmail, items, subtotal, taxPercent, total, dueDate, currency, createdAt, notes }) {
+  const rows = items.map((item, index) => `
+    <tr style="background-color:${index % 2 === 0 ? "#ffffff" : "#f9fafb"};">
+      <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#111827;">${item.description}</td>
+      <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#111827;text-align:center;">1</td>
+      <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#111827;text-align:right;">${money(item.amount, currency)}</td>
+      <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#111827;text-align:right;">${money(item.amount, currency)}</td>
     </tr>
   `).join("");
+
   const taxRow = taxPercent
-    ? `<tr><td style="padding:6px 0;color:#666;">Tax (${taxPercent}%)</td><td style="padding:6px 0;text-align:right;color:#666;">${money(subtotal * taxPercent / 100, currency)}</td></tr>`
+    ? `<tr><td style="padding:4px 0;font-size:14px;color:#6b7280;">Tax (${taxPercent}%)</td><td style="padding:4px 0;font-size:14px;color:#6b7280;text-align:right;">${money((subtotal * taxPercent) / 100, currency)}</td></tr>`
     : "";
+
   return `
-    <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a;">
-      <h1 style="font-size:20px;">Invoice ${number}</h1>
-      <p>Hi ${customerName || "there"},</p>
-      <p style="color:#555;">
-        Date: ${new Date(createdAt).toLocaleDateString()}<br/>
-        Due: ${dueDate ? new Date(dueDate).toLocaleDateString() : "On receipt"}
-      </p>
-      <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+<div style="background-color:#f3f4f6;padding:32px 16px;font-family:Arial, Helvetica, sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background-color:#ffffff;border-radius:8px;border:1px solid #e5e7eb;overflow:hidden;">
+    <div style="padding:32px;">
+
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="vertical-align:top;"><span style="font-size:26px;font-weight:bold;color:${BRAND_BLUE};">EkSaha</span></td>
+          <td style="vertical-align:top;text-align:right;"><span style="font-size:20px;font-weight:bold;color:#6b7280;letter-spacing:2px;">INVOICE</span></td>
+        </tr>
+      </table>
+
+      <div style="margin-top:16px;padding:12px 0;border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;">
+        <strong>Invoice #${number}</strong>&nbsp;&nbsp;|&nbsp;&nbsp;Date: ${formatEmailDate(createdAt)}&nbsp;&nbsp;|&nbsp;&nbsp;Due: ${dueDate ? formatEmailDate(dueDate) : "On receipt"}
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;margin-top:24px;">
+        <tr>
+          <td style="width:50%;vertical-align:top;padding-right:12px;">
+            <div style="font-size:12px;font-weight:bold;color:${BRAND_BLUE};text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">From</div>
+            <div style="font-size:14px;color:#111827;font-weight:bold;">EkSaha</div>
+            <div style="font-size:14px;color:#6b7280;">hello@eksaha.com</div>
+          </td>
+          <td style="width:50%;vertical-align:top;padding-left:12px;">
+            <div style="font-size:12px;font-weight:bold;color:${BRAND_BLUE};text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Bill To</div>
+            <div style="font-size:14px;color:#111827;font-weight:bold;">${customerName || "Customer"}</div>
+            <div style="font-size:14px;color:#6b7280;">${customerEmail || ""}</div>
+          </td>
+        </tr>
+      </table>
+
+      <table style="width:100%;border-collapse:collapse;margin-top:28px;border:1px solid #e5e7eb;">
         <thead>
-          <tr><th style="text-align:left;padding-bottom:8px;border-bottom:2px solid #1a1a1a;">Description</th><th style="text-align:right;padding-bottom:8px;border-bottom:2px solid #1a1a1a;">Amount</th></tr>
+          <tr style="background-color:${BRAND_BLUE};">
+            <th style="padding:10px 16px;text-align:left;font-size:12px;color:#ffffff;text-transform:uppercase;letter-spacing:.5px;">Description</th>
+            <th style="padding:10px 16px;text-align:center;font-size:12px;color:#ffffff;text-transform:uppercase;letter-spacing:.5px;">Qty</th>
+            <th style="padding:10px 16px;text-align:right;font-size:12px;color:#ffffff;text-transform:uppercase;letter-spacing:.5px;">Unit Price</th>
+            <th style="padding:10px 16px;text-align:right;font-size:12px;color:#ffffff;text-transform:uppercase;letter-spacing:.5px;">Amount</th>
+          </tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
-      <table style="width:100%;margin-top:8px;">
-        <tr><td style="padding:6px 0;color:#666;">Subtotal</td><td style="padding:6px 0;text-align:right;color:#666;">${money(subtotal, currency)}</td></tr>
-        ${taxRow}
-        <tr><td style="padding:10px 0;font-weight:bold;border-top:1px solid #ddd;">Total</td><td style="padding:10px 0;text-align:right;font-weight:bold;border-top:1px solid #ddd;">${money(total, currency)}</td></tr>
+
+      <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+        <tr>
+          <td style="width:55%;">&nbsp;</td>
+          <td style="width:45%;">
+            <table style="width:100%;border-collapse:collapse;">
+              <tr><td style="padding:4px 0;font-size:14px;color:#6b7280;">Subtotal</td><td style="padding:4px 0;font-size:14px;color:#6b7280;text-align:right;">${money(subtotal, currency)}</td></tr>
+              ${taxRow}
+              <tr>
+                <td style="padding:12px 0 4px;font-size:18px;font-weight:bold;color:#111827;border-top:2px solid ${BRAND_BLUE};">Total</td>
+                <td style="padding:12px 0 4px;font-size:18px;font-weight:bold;color:${BRAND_BLUE};text-align:right;border-top:2px solid ${BRAND_BLUE};">${money(total, currency)}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
       </table>
-      ${notes ? `<p style="margin-top:20px;color:#555;">${notes}</p>` : ""}
-      <p style="margin-top:24px;">Thank you for your business.</p>
-      <p style="color:#999;font-size:12px;margin-top:32px;">EkSaha &middot; hello@eksaha.com</p>
+
+      ${notes ? `<div style="margin-top:24px;padding:12px 16px;background-color:#f9fafb;border-radius:6px;font-size:13px;color:#374151;">${notes}</div>` : ""}
+
+      <div style="margin-top:32px;border-top:1px solid #e5e7eb;"></div>
+
+      <p style="margin-top:24px;font-size:14px;color:#6b7280;text-align:center;">
+        Thank you for your business. Questions? Contact us at <a href="mailto:hello@eksaha.com" style="color:${BRAND_BLUE};">hello@eksaha.com</a>
+      </p>
+
+      <p style="margin-top:16px;font-size:11px;color:#9ca3af;text-align:center;">
+        Tip: You can save this invoice as PDF using File &rarr; Print &rarr; Save as PDF in your browser.
+      </p>
+
     </div>
+  </div>
+</div>
   `;
 }
 
