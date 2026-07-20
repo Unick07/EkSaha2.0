@@ -106,8 +106,8 @@ export default function Tickets() {
     </div>; })}{tickets.length === 0 && <div className="panel p-6 text-sm text-muted">No tickets found.</div>}</div>}
 
     <Modal open={Boolean(viewing)} onClose={() => setViewingId(null)} title={viewing?.subject} description={`Ticket #${ticketNumber(viewing?.id)} | ${viewing?.user || "Unknown customer"}`} size="lg">
-      {viewing && <div className="space-y-5">
-        <div className="grid gap-3 rounded-2xl border border-border bg-surface-raised p-4 text-sm sm:grid-cols-2">
+      {viewing && <div className="flex max-h-[70vh] flex-col gap-5">
+        <div className="grid shrink-0 gap-3 rounded-2xl border border-border bg-surface-raised p-4 text-sm sm:grid-cols-2">
           <div><span className="text-muted">Status</span><div className="font-semibold capitalize">{formatValue(viewing.status)}</div></div>
           <div><span className="text-muted">Priority</span><div className="font-semibold capitalize">{viewing.priority}</div></div>
           <div><span className="text-muted">Category</span><div className="font-semibold">{viewing.category}</div></div>
@@ -115,8 +115,8 @@ export default function Tickets() {
           <div><span className="text-muted">Created</span><div className="font-semibold">{formatDate(viewing.createdAt)}</div></div>
           <div><span className="text-muted">Last updated</span><div className="font-semibold">{formatDate(viewing.updatedAt)}</div></div>
         </div>
-        <div>
-          <h4 className="mb-3 text-sm font-bold">Conversation</h4>
+        <div className="flex min-h-0 flex-1 flex-col">
+          <h4 className="mb-3 shrink-0 text-sm font-bold">Conversation</h4>
           <TicketThread ticketId={viewing.id} currentUserId={user?.id} onSent={() => loadTickets(false)}/>
         </div>
       </div>}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { ArrowRight, ChevronDown, Menu, Moon, Sparkles, Sun, X } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
@@ -22,13 +22,10 @@ const navLinkClass = ({ isActive }) => [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
-  const { dark, toggleDark, user } = useAppStore();
+  const { theme, toggleTheme, user } = useAppStore();
+  const dark = theme === "dark";
   const location = useLocation();
   const isLanding = location.pathname === "/";
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-  }, [dark]);
 
   const dashboardPath = user ? homeForRole(user.role) : "/login";
 
@@ -71,7 +68,7 @@ export default function Navbar() {
         </div>
 
         <div className="hidden items-center gap-2 lg:flex">
-          <button onClick={toggleDark} className="grid size-10 place-items-center rounded-2xl border border-border text-muted transition hover:bg-surface-raised hover:text-text" aria-label="Toggle theme">
+          <button onClick={toggleTheme} className="grid size-10 place-items-center rounded-2xl border border-border text-muted transition hover:bg-surface-raised hover:text-text" aria-label="Toggle theme">
             {dark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
           <Button to={dashboardPath} variant="ghost">{user ? "Dashboard" : "Sign in"}</Button>
@@ -101,7 +98,7 @@ export default function Navbar() {
           <Button to={dashboardPath} variant="secondary" onClick={() => setOpen(false)}>{user ? "Dashboard" : "Sign in"}</Button>
           <Button to="/signup" onClick={() => setOpen(false)}>Get started</Button>
         </div>
-        <button onClick={toggleDark} className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl border border-border px-4 py-3 text-sm font-bold text-muted">
+        <button onClick={toggleTheme} className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl border border-border px-4 py-3 text-sm font-bold text-muted">
           {dark ? <Sun size={17} /> : <Moon size={17} />} {dark ? "Light mode" : "Dark mode"}
         </button>
       </div>

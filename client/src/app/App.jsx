@@ -35,15 +35,23 @@ const AdminSubscriptions = from(adminPages, "AdminSubscriptions");
 const AdminTickets = from(adminPages, "AdminTickets");
 const AdminTeam = from(adminPages, "AdminTeam");
 const AdminAnalytics = from(adminPages, "AdminAnalytics");
+const AdminInvoices = from(adminPages, "AdminInvoices");
 const ResourceManager = from(adminPages, "ResourceManager");
 const AdminSettings = from(adminPages, "AdminSettings");
 
 export default function App() {
   const restoreSession = useAppStore((state) => state.restoreSession);
+  const theme = useAppStore((state) => state.theme);
 
   useEffect(() => {
     restoreSession();
   }, [restoreSession]);
+
+  // Applied here (not just in the public Navbar) so the class is set on every
+  // route, including dashboard/admin pages that never mount Navbar at all.
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+  }, [theme]);
 
   return <Suspense fallback={<PageLoader/>}><Routes>
     <Route element={<PublicLayout/>}>
@@ -78,7 +86,7 @@ export default function App() {
       <Route path="tickets" element={<AdminTickets/>}/>
       <Route path="team" element={<AdminTeam/>}/>
       <Route path="blog" element={<ResourceManager type="Blog"/>}/>
-      <Route path="invoices" element={<ResourceManager type="Invoices"/>}/>
+      <Route path="invoices" element={<AdminInvoices/>}/>
       <Route path="analytics" element={<AdminAnalytics/>}/>
       <Route path="settings" element={<AdminSettings/>}/>
     </Route>
@@ -94,7 +102,7 @@ export default function App() {
       <Route index element={<Navigate to="/billing/subscriptions" replace/>}/>
       <Route path="subscriptions" element={<AdminSubscriptions/>}/>
       <Route path="services" element={<ResourceManager type="Services"/>}/>
-      <Route path="invoices" element={<ResourceManager type="Invoices"/>}/>
+      <Route path="invoices" element={<AdminInvoices/>}/>
       <Route path="tickets" element={<AdminTickets/>}/>
       <Route path="users" element={<AdminUsersReadOnly/>}/>
       <Route path="settings" element={<AccountSettings/>}/>

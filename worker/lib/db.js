@@ -115,12 +115,17 @@ export function normalizeInvoice(row) {
   if (!row) return null;
   return {
     id: row.id,
+    number: row.number ?? null,
     userId: row.user_id ?? row.userId ?? null,
     customerName: row.user_name || row.customerName || undefined,
     customerEmail: row.user_email || row.customerEmail || undefined,
     amount: row.amount,
+    subtotal: row.subtotal ?? null,
+    taxPercent: row.tax_percent ?? row.taxPercent ?? 0,
     currency: row.currency,
     status: row.status,
+    dueDate: row.due_date ?? row.dueDate ?? null,
+    notes: row.notes ?? null,
     stripeInvoiceId: row.stripe_invoice_id ?? row.stripeInvoiceId ?? null,
     invoiceUrl: row.invoice_url ?? row.invoiceUrl ?? null,
     createdAt: row.created_at ?? row.createdAt ?? null,

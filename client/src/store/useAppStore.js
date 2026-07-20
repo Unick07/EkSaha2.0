@@ -5,14 +5,14 @@ import api from "../services/http/api";
 export const useAppStore = create(
   persist(
     (set, get) => ({
-      dark: false,
+      theme: "light",
       user: null,
       sessionChecked: false,
       billing: "monthly",
       sidebarOpen: false,
       sidebarCollapsed: false,
       setBilling: (billing) => set({ billing }),
-      toggleDark: () => set((state) => ({ dark: !state.dark })),
+      toggleTheme: () => set((state) => ({ theme: state.theme === "dark" ? "light" : "dark" })),
       setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
       toggleSidebarCollapsed: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       login: (user) => set({ user }),
@@ -41,7 +41,7 @@ export const useAppStore = create(
     }),
     {
       name: "eksaha-app",
-      partialize: ({ dark, user, sidebarCollapsed }) => ({ dark, user, sidebarCollapsed }),
+      partialize: ({ theme, user, sidebarCollapsed }) => ({ theme, user, sidebarCollapsed }),
     },
   ),
 );

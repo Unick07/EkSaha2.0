@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Send } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "../common/ui";
@@ -7,11 +7,22 @@ import api from "../../services/http/api";
 export default function TicketThread({ ticketId, currentUserId, onSent }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const containerRef = useRef(null);
+
+  const scrollToBottom = () => {
+    requestAnimationFrame(() => {
+      const node = containerRef.current;
+      if (node) node.scrollTop = node.scrollHeight;
+    });
+  };
 
   const load = () => {
     setLoading(true);
     return api.get(`/tickets/${ticketId}/messages`)
-      .then(({ data }) => setMessages(data || []))
+      .then(({ data }) => {
+        setMessages(data || []);
+        scrollToBottom();
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   };
@@ -36,8 +47,8 @@ export default function TicketThread({ ticketId, currentUserId, onSent }) {
     }
   };
 
-  return <div>
-    <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
+  return <div className="flex h-full min-h-0 flex-col">
+    <div ref={containerRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
       {loading && <div className="text-sm text-muted">Loading messages...</div>}
       {!loading && messages.length === 0 && <div className="text-sm text-muted">No messages yet.</div>}
       {messages.map((message) => {
@@ -50,7 +61,7 @@ export default function TicketThread({ ticketId, currentUserId, onSent }) {
         </div>;
       })}
     </div>
-    <form onSubmit={send} className="mt-4 flex gap-2">
+    <form onSubmit={send} className="mt-4 flex shrink-0 gap-2">
       <input name="reply" required className="input" placeholder="Write a reply..."/>
       <Button><Send size={16}/></Button>
     </form>

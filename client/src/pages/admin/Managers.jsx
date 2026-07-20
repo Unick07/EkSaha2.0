@@ -13,19 +13,9 @@ const formatToday = () => new Date().toLocaleDateString("en-US", {
   year: "numeric",
 });
 
-const formatDate = (value) => value ? new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
-
-const formatAmount = (item) => {
-  const amount = Number(item.amount || 0).toFixed(2);
-  const currency = (item.currency || "usd").toLowerCase();
-  return currency === "usd" ? `$${amount}` : `${amount} ${currency.toUpperCase()}`;
-};
-
-const capitalize = (value) => value ? String(value).charAt(0).toUpperCase() + String(value).slice(1) : "";
-
 // Types backed by a real D1-backed endpoint — same API the admin, support and
 // billing workspaces all call, so every workspace shows identical live data.
-const API_ENDPOINTS = { Blog: "/posts", Invoices: "/invoices" };
+const API_ENDPOINTS = { Blog: "/posts" };
 const DELETE_SUPPORTED = { Blog: true };
 
 const configs = {
@@ -56,23 +46,6 @@ const configs = {
     ],
     values: (item) => [item.title, item.slug, item.category, item.status, item.updated],
   },
-  Invoices: {
-    collection: "invoices",
-    singular: "Invoice",
-    columns: ["Invoice", "Customer", "Amount", "Status", "Date"],
-    fields: [
-      { name: "userId", label: "Customer", dynamicOptions: "customers", hideWhenEditing: true },
-      { name: "amount", label: "Amount (USD)", type: "number", placeholder: "999.00" },
-      { name: "status", label: "Status", options: ["draft", "open", "paid", "void"] },
-    ],
-    values: (item) => [
-      item.id,
-      item.customerName ? `${item.customerName}${item.customerEmail ? ` (${item.customerEmail})` : ""}` : (item.userId || "Unknown customer"),
-      formatAmount(item),
-      capitalize(item.status),
-      formatDate(item.createdAt),
-    ],
-  },
 };
 
 export function ResourceManager({ type }) {
@@ -87,7 +60,6 @@ export function ResourceManager({ type }) {
   const [deleting, setDeleting] = useState(null);
   const [loading, setLoading] = useState(Boolean(endpoint));
   const [loadError, setLoadError] = useState("");
-  const [customers, setCustomers] = useState([]);
 
   useEffect(() => {
     if (!endpoint) return undefined;
@@ -110,19 +82,6 @@ export function ResourceManager({ type }) {
       active = false;
     };
   }, [config.collection, endpoint, ingestRecords, type]);
-
-  useEffect(() => {
-    if (type !== "Invoices") return undefined;
-    let active = true;
-    api.get("/admin/users", { params: { roles: "user" } })
-      .then(({ data }) => {
-        if (active) setCustomers(data);
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, [type]);
 
   const save = async (event) => {
     event.preventDefault();
@@ -210,14 +169,11 @@ export function ResourceManager({ type }) {
     <Modal open={Boolean(editing)} onClose={() => setEditing(null)} title={`${editing?.id ? "Edit" : "Create"} ${config.singular}`}>
       <form className="space-y-4" onSubmit={save}>
         {config.fields.filter((field) => !(field.hideWhenEditing && editing?.id)).map((field) => {
-          const options = field.dynamicOptions === "customers"
-            ? customers.map((customer) => ({ value: customer.id, label: `${customer.name} (${customer.email})` }))
-            : field.options;
+          const options = field.options;
           const firstOptionValue = options ? (typeof options[0] === "object" ? options[0]?.value : options[0]) : undefined;
           return <label className="block text-sm font-semibold" key={field.name}>
             {field.label}
             {options ? <select required className="input mt-2" name={field.name} defaultValue={editing?.[field.name] || firstOptionValue}>
-              {options.length === 0 && <option value="">No customers found</option>}
               {options.map((option) => {
                 const value = typeof option === "object" ? option.value : option;
                 const text = typeof option === "object" ? option.label : option;
