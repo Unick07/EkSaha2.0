@@ -8,6 +8,7 @@ import api from "../../services/http/api";
 import { useAuth } from "../../hooks/useAuth";
 
 const ticketNumber = (id) => `NX-${(id || "").replace(/[^a-zA-Z0-9]/g, "").slice(-4).toUpperCase()}`;
+const unreadCount = (ticket, userId) => (ticket.messages || []).filter((message) => message.senderId !== userId && !message.read).length;
 
 export default function Tickets() {
   const { user } = useAuth();
@@ -58,11 +59,22 @@ export default function Tickets() {
     }
   };
 
+  const viewTicket = async (ticket) => {
+    setSelectedId(ticket.id);
+    if (unreadCount(ticket, user?.id) === 0) return;
+    try {
+      const { data } = await api.patch(`/tickets/${ticket.id}/messages/read`);
+      setTickets((items) => items.map((item) => item.id === data.id ? data : item));
+    } catch {
+      // Non-critical: the thread's own fetch also marks messages read.
+    }
+  };
+
   return <div>
     <div className="mb-7 flex items-center justify-between"><div><h2 className="text-2xl font-bold">Support tickets</h2><p className="mt-1 text-sm text-slate-500">Ask for help and follow every conversation.</p></div><Button onClick={() => setCreateOpen(true)}><Plus size={16}/>New ticket</Button></div>
     {loading && <div className="panel p-5 text-sm text-muted">Loading tickets...</div>}
     {error && <div className="panel border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>}
-    {!loading && !error && <div className="panel overflow-hidden"><div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left text-sm"><thead className="bg-surface-raised text-xs uppercase tracking-wider text-muted"><tr><th className="p-5">Ticket</th><th>Priority</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>{tickets.map(ticket => <tr className="border-t border-border" key={ticket.id}><td className="p-5"><div className="font-semibold">{ticket.subject}</div><div className="mt-1 text-xs text-muted">Ticket #{ticketNumber(ticket.id)}</div></td><td className="capitalize">{ticket.priority}</td><td><span className="info-pill capitalize">{String(ticket.status).replace(/_/g, " ")}</span></td><td className="text-muted">{ticket.updatedAt ? new Date(ticket.updatedAt).toLocaleDateString() : ""}</td><td><button onClick={() => setSelectedId(ticket.id)} className="text-action">View</button></td></tr>)}</tbody></table></div>{tickets.length === 0 && <div className="p-6 text-sm text-muted">No tickets yet. Create one to get help from our team.</div>}</div>}
+    {!loading && !error && <div className="panel overflow-hidden"><div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left text-sm"><thead className="bg-surface-raised text-xs uppercase tracking-wider text-muted"><tr><th className="p-5">Ticket</th><th>Priority</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>{tickets.map(ticket => { const unread = unreadCount(ticket, user?.id); return <tr className="border-t border-border" key={ticket.id}><td className="p-5"><div className="flex items-center gap-2">{unread > 0 && <span className="size-2 shrink-0 rounded-full bg-primary" aria-label={`${unread} unread message${unread > 1 ? "s" : ""}`}/>}<div className={unread > 0 ? "font-extrabold" : "font-semibold"}>{ticket.subject}</div></div><div className="mt-1 text-xs text-muted">Ticket #{ticketNumber(ticket.id)}</div></td><td className="capitalize">{ticket.priority}</td><td><span className="info-pill capitalize">{String(ticket.status).replace(/_/g, " ")}</span></td><td className="text-muted">{ticket.updatedAt ? new Date(ticket.updatedAt).toLocaleDateString() : ""}</td><td><button onClick={() => viewTicket(ticket)} className="text-action">View</button></td></tr>; })}</tbody></table></div>{tickets.length === 0 && <div className="p-6 text-sm text-muted">No tickets yet. Create one to get help from our team.</div>}</div>}
     <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New support ticket"><form onSubmit={create} className="space-y-4"><input name="subject" required className="input" placeholder="What do you need help with?"/><select name="category" className="input" defaultValue="General"><option value="General">General</option><option value="Support">Support</option><option value="Technical">Technical</option><option value="Billing">Billing</option></select><select name="priority" className="input"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical</option></select><textarea name="message" required className="input min-h-32 resize-none" placeholder="Add details..."/><Button className="w-full">Create ticket</Button></form></Modal>
     <Modal open={Boolean(selected)} onClose={() => setSelectedId(null)} title={selected?.subject} description={`Ticket #${ticketNumber(selected?.id)} | ${selected?.status} | ${selected?.priority} priority`}>
       {selected && <TicketThread ticketId={selected.id} currentUserId={user?.id} onSent={() => loadTickets(false)}/>}

@@ -75,12 +75,29 @@ export function Login() {
 }
 
 export function Signup() {
+  const [searchParams] = useSearchParams();
+  const isGoogleFlow = searchParams.get("google") === "true";
   const [step, setStep] = useState(1);
   const [selected, setSelected] = useState("Growth");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { user, login } = useAuth();
   const strength = passwordStrength(password);
+
+  if (isGoogleFlow && !user) return <Navigate to="/login" replace />;
+
+  const attachPlan = async () => {
+    try {
+      const { data: availablePlans } = await api.get("/plans");
+      const selectedPlan = availablePlans.find((plan) => plan.name === selected);
+      if (!selectedPlan) throw new Error("Plan not found");
+      await api.post("/subscriptions/me", { planId: selectedPlan.id });
+      toast.success(`You're on the ${selected} plan.`);
+      navigate(homeForRole(user.role));
+    } catch (caught) {
+      toast.error(caught.response?.data?.message || "Could not attach this plan.");
+    }
+  };
 
   const submit = async (event) => {
     event.preventDefault();
@@ -122,13 +139,15 @@ export function Signup() {
     }
   };
 
-  return <AuthShell title={step === 1 ? "Choose your starting point" : "Create your account"} copy="You can switch plans or service priorities whenever your business needs change.">
-    {step === 1 ? <div className="mt-8 space-y-3">
+  const showPlanStep = step === 1 || isGoogleFlow;
+
+  return <AuthShell title={isGoogleFlow ? "Choose your plan" : (step === 1 ? "Choose your starting point" : "Create your account")} copy={isGoogleFlow ? "Pick a plan to unlock your EkSaha dashboard." : "You can switch plans or service priorities whenever your business needs change."}>
+    {showPlanStep ? <div className="mt-8 space-y-3">
       {plans.map((plan) => <button onClick={() => setSelected(plan.name)} className={`w-full rounded-2xl border p-5 text-left transition ${selected === plan.name ? "border-primary bg-primary/10 ring-4 ring-primary/15" : "border-border bg-surface hover:bg-surface-raised"}`} key={plan.name}>
         <div className="flex items-center justify-between"><span className="font-bold">{plan.name}</span><span className="font-extrabold">${plan.monthly}/mo</span></div>
         <p className="mt-1 text-xs text-muted">{plan.description}</p>
       </button>)}
-      <Button onClick={() => setStep(2)} className="mt-3 w-full">Continue with {selected}<ArrowRight size={16} /></Button>
+      <Button onClick={isGoogleFlow ? attachPlan : () => setStep(2)} className="mt-3 w-full">Continue with {selected}<ArrowRight size={16} /></Button>
     </div> : <form onSubmit={submit} className="mt-8 space-y-5">
       <label className="block text-sm font-semibold">Full name<input name="name" required className="input mt-2" placeholder="Your full name" /></label>
       <label className="block text-sm font-semibold">Email<input name="email" required type="email" className="input mt-2" placeholder="your@email.com" /></label>
@@ -146,7 +165,7 @@ export function Signup() {
       <button type="button" onClick={continueWithGoogle} className="soft-button w-full">Continue with Google</button>
       <button type="button" onClick={() => setStep(1)} className="soft-button w-full">Back to plans</button>
     </form>}
-    <p className="mt-7 text-center text-sm text-muted">Already have an account? <Link className="font-bold text-primary" to="/login">Sign in</Link></p>
+    {!isGoogleFlow && <p className="mt-7 text-center text-sm text-muted">Already have an account? <Link className="font-bold text-primary" to="/login">Sign in</Link></p>}
   </AuthShell>;
 }
 

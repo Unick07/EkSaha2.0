@@ -76,6 +76,17 @@ export async function handleTickets(request, env, path) {
     return json(await withMessages(env.DB, await first(env.DB, `${ticketSelect} WHERE tickets.id = ?`, [ticketId])), { status: 201 }, env, request);
   }
 
+  const readMatch = path.match(/^\/tickets\/([^/]+)\/messages\/read$/);
+  if (request.method === "PATCH" && readMatch) {
+    const user = await requireUser(request, env);
+    const ticketId = readMatch[1];
+    const ticket = await first(env.DB, "SELECT * FROM tickets WHERE id = ?", [ticketId]);
+    if (!ticket) return error("Ticket not found", 404, env, request);
+    if (!canAccessTicket(user, ticket)) return error("Forbidden", 403, env, request);
+    await run(env.DB, "UPDATE ticket_messages SET read = 1 WHERE ticket_id = ? AND sender_id != ?", [ticketId, user.id]);
+    return json(await withMessages(env.DB, await first(env.DB, `${ticketSelect} WHERE tickets.id = ?`, [ticketId])), {}, env, request);
+  }
+
   const messagesMatch = path.match(/^\/tickets\/([^/]+)\/messages$/);
   if (messagesMatch) {
     const user = await requireUser(request, env);

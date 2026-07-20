@@ -8,6 +8,7 @@ import { useAuth } from "../../hooks/useAuth";
 const formatValue = (value) => value ? String(value).replace(/_/g, " ") : "";
 const formatDate = (value) => value ? new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
 const ticketNumber = (id) => `NX-${(id || "").replace(/[^a-zA-Z0-9]/g, "").slice(-4).toUpperCase()}`;
+const unreadCount = (ticket, userId) => (ticket.messages || []).filter((message) => message.senderId !== userId && !message.read).length;
 
 export default function Tickets() {
   const { user } = useAuth();
@@ -60,15 +61,26 @@ export default function Tickets() {
     }
   };
 
+  const viewTicket = async (ticket) => {
+    setViewingId(ticket.id);
+    if (unreadCount(ticket, user?.id) === 0) return;
+    try {
+      const { data } = await api.patch(`/tickets/${ticket.id}/messages/read`);
+      setTickets((items) => items.map((item) => item.id === data.id ? data : item));
+    } catch {
+      // Non-critical: the thread's own fetch also marks messages read.
+    }
+  };
+
   return <div>
     <div className="mb-7"><h2 className="text-2xl font-bold">Support queue</h2><p className="mt-1 text-sm text-muted">Triage, assign and resolve customer requests.</p></div>
     {loading && <div className="panel p-5 text-sm text-muted">Loading tickets...</div>}
     {error && <div className="panel border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>}
-    {!loading && !error && <div className="grid gap-4">{tickets.map((ticket) => <div className="panel flex flex-col justify-between gap-5 p-5 lg:flex-row lg:items-center" key={ticket.id}>
+    {!loading && !error && <div className="grid gap-4">{tickets.map((ticket) => { const unread = unreadCount(ticket, user?.id); return <div className="panel flex flex-col justify-between gap-5 p-5 lg:flex-row lg:items-center" key={ticket.id}>
       <div className="flex items-start gap-4">
         <span className={`mt-1 size-2 rounded-full ${ticket.priority === "critical" ? "bg-red-500" : ticket.priority === "high" ? "bg-orange-500" : "bg-primary"}`}/>
         <div>
-          <div className="flex items-center gap-2"><span className="font-semibold">{ticket.subject}</span><span className="rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted">{ticket.category}</span></div>
+          <div className="flex items-center gap-2">{unread > 0 && <span className="size-2 shrink-0 rounded-full bg-primary" aria-label={`${unread} unread message${unread > 1 ? "s" : ""}`}/>}<span className={unread > 0 ? "font-extrabold" : "font-semibold"}>{ticket.subject}</span><span className="rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted">{ticket.category}</span>{unread > 0 && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">New reply</span>}</div>
           <div className="mt-1 text-xs capitalize text-muted">Ticket #{ticketNumber(ticket.id)} | {ticket.user || "Unknown customer"} | {formatValue(ticket.priority)} priority{ticket.createdAt ? ` | ${formatDate(ticket.createdAt)}` : ""}</div>
         </div>
       </div>
@@ -78,9 +90,9 @@ export default function Tickets() {
           {teamMembers.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}
         </select>
         <select value={ticket.status} onChange={(event) => updateAdminTicket(ticket.id, { status: event.target.value }, "Ticket status updated.")} className="input py-2 sm:w-40"><option value="open">Open</option><option value="in_progress">In Progress</option><option value="resolved">Resolved</option></select>
-        <button onClick={() => setViewingId(ticket.id)} className="text-action">View</button>
+        <button onClick={() => viewTicket(ticket)} className="text-action">View</button>
       </div>
-    </div>)}{tickets.length === 0 && <div className="panel p-6 text-sm text-muted">No tickets found.</div>}</div>}
+    </div>; })}{tickets.length === 0 && <div className="panel p-6 text-sm text-muted">No tickets found.</div>}</div>}
 
     <Modal open={Boolean(viewing)} onClose={() => setViewingId(null)} title={viewing?.subject} description={`Ticket #${ticketNumber(viewing?.id)} | ${viewing?.user || "Unknown customer"}`} size="lg">
       {viewing && <div className="space-y-5">
