@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CircleCheck, Plus, Send, Trash2, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "../../components/common/ui";
 import { Modal } from "../../components/dashboard/Modal";
 import ActionMenu from "../../components/dashboard/ActionMenu";
 import api from "../../services/http/api";
+import useHeaderAction from "../../hooks/useHeaderAction";
 
 const formatDate = (value) => value ? new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
 const formatMoney = (value, currency) => `${Number(value || 0).toFixed(2)} ${(currency || "usd").toUpperCase()}`;
@@ -52,14 +53,15 @@ export default function Invoices() {
 
   const customerSubscription = subscriptions.find((sub) => (sub.user_id || sub.userId) === customerId);
 
-  const openCreate = () => {
+  const openCreate = useCallback(() => {
     setCustomerId("");
     setItems([emptyItem()]);
     setTaxPercent("0");
     setDueDate("");
     setNotes("");
     setCreateOpen(true);
-  };
+  }, []);
+  useHeaderAction({ label: "Create invoice", icon: Plus, onClick: openCreate });
 
   const updateItem = (key, field, value) => {
     setItems((current) => current.map((item) => item.key === key ? { ...item, [field]: value } : item));
@@ -120,11 +122,6 @@ export default function Invoices() {
   };
 
   return <div>
-    <div className="mb-7 flex items-center justify-between">
-      <div><h2 className="text-2xl font-bold">Invoices</h2><p className="mt-1 text-sm text-muted">Create, send and track customer invoices.</p></div>
-      <Button onClick={openCreate}><Plus size={16}/>Create invoice</Button>
-    </div>
-
     {loading && <div className="panel p-5 text-sm text-muted">Loading invoices...</div>}
     {error && <div className="panel border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>}
 

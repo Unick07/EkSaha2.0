@@ -8,6 +8,7 @@ import TicketThread from "../../components/dashboard/TicketThread";
 import api from "../../services/http/api";
 import { useAuth } from "../../hooks/useAuth";
 import { ticketNumber } from "../../lib/tickets";
+import useHeaderAction from "../../hooks/useHeaderAction";
 
 const unreadCount = (ticket, userId) => (ticket.messages || []).filter((message) => message.senderId !== userId && !message.read).length;
 
@@ -39,6 +40,8 @@ export default function Tickets() {
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const selected = tickets.find((ticket) => ticket.id === selectedId);
+  const openCreate = useCallback(() => setCreateOpen(true), []);
+  useHeaderAction({ label: "New ticket", icon: Plus, onClick: openCreate });
 
   const loadTickets = useCallback((showSpinner = false) => {
     if (showSpinner) setLoading(true);
@@ -105,7 +108,6 @@ export default function Tickets() {
   }, [tickets]);
 
   return <div>
-    <div className="mb-7 flex items-center justify-between"><div><h2 className="text-2xl font-bold">Support tickets</h2><p className="mt-1 text-sm text-muted">Ask for help and follow every conversation.</p></div><Button onClick={() => setCreateOpen(true)}><Plus size={16}/>New ticket</Button></div>
     {loading && <div className="panel p-5 text-sm text-muted">Loading tickets...</div>}
     {error && <div className="panel border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>}
     {!loading && !error && <div className="panel overflow-hidden"><div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left text-sm"><thead className="bg-surface-raised text-xs uppercase tracking-wider text-muted"><tr><th className="p-5">Ticket</th><th>Priority</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody>{tickets.map(ticket => { const unread = unreadCount(ticket, user?.id); return <tr className="border-t border-border" key={ticket.id}><td className="p-5"><div className="flex items-center gap-2">{unread > 0 && <span className="size-2 shrink-0 rounded-full bg-primary" aria-label={`${unread} unread message${unread > 1 ? "s" : ""}`}/>}<div className={unread > 0 ? "font-extrabold" : "font-semibold"}>{ticket.subject}</div></div><div className="mt-1 text-xs text-muted">Ticket #{ticketNumber(ticket.id)}</div></td><td className="capitalize">{ticket.priority}</td><td><span className="info-pill capitalize">{String(ticket.status).replace(/_/g, " ")}</span></td><td className="text-muted">{ticket.updatedAt ? new Date(ticket.updatedAt).toLocaleDateString() : ""}</td><td><button onClick={() => viewTicket(ticket)} className="text-action">View</button></td></tr>; })}</tbody></table></div>{tickets.length === 0 && <div className="p-6 text-sm text-muted">No tickets yet. Create one to get help from our team.</div>}</div>}

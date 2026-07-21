@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import PublicLayout from "../layouts/PublicLayout";
 import AppShell from "../layouts/AppShell";
 import { PageLoader } from "../components/common/ui";
+import BackToTop from "../components/common/BackToTop";
 import { useAppStore } from "../store/useAppStore";
 
 const Home = lazy(() => import("../pages/public/Home"));
@@ -54,7 +55,7 @@ export default function App() {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
 
-  return <Suspense fallback={<PageLoader/>}><Routes>
+  return <><Suspense fallback={<PageLoader/>}><Routes>
     <Route element={<PublicLayout/>}>
       <Route index element={<Home/>}/>
       <Route path="services/:slug" element={<ServicePage/>}/>
@@ -109,5 +110,5 @@ export default function App() {
       <Route path="users" element={<AdminUsersReadOnly/>}/>
       <Route path="settings" element={<AccountSettings/>}/>
     </Route>
-  </Routes></Suspense>;
+  </Routes></Suspense><BackToTop/></>;
 }

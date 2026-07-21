@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Edit3, Plus, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "../../components/common/ui";
@@ -6,6 +6,7 @@ import ActionMenu from "../../components/dashboard/ActionMenu";
 import { ConfirmDialog, Modal } from "../../components/dashboard/Modal";
 import api from "../../services/http/api";
 import { useAdminStore } from "../../store/useAdminStore";
+import useHeaderAction from "../../hooks/useHeaderAction";
 
 const formatToday = () => new Date().toLocaleDateString("en-US", {
   month: "short",
@@ -60,6 +61,8 @@ export function ResourceManager({ type }) {
   const [deleting, setDeleting] = useState(null);
   const [loading, setLoading] = useState(Boolean(endpoint));
   const [loadError, setLoadError] = useState("");
+  const openCreate = useCallback(() => setEditing({}), []);
+  useHeaderAction({ label: `Create ${config.singular.toLowerCase()}`, icon: Plus, onClick: openCreate });
 
   useEffect(() => {
     if (!endpoint) return undefined;
@@ -133,14 +136,6 @@ export function ResourceManager({ type }) {
   const canDelete = !endpoint || DELETE_SUPPORTED[type];
 
   return <div>
-    <div className="mb-7 flex items-center justify-between">
-      <div>
-        <h2 className="text-2xl font-bold">{type}</h2>
-        <p className="mt-1 text-sm text-muted">Create, update and manage {type.toLowerCase()} records.</p>
-      </div>
-      <Button onClick={() => setEditing({})}><Plus size={16} />Create new</Button>
-    </div>
-
     {endpoint && loading && <div className="panel mb-5 p-5 text-sm text-muted">Loading {type.toLowerCase()}...</div>}
     {endpoint && loadError && <div className="panel mb-5 border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{loadError}</div>}
 

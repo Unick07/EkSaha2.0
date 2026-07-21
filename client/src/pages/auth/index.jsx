@@ -71,6 +71,12 @@ export function Login() {
       <Button className="w-full">Sign in <ArrowRight size={16} /></Button>
       <button type="button" onClick={() => { window.location.href = "/api/auth/google"; }} className="soft-button w-full">Continue with Google</button>
     </form>
+    {import.meta.env.DEV && <div className="mt-6 rounded-2xl border border-primary/20 bg-primary/10 p-4 text-xs leading-6 text-muted">
+      <div className="font-bold text-text">Disposable localhost accounts</div>
+      <div className="mt-2"><span className="font-semibold text-text">User:</span> local.user@eksaha.test / LocalUser!2026</div>
+      <div><span className="font-semibold text-text">Admin:</span> local.admin@eksaha.test / LocalAdmin!2026</div>
+      <div className="mt-1">Development only. Sessions reset when the local API restarts.</div>
+    </div>}
     <p className="mt-7 text-center text-sm text-muted">New to EkSaha? <Link to="/signup" className="font-bold text-primary">Create an account</Link></p>
   </AuthShell>;
 }

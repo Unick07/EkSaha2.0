@@ -76,7 +76,7 @@ export const testimonials = [
 ];
 
 export const trustedCompanies = [
-  { name: "Algories Technology", sector: "Technology Partner", logo: "/logos/algories-technology-transparent.png", url: "https://www.facebook.com/algoriestechnology?__tn__=-UC*F", showName: true },
+  { name: "Algories Technology", sector: "Technology Partner", logo: "/logos/algories-technology-transparent.png",  showName: true },
   { name: "Northstar", sector: "SaaS Growth", logo: "/logos/northstar.svg" },
   { name: "Alder & Co.", sector: "Retail Ops", logo: "/logos/alder-co.svg" },
   { name: "Layerpath", sector: "Cloud Systems", logo: "/logos/layerpath.svg" },

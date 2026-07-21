@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Plus, Shield, UserMinus } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "../../components/common/ui";
 import ActionMenu from "../../components/dashboard/ActionMenu";
 import { ConfirmDialog, Modal } from "../../components/dashboard/Modal";
 import api from "../../services/http/api";
+import useHeaderAction from "../../hooks/useHeaderAction";
 
 const TEAM_ROLES = ["admin", "support", "billing"];
 
@@ -26,6 +27,8 @@ export default function Team() {
   const [addOpen, setAddOpen] = useState(false);
   const [roleEditing, setRoleEditing] = useState(null);
   const [removing, setRemoving] = useState(null);
+  const openAddMember = useCallback(() => setAddOpen(true), []);
+  useHeaderAction({ label: "Add team member", icon: Plus, onClick: openAddMember });
 
   const loadTeam = () => {
     setLoading(true);
@@ -85,7 +88,6 @@ export default function Team() {
   };
 
   return <div>
-    <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h2 className="text-2xl font-bold">Team Management</h2><p className="mt-1 text-sm text-muted">Manage internal admin, support and billing access — not customer accounts.</p></div><Button onClick={() => setAddOpen(true)}><Plus size={16}/>Add team member</Button></div>
     {loading && <div className="panel p-5 text-sm text-muted">Loading team...</div>}
     {error && <div className="panel border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>}
     {!loading && !error && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

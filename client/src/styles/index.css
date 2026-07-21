@@ -21,20 +21,20 @@
   }
 
   .dark {
-    /* Navy-led dark palette with bright teal derivatives for accessible controls. */
-    --color-background: 3 20 45;           /* #03142D: deep navy canvas */
-    --color-surface: 7 34 62;              /* #07223E: card/sidebar surface */
-    --color-surface-raised: 12 47 73;      /* #0C2F49: raised panels and menus */
-    --color-border: 39 83 106;             /* #27536A: visible navy-teal border */
-    --color-text: 234 247 245;             /* #EAF7F5: soft teal-white text */
-    --color-text-muted: 183 206 202;       /* #B7CECA: readable secondary text */
-    --color-primary: 100 216 202;          /* #64D8CA: accessible light teal */
-    --color-primary-foreground: 5 28 60;   /* #051C3C: exact logo navy */
-    --color-secondary: 2 139 127;          /* #028B7F: exact logo teal */
-    --color-accent: 45 184 168;            /* #2DB8A8: bright teal interaction accent */
-    --color-accent-foreground: 5 28 60;
-    --color-ink: 5 28 60;
-    --color-soft-white: 234 247 245;
+    /* Original dark theme from main: neutral charcoal with cool accents. */
+    --color-background: 17 24 39;          /* #111827: dark gray, not pure black */
+    --color-surface: 31 41 55;             /* #1F2937: card/sidebar surface */
+    --color-surface-raised: 39 52 73;      /* #273449: raised panels and menus */
+    --color-border: 71 85 105;             /* #475569: AA-visible border tone */
+    --color-text: 229 231 235;             /* #E5E7EB: off-white, not pure white */
+    --color-text-muted: 203 213 225;       /* #CBD5E1: readable secondary text */
+    --color-primary: 147 197 253;          /* #93C5FD: light blue for dark mode */
+    --color-primary-foreground: 11 18 32;  /* #0B1220: dark text on light fills */
+    --color-secondary: 196 181 253;        /* #C4B5FD: light violet */
+    --color-accent: 103 232 249;           /* #67E8F9: light cyan accent */
+    --color-accent-foreground: 11 18 32;
+    --color-ink: 17 24 39;
+    --color-soft-white: 229 231 235;
   }
 
   html { min-height: 100%; scroll-behavior: smooth; }
@@ -45,12 +45,8 @@
 @layer components {
   .container-shell { @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12; }
   .eyebrow { @apply mb-4 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-[.18em] text-primary; }
-  .bg-ink .eyebrow {
-    border-color: rgb(100 216 202 / .3);
-    background-color: rgb(100 216 202 / .1);
-    color: rgb(100 216 202);
-  }
-  .bg-ink .text-primary { color: rgb(100 216 202); }
+  .bg-ink .eyebrow { @apply border-on-brand-accent/30 bg-on-brand-accent/10 text-on-brand-accent; }
+  .bg-ink .text-primary { @apply text-on-brand-accent; }
   .section-title { @apply text-3xl font-extrabold tracking-[-.04em] text-text sm:text-4xl lg:text-5xl; }
   .section-copy { @apply mt-5 max-w-2xl text-base leading-7 text-muted; }
   .panel { @apply rounded-3xl border border-border/80 bg-surface shadow-sm dark:bg-surface/70; }
