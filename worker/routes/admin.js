@@ -149,6 +149,9 @@ export async function handleAdmin(request, env, path) {
     await run(env.DB, "DELETE FROM ticket_messages WHERE ticket_id IN (SELECT id FROM tickets WHERE user_id = ?)", [userId]);
     await run(env.DB, "DELETE FROM tickets WHERE user_id = ?", [userId]);
     await run(env.DB, "DELETE FROM subscriptions WHERE user_id = ?", [userId]);
+    // invoice_items.invoice_id -> invoices.id has no cascade either, so the
+    // line items have to go before their parent invoices do.
+    await run(env.DB, "DELETE FROM invoice_items WHERE invoice_id IN (SELECT id FROM invoices WHERE user_id = ?)", [userId]);
     await run(env.DB, "DELETE FROM invoices WHERE user_id = ?", [userId]);
     await run(env.DB, "DELETE FROM verification_tokens WHERE user_id = ?", [userId]);
     await run(env.DB, "DELETE FROM users WHERE id = ?", [userId]);
