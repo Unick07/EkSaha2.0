@@ -164,7 +164,7 @@ export default function Tickets() {
             value={form.message}
             onChange={(event) => setForm((prev) => ({ ...prev, message: event.target.value }))}
             className="input mt-2 min-h-36 resize-none"
-            placeholder="Describe your issue in detail. Include any relevant information that will help us assist you faster."
+            placeholder="Type here..."
           />
           <div className="mt-1.5 text-right text-xs font-normal text-muted">{form.message.length}/{MESSAGE_MAX}</div>
         </label>
