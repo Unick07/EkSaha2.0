@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, CalendarDays, Clock3, Send, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowRight, CalendarDays, Clock3, MailWarning, Send, Sparkles, TrendingUp } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "../../components/common/ui";
 import { Modal } from "../../components/dashboard/Modal";
+import { useAuth } from "../../hooks/useAuth";
 import api from "../../services/http/api";
 
 const capitalize = (value) => value ? String(value).replace(/_/g, " ").replace(/^./, (char) => char.toUpperCase()) : "";
@@ -11,7 +12,9 @@ const formatAmount = (amount, currency) => amount == null ? null : `${Number(amo
 const initials = (name) => name ? name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") : "?";
 
 export default function Overview() {
+  const { user } = useAuth();
   const [messageOpen, setMessageOpen] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const [subscription, setSubscription] = useState(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
@@ -55,6 +58,18 @@ export default function Overview() {
     toast.success(`Message sent to ${strategist?.name?.split(" ")[0] || "your strategist"}.`);
   };
 
+  const resendVerification = async () => {
+    setResending(true);
+    try {
+      await api.post("/auth/resend-verification");
+      toast.success("Verification email sent.");
+    } catch (caught) {
+      toast.error(caught.response?.data?.message || "Could not send the verification email.");
+    } finally {
+      setResending(false);
+    }
+  };
+
   const resolvedCount = tickets.filter((ticket) => ticket.status === "resolved").length;
   const openCount = tickets.filter((ticket) => ticket.status !== "resolved").length;
   const nextBillingAmount = formatAmount(subscription?.plan?.price, subscription?.currency);
@@ -76,6 +91,16 @@ export default function Overview() {
         <Button to={subscription ? "/pricing" : "/signup?step=2&google=true"} variant="secondary" className="border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20">{subscriptionLoading || subscription ? "Manage plan" : "Choose your plan"} <ArrowRight size={16}/></Button>
       </div>
     </div>
+    {user && !user.emailVerified && <div className="panel flex flex-col items-start justify-between gap-4 border-2 border-dashed border-amber-400/50 bg-amber-500/10 p-6 sm:flex-row sm:items-center">
+      <div className="flex items-start gap-4">
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-amber-500/15 text-amber-600"><MailWarning size={20}/></span>
+        <div>
+          <h3 className="font-bold">Please verify your email address</h3>
+          <p className="mt-1 text-sm text-slate-500">We sent a verification code to {user.email}. Check your inbox to confirm your account.</p>
+        </div>
+      </div>
+      <Button onClick={resendVerification} disabled={resending} className="w-full shrink-0 sm:w-auto">{resending ? "Sending..." : "Resend verification"}</Button>
+    </div>}
     {!subscriptionLoading && !subscription && <div className="panel flex flex-col items-start justify-between gap-4 border-2 border-dashed border-primary/40 bg-primary/5 p-6 sm:flex-row sm:items-center">
       <div className="flex items-start gap-4">
         <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/15 text-primary"><Sparkles size={20}/></span>

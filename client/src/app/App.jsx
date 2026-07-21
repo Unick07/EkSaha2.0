@@ -23,6 +23,7 @@ const Signup = from(authPages, "Signup");
 const ForgotPassword = from(authPages, "ForgotPassword");
 const ResetPassword = from(authPages, "ResetPassword");
 const Callback = lazy(() => import("../pages/auth/Callback"));
+const VerifyEmail = lazy(() => import("../pages/auth/VerifyEmail"));
 const Overview = from(dashboardPages, "Overview");
 const MyServices = from(dashboardPages, "MyServices");
 const Tickets = from(dashboardPages, "Tickets");
@@ -71,6 +72,7 @@ export default function App() {
     <Route path="/forgot-password" element={<ForgotPassword/>}/>
     <Route path="/reset-password/:token" element={<ResetPassword/>}/>
     <Route path="/auth/callback" element={<Callback/>}/>
+    <Route path="/verify-email" element={<VerifyEmail/>}/>
     <Route path="/dashboard" element={<AppShell variant="user"/>}>
       <Route index element={<Overview/>}/>
       <Route path="services" element={<MyServices/>}/>

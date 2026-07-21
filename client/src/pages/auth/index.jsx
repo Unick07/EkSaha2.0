@@ -9,7 +9,7 @@ import api from "../../services/http/api";
 import { homeForRole } from "../../lib/roles";
 import { PASSWORD_RULES, failedPasswordRules, passwordStrength } from "../../lib/password";
 
-function AuthShell({ title, copy, children }) {
+export function AuthShell({ title, copy, children }) {
   return <div className="grid min-h-screen bg-background text-text lg:grid-cols-2">
     <div className="hidden bg-surface p-12 lg:flex lg:flex-col lg:justify-between">
       <Link to="/" className="flex items-center gap-2.5 font-extrabold"><span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">E</span>EkSaha</Link>
@@ -123,7 +123,7 @@ export function Signup() {
       localStorage.setItem("accessToken", data.accessToken);
       login(data.user);
       toast.success("Your workspace is ready.");
-      navigate("/dashboard");
+      navigate("/verify-email");
     } catch (error) {
       toast.error(error.response?.data?.message || "Could not create your account.");
     }
