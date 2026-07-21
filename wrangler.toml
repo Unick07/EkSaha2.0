@@ -15,5 +15,5 @@ database_id = "a31db9fd-1f2d-4b10-9373-79325b0c905c"
 
 [vars]
 CLIENT_URL = "https://eksaha.com"
-RESEND_FROM_EMAIL = "hello@eksaha.com"
+RESEND_FROM_EMAIL = "accounts@eksaha.com"
 RESEND_TO_EMAIL = "eksahahub@gmail.com"

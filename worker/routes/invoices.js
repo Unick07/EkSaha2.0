@@ -42,7 +42,7 @@ function formatEmailDate(value) {
 
 const BRAND_BLUE = "#3B82F6";
 
-function invoiceEmailHtml({ number, customerName, customerEmail, items, subtotal, taxPercent, total, dueDate, currency, createdAt, notes }) {
+function invoiceEmailHtml({ number, customerName, customerEmail, items, subtotal, taxPercent, total, dueDate, currency, createdAt, notes, fromEmail }) {
   const rows = items.map((item, index) => `
     <tr style="background-color:${index % 2 === 0 ? "#ffffff" : "#f9fafb"};">
       <td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#111827;">${item.description}</td>
@@ -77,7 +77,7 @@ function invoiceEmailHtml({ number, customerName, customerEmail, items, subtotal
           <td style="width:50%;vertical-align:top;padding-right:12px;">
             <div style="font-size:12px;font-weight:bold;color:${BRAND_BLUE};text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">From</div>
             <div style="font-size:14px;color:#111827;font-weight:bold;">EkSaha</div>
-            <div style="font-size:14px;color:#6b7280;">hello@eksaha.com</div>
+            <div style="font-size:14px;color:#6b7280;">${fromEmail}</div>
           </td>
           <td style="width:50%;vertical-align:top;padding-left:12px;">
             <div style="font-size:12px;font-weight:bold;color:${BRAND_BLUE};text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Bill To</div>
@@ -120,7 +120,7 @@ function invoiceEmailHtml({ number, customerName, customerEmail, items, subtotal
       <div style="margin-top:32px;border-top:1px solid #e5e7eb;"></div>
 
       <p style="margin-top:24px;font-size:14px;color:#6b7280;text-align:center;">
-        Thank you for your business. Questions? Contact us at <a href="mailto:hello@eksaha.com" style="color:${BRAND_BLUE};">hello@eksaha.com</a>
+        Thank you for your business. Questions? Contact us at <a href="mailto:${fromEmail}" style="color:${BRAND_BLUE};">${fromEmail}</a>
       </p>
 
       <p style="margin-top:16px;font-size:11px;color:#9ca3af;text-align:center;">
@@ -137,7 +137,7 @@ async function sendInvoiceEmail(env, invoice) {
   return sendEmail(env, {
     to: invoice.customerEmail,
     subject: `Invoice ${invoice.number} from EkSaha`,
-    html: invoiceEmailHtml(invoice),
+    html: invoiceEmailHtml({ ...invoice, fromEmail: env.RESEND_FROM_EMAIL }),
     text: `Invoice ${invoice.number} - Total: ${money(invoice.total, invoice.currency)}. Thank you for your business.`,
   });
 }
