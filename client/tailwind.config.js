@@ -24,6 +24,11 @@ export default {
         electric: "rgb(var(--color-primary) / <alpha-value>)",
         cyan: "rgb(var(--color-accent) / <alpha-value>)",
         white: "rgb(var(--color-soft-white) / <alpha-value>)",
+        "brand-navy": "#051C3C",
+        "brand-teal": "#028B7F",
+        "brand-teal-deep": "#01766C",
+        "on-brand-muted": "#B7CECA",
+        "on-brand-accent": "#64D8CA",
       },
       fontFamily: {
         sans: ["Inter", "ui-sans-serif", "system-ui"],

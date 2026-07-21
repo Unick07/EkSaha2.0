@@ -4,6 +4,7 @@ import { ArrowRight, ChevronDown, Menu, Moon, Sparkles, Sun, X } from "lucide-re
 import { useAppStore } from "../../store/useAppStore";
 import { services } from "../../data/siteData";
 import { Button } from "../common/ui";
+import { BrandLogo } from "../common/BrandLogo";
 import { homeForRole } from "../../lib/roles";
 
 const links = [
@@ -31,10 +32,9 @@ export default function Navbar() {
 
   return <header className={`${isLanding ? "fixed inset-x-0 top-0" : "sticky top-0"} z-50 px-3 py-3 sm:px-5`}>
     <div className="container-shell">
-      <nav className="relative flex h-16 items-center justify-between rounded-3xl border border-border/70 bg-surface/85 px-3 shadow-xl shadow-slate-950/5 backdrop-blur-2xl dark:shadow-black/20 lg:px-4">
-        <Link to="/" className="group flex items-center gap-3 rounded-2xl pr-3 font-extrabold tracking-tight" onClick={() => setOpen(false)}>
-          <span className="grid size-10 place-items-center rounded-2xl bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-glow transition group-hover:scale-105">E</span>
-          <span className="text-lg text-text">Ek<span className="text-primary">Saha</span></span>
+      <nav className="relative flex h-16 items-center justify-between rounded-3xl border border-border/70 bg-surface/85 px-3 shadow-xl shadow-brand-navy/5 backdrop-blur-2xl dark:shadow-black/20 lg:px-4">
+        <Link to="/" aria-label="EkSaha home" className="group inline-flex rounded-xl px-1 py-2" onClick={() => setOpen(false)}>
+          <BrandLogo alt="" size="sm" imageClassName="transition-transform duration-200 group-hover:scale-[1.02] sm:h-8" />
         </Link>
 
         <div className="absolute left-1/2 hidden -translate-x-1/2 items-center rounded-full border border-border/70 bg-background/70 p-1 shadow-inner lg:flex">
@@ -43,7 +43,7 @@ export default function Navbar() {
               Services <ChevronDown className={`transition ${servicesOpen ? "rotate-180" : ""}`} size={14} />
             </button>
             {servicesOpen && <div className="absolute left-1/2 top-12 w-[640px] -translate-x-1/2 pt-4">
-              <div className="overflow-hidden rounded-[2rem] border border-border bg-surface p-3 shadow-2xl shadow-slate-950/15 dark:shadow-black/40">
+              <div className="overflow-hidden rounded-[2rem] border border-border bg-surface p-3 shadow-2xl shadow-brand-navy/15 dark:shadow-black/40">
                 <div className="grid grid-cols-[.8fr_1.2fr] gap-3">
                   <div className="rounded-3xl bg-gradient-to-br from-primary/15 to-accent/15 p-5">
                     <div className="flex size-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground"><Sparkles size={19} /></div>
@@ -82,7 +82,7 @@ export default function Navbar() {
     </div>
 
     {open && <div className="container-shell lg:hidden">
-      <div className="mt-3 overflow-hidden rounded-[2rem] border border-border bg-surface p-3 shadow-2xl shadow-slate-950/10 dark:shadow-black/30">
+      <div className="mt-3 overflow-hidden rounded-[2rem] border border-border bg-surface p-3 shadow-2xl shadow-brand-navy/10 dark:shadow-black/30">
         <div className="rounded-3xl bg-gradient-to-br from-primary/15 to-accent/15 p-4">
           <div className="text-xs font-bold uppercase tracking-[.18em] text-primary">Explore services</div>
           <div className="mt-3 grid gap-2">

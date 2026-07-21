@@ -8,11 +8,12 @@ import { plans } from "../../data/siteData";
 import api from "../../services/http/api";
 import { homeForRole } from "../../lib/roles";
 import { PASSWORD_RULES, failedPasswordRules, passwordStrength } from "../../lib/password";
+import { BrandLogo } from "../../components/common/BrandLogo";
 
 export function AuthShell({ title, copy, children }) {
   return <div className="grid min-h-screen bg-background text-text lg:grid-cols-2">
     <div className="hidden bg-surface p-12 lg:flex lg:flex-col lg:justify-between">
-      <Link to="/" className="flex items-center gap-2.5 font-extrabold"><span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">E</span>EkSaha</Link>
+      <Link to="/" aria-label="EkSaha home" className="inline-flex"><BrandLogo alt="" /></Link>
       <div>
         <div className="max-w-lg text-4xl font-extrabold leading-tight">"The best extension of our team we could have asked for."</div>
         <div className="mt-6 text-sm text-muted">Maya Chen - Co-founder, Northstar</div>
@@ -21,7 +22,7 @@ export function AuthShell({ title, copy, children }) {
     </div>
     <main className="flex items-center justify-center px-5 py-12">
       <div className="w-full max-w-md">
-        <Link to="/" className="mb-10 flex items-center gap-2 font-extrabold lg:hidden"><span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">E</span>EkSaha</Link>
+        <Link to="/" aria-label="EkSaha home" className="mb-10 inline-flex lg:hidden"><BrandLogo alt="" size="sm" /></Link>
         <h1 className="text-3xl font-extrabold tracking-tight">{title}</h1>
         <p className="mt-2 text-sm leading-6 text-muted">{copy}</p>
         {children}
@@ -154,7 +155,7 @@ export function Signup() {
       <label className="block text-sm font-semibold">Password
         <input name="password" required type="password" minLength="8" className="input mt-2" placeholder="At least 8 characters" value={password} onChange={(event) => setPassword(event.target.value)} />
         {password && <div className="mt-2">
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-raised">
             <div className={`h-full rounded-full transition-all ${strength.barColor}`} style={{ width: `${(strength.passed / PASSWORD_RULES.length) * 100}%` }} />
           </div>
           <div className={`mt-1.5 text-xs font-bold ${strength.textColor}`}>{strength.label}</div>

@@ -15,7 +15,7 @@ const formatDate = (value) => {
 
 const roleBadgeClass = {
   admin: "bg-primary/10 text-primary",
-  support: "bg-blue-500/10 text-blue-600 dark:text-blue-300",
+  support: "bg-primary/10 text-primary",
   billing: "bg-amber-500/10 text-amber-600 dark:text-amber-300",
 };
 
@@ -92,7 +92,7 @@ export default function Team() {
       {members.map((member) => <div className="panel flex flex-col gap-4 p-5" key={member.id}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-sm font-bold text-primary-foreground">{member.name?.[0]?.toUpperCase() || "?"}</span>
+            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-navy to-brand-teal-deep text-sm font-bold text-white">{member.name?.[0]?.toUpperCase() || "?"}</span>
             <div className="min-w-0"><div className="truncate font-semibold">{member.name}</div><div className="truncate text-xs text-muted">{member.email}</div></div>
           </div>
           <ActionMenu actions={[
