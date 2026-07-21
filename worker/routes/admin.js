@@ -127,13 +127,30 @@ export async function handleAdmin(request, env, path) {
     const existing = await first(env.DB, "SELECT id FROM users WHERE id = ?", [userId]);
     if (!existing) return error("User not found", 404, env, request);
 
-    // Own tickets/subscriptions/invoices/tokens cascade automatically, but
-    // FK enforcement is on and these references have no cascade — clear
-    // them first or the delete fails whenever this user is a strategist or
-    // ticket assignee rather than the ticket/subscription owner.
+    // D1 doesn't reliably apply ON DELETE CASCADE, so every dependent row is
+    // deleted explicitly rather than trusting the schema's cascade clauses.
+    try {
+      await run(env.DB, "PRAGMA foreign_keys = ON");
+    } catch (caught) {
+      console.error("Could not set PRAGMA foreign_keys", caught);
+    }
+
+    // References with no cascade at all — must be cleared or the final
+    // DELETE FROM users fails with a FOREIGN KEY constraint error.
     await run(env.DB, "UPDATE tickets SET assigned_to = NULL WHERE assigned_to = ?", [userId]);
     await run(env.DB, "UPDATE users SET assigned_to = NULL WHERE assigned_to = ?", [userId]);
-    await run(env.DB, "UPDATE ticket_messages SET sender_id = NULL WHERE sender_id = ?", [userId]);
+    await run(env.DB, "UPDATE blog_posts SET author_id = NULL WHERE author_id = ?", [userId]);
+
+    await run(env.DB, "DELETE FROM refresh_tokens WHERE user_id = ?", [userId]);
+    await run(env.DB, "DELETE FROM ticket_messages WHERE sender_id = ?", [userId]);
+    // Also covers messages other people left on this user's own tickets —
+    // ticket_messages.ticket_id does cascade in the schema, but nothing
+    // here is left to a cascade actually firing.
+    await run(env.DB, "DELETE FROM ticket_messages WHERE ticket_id IN (SELECT id FROM tickets WHERE user_id = ?)", [userId]);
+    await run(env.DB, "DELETE FROM tickets WHERE user_id = ?", [userId]);
+    await run(env.DB, "DELETE FROM subscriptions WHERE user_id = ?", [userId]);
+    await run(env.DB, "DELETE FROM invoices WHERE user_id = ?", [userId]);
+    await run(env.DB, "DELETE FROM verification_tokens WHERE user_id = ?", [userId]);
     await run(env.DB, "DELETE FROM users WHERE id = ?", [userId]);
 
     return json({ message: "User deleted successfully" }, {}, env, request);
