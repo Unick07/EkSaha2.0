@@ -22,6 +22,7 @@ export default {
         "accent-foreground": "rgb(var(--color-accent-foreground) / <alpha-value>)",
         ink: "rgb(var(--color-ink) / <alpha-value>)",
         electric: "rgb(var(--color-primary) / <alpha-value>)",
+        cyan: "rgb(var(--color-accent) / <alpha-value>)",
         white: "rgb(var(--color-soft-white) / <alpha-value>)",
       },
       fontFamily: {

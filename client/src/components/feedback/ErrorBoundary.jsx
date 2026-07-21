@@ -1,5 +1,4 @@
 import { Component } from "react";
-import { BrandLogo } from "../common/BrandLogo";
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -19,7 +18,7 @@ export default class ErrorBoundary extends Component {
     return (
       <main className="grid min-h-screen place-items-center bg-background px-5 text-center text-text">
         <div className="max-w-lg rounded-3xl border border-border bg-surface p-8 shadow-xl">
-          <BrandLogo className="justify-center" />
+          <div className="text-sm font-bold uppercase tracking-wider text-primary">EkSaha</div>
           <h1 className="mt-4 text-2xl font-extrabold">The page could not finish loading.</h1>
           <p className="mt-3 text-sm leading-6 text-muted">
             Refresh the page. If the problem remains, check the browser console for the error below.

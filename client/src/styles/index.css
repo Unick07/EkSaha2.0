@@ -5,28 +5,36 @@
 @layer base {
   :root {
     /*
-     * EkSaha Light Theme - brand palette from the logo.
-     * Navy #051C3C anchors text/dark sections; teal #028B7F drives actions.
+     * EkSaha Light Theme - WCAG AA palette
+     * Text #0F172A on background #F8FAFC is ~16.0:1.
+     * Muted text #475569 on background #F8FAFC is ~7.2:1.
+     * Primary #1D4ED8 with off-white foreground #F8FAFC is ~6.7:1.
+     * Accent #0E7490 with off-white foreground #F8FAFC is ~5.3:1.
      */
-    --color-background: 246 251 250;       /* #F6FBFA: light teal-tinted canvas */
+    --color-background: 248 250 252;       /* #F8FAFC: calm near-white page canvas */
     --color-surface: 255 255 255;          /* #FFFFFF: light mode card surface */
-    --color-surface-raised: 232 244 242;   /* #E8F4F2: subtle brand-tinted raised areas */
-    --color-border: 176 207 202;           /* #B0CFCA: visible teal-gray borders */
-    --color-text: 5 28 60;                 /* #051C3C: logo navy */
-    --color-text-muted: 47 82 105;         /* #2F5269: readable navy-muted text */
-    --color-primary: 2 139 127;            /* #028B7F: logo teal */
+    --color-surface-raised: 241 245 249;   /* #F1F5F9: subtle raised/alternate areas */
+    --color-border: 203 213 225;           /* #CBD5E1: visible borders on light surfaces */
+    --color-text: 15 23 42;                /* #0F172A: primary text, AA/AAA on light */
+    --color-text-muted: 71 85 105;         /* #475569: secondary text, AA on light */
+    --color-primary: 29 78 216;            /* #1D4ED8: brand blue, strong CTA contrast */
     --color-primary-foreground: 248 250 252; /* #F8FAFC: off-white CTA text */
-    --color-secondary: 5 28 60;            /* #051C3C: logo navy */
-    --color-accent: 5 28 60;               /* #051C3C: logo navy accent */
+    --color-secondary: 79 70 229;          /* #4F46E5: secondary violet, AA with off-white */
+    --color-accent: 14 116 144;            /* #0E7490: cyan accent, AA with off-white */
     --color-accent-foreground: 248 250 252;
-    --color-ink: 5 28 60;                  /* #051C3C: logo navy */
+    --color-ink: 15 23 42;                 /* #0F172A: deep navy replacement */
     --color-soft-white: 248 250 252;       /* Avoids stark pure white in text-heavy areas */
   }
 
   .dark {
     /*
-     * EkSaha Dark Theme - readable dark neutral palette.
-     * Brand accents use the previous lighter blue/cyan treatment on dark surfaces.
+     * EkSaha Dark Theme - WCAG AA palette
+     * No pure black is used; backgrounds are dark grays/navy grays.
+     * No pure white text is used; #E5E7EB reduces eye strain.
+     * Body text #E5E7EB on #111827 is ~14.0:1.
+     * Muted text #CBD5E1 on #111827 is ~10.7:1.
+     * Brand #93C5FD is a lighter dark-mode variant for dark surfaces.
+     * Primary foreground #0B1220 on #93C5FD is ~10.2:1.
      */
     --color-background: 17 24 39;          /* #111827: dark gray, not pure black */
     --color-surface: 31 41 55;             /* #1F2937: card/sidebar surface */
@@ -34,12 +42,12 @@
     --color-border: 71 85 105;             /* #475569: AA-visible border tone */
     --color-text: 229 231 235;             /* #E5E7EB: off-white, not pure white */
     --color-text-muted: 203 213 225;       /* #CBD5E1: readable secondary text */
-    --color-primary: 147 197 253;          /* #93C5FD: previous light blue for dark mode */
+    --color-primary: 147 197 253;          /* #93C5FD: lighter brand blue for dark mode */
     --color-primary-foreground: 11 18 32;  /* #0B1220: dark text on light brand fills */
-    --color-secondary: 196 181 253;        /* #C4B5FD: previous secondary violet */
-    --color-accent: 103 232 249;           /* #67E8F9: previous cyan accent */
+    --color-secondary: 196 181 253;        /* #C4B5FD: lighter violet for dark mode */
+    --color-accent: 103 232 249;           /* #67E8F9: lighter cyan accent for dark mode */
     --color-accent-foreground: 11 18 32;
-    --color-ink: 10 15 44;                 /* #0A0F2C: previous deep blue */
+    --color-ink: 17 24 39;
     --color-soft-white: 229 231 235;       /* Keeps dark text off pure #FFFFFF */
   }
 
@@ -53,15 +61,12 @@
   .eyebrow { @apply mb-4 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-[.18em] text-primary; }
   .section-title { @apply text-3xl font-extrabold tracking-[-.04em] text-text sm:text-4xl lg:text-5xl; }
   .section-copy { @apply mt-5 max-w-2xl text-base leading-7 text-muted; }
-  .bg-ink .section-title { @apply text-slate-100; }
-  .bg-ink .section-copy { @apply text-slate-300; }
-  .bg-ink .eyebrow { @apply border-primary/35 bg-primary/15 text-primary; }
   .panel { @apply rounded-3xl border border-border/80 bg-surface shadow-sm dark:bg-surface/70; }
   .input { @apply w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text outline-none transition placeholder:text-muted focus:border-primary focus:ring-4 focus:ring-primary/15; }
   .theme-surface { @apply bg-surface text-text; }
   .theme-muted { @apply text-muted; }
-  .icon-button { @apply grid size-10 place-items-center rounded-2xl border border-transparent text-muted transition hover:border-border hover:bg-surface-raised hover:text-text focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15; }
-  .soft-button { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-5 py-3 text-sm font-bold text-text transition hover:border-primary/40 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15; }
+  .icon-button { @apply grid size-10 place-items-center rounded-2xl border border-transparent text-muted transition hover:border-border hover:bg-surface-raised hover:text-text; }
+  .soft-button { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-5 py-3 text-sm font-bold text-text transition hover:border-primary/40 hover:bg-primary/10; }
   .text-action { @apply inline-flex items-center gap-2 text-sm font-bold text-primary transition hover:text-accent; }
   .danger-button { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-slate-50 transition hover:bg-red-700 dark:bg-red-400 dark:text-slate-950 dark:hover:bg-red-300; }
   .success-pill { @apply rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300; }
@@ -89,39 +94,11 @@
 .animate-modal-panel { animation: modal-panel-in .25s cubic-bezier(0.16, 1, 0.3, 1); }
 
 @layer utilities {
-  .brand-logo-image {
-    display: block;
-  }
-
-  .dark .brand-logo-image {
-    filter: brightness(2.35) saturate(1.25) contrast(1.05) drop-shadow(0 1px 0 rgb(248 250 252 / .32)) drop-shadow(0 0 10px rgb(2 139 127 / .24));
-  }
-
-  .brand-gradient-text {
-    background-image: linear-gradient(90deg, #028B7F, #7DECE2);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-
-  .hero-secondary-button {
-    border-color: rgb(125 236 226 / .45) !important;
-    background-color: rgb(2 139 127 / .18) !important;
-    color: rgb(var(--color-soft-white)) !important;
-  }
-
-  .hero-secondary-button:hover {
-    border-color: rgb(125 236 226 / .7) !important;
-    background-color: rgb(2 139 127 / .28) !important;
-  }
-
-  .dark .text-slate-600,
-  .dark .text-slate-500 {
-    color: rgb(var(--color-text-muted));
-  }
-
-  .dark .text-slate-400,
-  .dark .text-slate-300 {
-    color: rgb(var(--color-soft-white));
+  /*
+   * Dark-mode brand fills use a lighter blue. Their text flips to the
+   * dark primary foreground so filled CTAs stay above 4.5:1 contrast.
+   */
+  .dark .bg-electric {
+    color: rgb(var(--color-primary-foreground));
   }
 }

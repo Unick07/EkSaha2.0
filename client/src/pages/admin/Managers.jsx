@@ -133,7 +133,11 @@ export function ResourceManager({ type }) {
   const canDelete = !endpoint || DELETE_SUPPORTED[type];
 
   return <div>
-    <div className="mb-7 flex justify-end">
+    <div className="mb-7 flex items-center justify-between">
+      <div>
+        <h2 className="text-2xl font-bold">{type}</h2>
+        <p className="mt-1 text-sm text-slate-500">Create, update and manage {type.toLowerCase()} records.</p>
+      </div>
       <Button onClick={() => setEditing({})}><Plus size={16} />Create new</Button>
     </div>
 
@@ -195,6 +199,10 @@ export function AdminSettings() {
   };
 
   return <div>
+    <div className="mb-7">
+      <h2 className="text-2xl font-bold">Settings</h2>
+      <p className="mt-1 text-sm text-slate-500">Configure plans, roles and operational preferences.</p>
+    </div>
     <form onSubmit={save} className="panel max-w-3xl p-7">
       <h3 className="font-bold">Workspace settings</h3>
       <div className="mt-6 grid gap-5 sm:grid-cols-2">

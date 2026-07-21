@@ -9,7 +9,7 @@ export const PASSWORD_RULES = [
 const STRENGTH_LEVELS = [
   { label: "Weak", barColor: "bg-red-500", textColor: "text-red-600 dark:text-red-400" },
   { label: "Fair", barColor: "bg-amber-500", textColor: "text-amber-600 dark:text-amber-400" },
-  { label: "Strong", barColor: "bg-primary", textColor: "text-primary" },
+  { label: "Strong", barColor: "bg-blue-500", textColor: "text-blue-600 dark:text-blue-400" },
   { label: "Very Strong", barColor: "bg-emerald-500", textColor: "text-emerald-600 dark:text-emerald-400" },
 ];
 

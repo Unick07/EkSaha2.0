@@ -52,6 +52,10 @@ export default function Subscriptions() {
 
   return (
     <div>
+      <div className="mb-7">
+        <h2 className="text-2xl font-bold">Subscriptions</h2>
+        <p className="mt-1 text-sm text-muted">Monitor plan health, billing cycles and payment status.</p>
+      </div>
       <div className="grid gap-5 sm:grid-cols-3">
         {[[counts.active, "Active"], [counts.pastDue, "Past due"], [counts.cancelled, "Cancelled"]].map(([value, label]) => (
           <div className="panel p-5" key={label}>

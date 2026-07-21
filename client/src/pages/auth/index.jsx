@@ -8,12 +8,11 @@ import { plans } from "../../data/siteData";
 import api from "../../services/http/api";
 import { homeForRole } from "../../lib/roles";
 import { PASSWORD_RULES, failedPasswordRules, passwordStrength } from "../../lib/password";
-import { BrandLogo } from "../../components/common/BrandLogo";
 
 export function AuthShell({ title, copy, children }) {
   return <div className="grid min-h-screen bg-background text-text lg:grid-cols-2">
     <div className="hidden bg-surface p-12 lg:flex lg:flex-col lg:justify-between">
-      <Link to="/" aria-label="EkSaha home"><BrandLogo /></Link>
+      <Link to="/" className="flex items-center gap-2.5 font-extrabold"><span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">E</span>EkSaha</Link>
       <div>
         <div className="max-w-lg text-4xl font-extrabold leading-tight">"The best extension of our team we could have asked for."</div>
         <div className="mt-6 text-sm text-muted">Maya Chen - Co-founder, Northstar</div>
@@ -22,7 +21,7 @@ export function AuthShell({ title, copy, children }) {
     </div>
     <main className="flex items-center justify-center px-5 py-12">
       <div className="w-full max-w-md">
-        <Link to="/" className="mb-10 inline-flex" aria-label="EkSaha home"><BrandLogo imageClassName="h-8" /></Link>
+        <Link to="/" className="mb-10 flex items-center gap-2 font-extrabold lg:hidden"><span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">E</span>EkSaha</Link>
         <h1 className="text-3xl font-extrabold tracking-tight">{title}</h1>
         <p className="mt-2 text-sm leading-6 text-muted">{copy}</p>
         {children}
@@ -161,7 +160,7 @@ export function Signup() {
           <div className={`mt-1.5 text-xs font-bold ${strength.textColor}`}>{strength.label}</div>
         </div>}
       </label>
-      <div className="rounded-xl border border-border bg-surface-raised p-4 text-sm"><div className="flex items-center gap-2 font-semibold"><CheckCircle2 size={16} className="text-primary" />{selected} plan selected</div></div>
+      <div className="rounded-xl border border-border bg-surface-raised p-4 text-sm"><div className="flex items-center gap-2 font-semibold"><CheckCircle2 size={16} className="text-emerald-500" />{selected} plan selected</div></div>
       <Button className="w-full">Create account</Button>
       <button type="button" onClick={continueWithGoogle} className="soft-button w-full">Continue with Google</button>
       <button type="button" onClick={() => setStep(1)} className="soft-button w-full">Back to plans</button>
