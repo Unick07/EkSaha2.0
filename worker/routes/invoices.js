@@ -136,6 +136,7 @@ function invoiceEmailHtml({ number, customerName, customerEmail, items, subtotal
 async function sendInvoiceEmail(env, invoice) {
   return sendEmail(env, {
     to: invoice.customerEmail,
+    from: env.RESEND_FROM_EMAIL,
     subject: `Invoice ${invoice.number} from EkSaha`,
     html: invoiceEmailHtml({ ...invoice, fromEmail: env.RESEND_FROM_EMAIL }),
     text: `Invoice ${invoice.number} - Total: ${money(invoice.total, invoice.currency)}. Thank you for your business.`,

@@ -1,4 +1,4 @@
-export async function sendEmail(env, { to = env.RESEND_TO_EMAIL, subject, html, text }) {
+export async function sendEmail(env, { to = env.RESEND_TO_EMAIL, from = env.RESEND_FROM_EMAIL, subject, html, text }) {
   if (!env.RESEND_API_KEY) return { skipped: true, reason: "RESEND_API_KEY is not configured" };
 
   const response = await fetch("https://api.resend.com/emails", {
@@ -8,7 +8,7 @@ export async function sendEmail(env, { to = env.RESEND_TO_EMAIL, subject, html, 
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: env.RESEND_FROM_EMAIL,
+      from,
       to,
       subject,
       html,

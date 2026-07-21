@@ -21,24 +21,130 @@ function ticketUrl(env, ticketId, role) {
   return `${base}${route}?ticket=${ticketId}`;
 }
 
-function notificationEmailHtml(heading, body, url) {
+// Mirrors client/src/lib/tickets.js's ticketNumber so the #NX-XXXX shown in
+// the email matches what the recipient sees in the app.
+function ticketNumber(id) {
+  return `NX-${(id || "").replace(/[^a-zA-Z0-9]/g, "").slice(-4).toUpperCase()}`;
+}
+
+function truncate(text, max) {
+  const clean = String(text || "").trim();
+  return clean.length > max ? `${clean.slice(0, max).trim()}...` : clean;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+}
+
+const NOTIFICATION_ICONS = { new_ticket: "\u{1F3AB}", reply: "\u{1F4AC}", assignment: "\u{1F464}" };
+const PRIORITY_COLORS = { low: "#64748b", medium: "#3B82F6", high: "#f97316", critical: "#ef4444" };
+
+// Table-based layout with only inline styles - no <style> blocks, no
+// position/float/flex/grid, no external images or fonts - so it renders
+// consistently in Gmail (web and app) instead of getting stripped down.
+function notificationEmailHtml({ type, heading, intro, ticket, replyPreview, url }) {
+  const icon = NOTIFICATION_ICONS[type] || "\u{1F514}";
+  const priorityColor = PRIORITY_COLORS[ticket.priority] || PRIORITY_COLORS.medium;
+  const statusLabel = escapeHtml(String(ticket.status || "open").replace(/_/g, " "));
+
+  const replyBlock = replyPreview ? `
+    <tr>
+      <td style="padding:14px 32px 0;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="background-color:#f3f4f6;border-left:4px solid #3B82F6;border-radius:6px;padding:14px 16px;font-size:14px;color:#374151;line-height:1.6;font-style:italic;">
+              &ldquo;${escapeHtml(replyPreview)}&rdquo;
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  ` : "";
+
   return `
-    <div style="font-family:Arial, Helvetica, sans-serif;max-width:480px;margin:0 auto;color:#111827;">
-      <div style="font-size:24px;font-weight:bold;color:#3B82F6;">EkSaha</div>
-      <h1 style="font-size:18px;margin-top:24px;">${heading}</h1>
-      <p style="color:#374151;line-height:1.6;">${body}</p>
-      <a href="${url}" style="display:inline-block;margin-top:20px;padding:12px 24px;background-color:#3B82F6;color:#ffffff;font-weight:bold;text-decoration:none;border-radius:8px;font-size:14px;">View ticket</a>
-    </div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f4f6;padding:32px 16px;font-family:Arial, Helvetica, sans-serif;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border:1px solid #e5e7eb;border-radius:8px;">
+        <tr>
+          <td style="padding:28px 32px 0;">
+            <span style="font-size:24px;font-weight:bold;color:#3B82F6;">EkSaha</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:22px 32px 0;">
+            <table role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="background-color:#eff6ff;border-radius:8px;width:40px;height:40px;text-align:center;vertical-align:middle;font-size:20px;">${icon}</td>
+                <td style="padding-left:12px;vertical-align:middle;">
+                  <span style="font-size:18px;font-weight:bold;color:#111827;">${escapeHtml(heading)}</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px 32px 0;">
+            <p style="margin:0;font-size:14px;color:#374151;line-height:1.6;">${escapeHtml(intro)}</p>
+          </td>
+        </tr>
+        ${replyBlock}
+        <tr>
+          <td style="padding:20px 32px 0;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
+              <tr>
+                <td style="padding:16px 18px;">
+                  <div style="font-size:15px;font-weight:bold;color:#111827;">${escapeHtml(ticket.subject)}</div>
+                  <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+                    <tr>
+                      <td style="font-size:12px;color:#6b7280;padding-right:16px;">Ticket #${ticketNumber(ticket.id)}</td>
+                      <td style="font-size:12px;color:${priorityColor};font-weight:bold;text-transform:capitalize;padding-right:16px;">&#9679; ${escapeHtml(ticket.priority)} priority</td>
+                      <td style="font-size:12px;color:#6b7280;text-transform:capitalize;">Status: ${statusLabel}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 32px 0;">
+            <a href="${url}" style="display:inline-block;padding:12px 28px;background-color:#3B82F6;color:#ffffff;font-weight:bold;text-decoration:none;border-radius:8px;font-size:14px;">View ticket</a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px 32px 28px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e7eb;">
+              <tr>
+                <td style="padding-top:16px;font-size:12px;color:#9ca3af;text-align:center;">
+                  This is an automated notification from EkSaha. Questions? Contact <a href="mailto:support@eksaha.com" style="color:#3B82F6;">support@eksaha.com</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
   `;
 }
 
 // Non-fatal by design, same pattern as the rest of the app's transactional
 // email: a Resend outage should never block a ticket action from saving.
-async function notify(env, { to, role, ticketId, subject, heading, body }) {
+// Sent from support@eksaha.com (env.RESEND_SUPPORT_EMAIL), not the
+// accounts@ address invoices/billing email uses.
+async function notify(env, { to, role, ticket, type, subject, heading, intro, replyPreview }) {
   if (!to) return;
-  const url = ticketUrl(env, ticketId, role);
+  const url = ticketUrl(env, ticket.id, role);
   try {
-    await sendEmail(env, { to, subject, html: notificationEmailHtml(heading, body, url), text: `${body} View it here: ${url}` });
+    await sendEmail(env, {
+      to,
+      from: env.RESEND_SUPPORT_EMAIL,
+      subject,
+      html: notificationEmailHtml({ type, heading, intro, ticket, replyPreview, url }),
+      text: `${intro}${replyPreview ? `\n\n"${replyPreview}"` : ""}\n\nTicket #${ticketNumber(ticket.id)} - ${ticket.priority} priority - ${String(ticket.status || "open").replace(/_/g, " ")}\n\nView it here: ${url}`,
+    });
   } catch (caught) {
     console.error("Could not send ticket notification email", caught);
   }
@@ -59,15 +165,17 @@ async function notifyNewTicket(env, ticket, owner) {
   await Promise.all(staff.map((member) => notify(env, {
     to: member.email,
     role: member.role,
-    ticketId: ticket.id,
+    ticket,
+    type: "new_ticket",
     subject: `New support ticket from ${owner.name}: ${ticket.subject}`,
     heading: "New support ticket",
-    body: `${owner.name} opened a new ${ticket.category} ticket: "${ticket.subject}".`,
+    intro: `${owner.name} opened a new ${ticket.category} ticket.`,
   })));
 }
 
-async function notifyReply(env, ticket, sender, messageId) {
+async function notifyReply(env, ticket, sender, messageId, messageBody) {
   if (await sentRecentlyBySameSender(env, ticket.id, sender.id, messageId)) return;
+  const replyPreview = truncate(messageBody, 150);
 
   if (sender.role === "user") {
     const recipients = ticket.assigned_to
@@ -76,20 +184,24 @@ async function notifyReply(env, ticket, sender, messageId) {
     await Promise.all(recipients.map((recipient) => notify(env, {
       to: recipient.email,
       role: recipient.role,
-      ticketId: ticket.id,
+      ticket,
+      type: "reply",
       subject: `${sender.name} replied to ticket: ${ticket.subject}`,
       heading: "New reply on a support ticket",
-      body: `${sender.name} replied to "${ticket.subject}".`,
+      intro: `${sender.name} replied to this ticket.`,
+      replyPreview,
     })));
   } else {
     const owner = await first(env.DB, "SELECT email FROM users WHERE id = ?", [ticket.user_id]);
     await notify(env, {
       to: owner?.email,
       role: "user",
-      ticketId: ticket.id,
+      ticket,
+      type: "reply",
       subject: `You have a new reply on your ticket: ${ticket.subject}`,
       heading: "New reply on your ticket",
-      body: `Our team replied to your ticket "${ticket.subject}".`,
+      intro: "Our team replied to your ticket.",
+      replyPreview,
     });
   }
 }
@@ -100,10 +212,11 @@ async function notifyAssignment(env, ticket, subject, assigneeId) {
   await notify(env, {
     to: assignee.email,
     role: assignee.role,
-    ticketId: ticket.id,
+    ticket: { ...ticket, subject },
+    type: "assignment",
     subject: `You've been assigned a new ticket: ${subject}`,
     heading: "New ticket assigned to you",
-    body: `You've been assigned to handle "${subject}".`,
+    intro: "You've been assigned to handle this ticket.",
   });
 }
 
@@ -215,7 +328,7 @@ export async function handleTickets(request, env, path) {
         VALUES (?, ?, ?, ?, ?, ?, ?)
       `, [messageId, ticketId, user.id, body.body, stringifyJson(body.attachments), timestamp, timestamp]);
       await run(env.DB, "UPDATE tickets SET updated_at = ? WHERE id = ?", [timestamp, ticketId]);
-      await notifyReply(env, ticket, user, messageId);
+      await notifyReply(env, ticket, user, messageId, body.body);
       return json(await withMessages(env.DB, await first(env.DB, `${ticketSelect} WHERE tickets.id = ?`, [ticketId])), {}, env, request);
     }
   }
