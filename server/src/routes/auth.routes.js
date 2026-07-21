@@ -3,10 +3,19 @@ import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import { User } from "../models/index.js";
+import { findDemoUser, findDemoUserById, publicDemoUser } from "../lib/demo-users.js";
 
 const authRouter = Router();
-const accessToken = (user) => jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_ACCESS_SECRET, { expiresIn: "15m" });
-const refreshToken = (user) => jwt.sign({ sub: user.id, type: "refresh" }, process.env.JWT_REFRESH_SECRET, { expiresIn: "30d" });
+const isLocalMode = () => process.env.NODE_ENV !== "production";
+const secret = (value, fallback) => {
+  if (value) return value;
+  if (isLocalMode()) return fallback;
+  throw new Error("JWT secret is not configured");
+};
+const accessSecret = () => secret(process.env.JWT_ACCESS_SECRET, "eksaha-local-access-secret");
+const refreshSecret = () => secret(process.env.JWT_REFRESH_SECRET, "eksaha-local-refresh-secret");
+const accessToken = (user) => jwt.sign({ sub: user.id, role: user.role }, accessSecret(), { expiresIn: "15m" });
+const refreshToken = (user) => jwt.sign({ sub: user.id, type: "refresh" }, refreshSecret(), { expiresIn: "30d" });
 const cookieOptions = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge: 30 * 24 * 60 * 60 * 1000 };
 
 authRouter.post("/signup", async (req, res, next) => {
@@ -24,6 +33,12 @@ authRouter.post("/signup", async (req, res, next) => {
 
 authRouter.post("/login", async (req, res, next) => {
   try {
+    const demoUser = isLocalMode() ? findDemoUser(req.body.email, req.body.password || "") : null;
+    if (demoUser) {
+      const refresh = refreshToken(demoUser);
+      return res.cookie("refreshToken", refresh, cookieOptions).json({ accessToken: accessToken(demoUser), user: publicDemoUser(demoUser) });
+    }
+
     const user = await User.findOne({ email: req.body.email?.toLowerCase() }).select("+passwordHash");
     if (!user || !await bcrypt.compare(req.body.password || "", user.passwordHash || "")) return res.status(401).json({ message: "Invalid email or password" });
     const refresh = refreshToken(user);
@@ -36,12 +51,31 @@ authRouter.post("/login", async (req, res, next) => {
 authRouter.post("/refresh", async (req, res) => {
   try {
     const token = req.cookies.refreshToken;
-    const payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    const payload = jwt.verify(token, refreshSecret());
+    const demoUser = isLocalMode() ? findDemoUserById(payload.sub) : null;
+    if (demoUser) return res.json({ accessToken: accessToken(demoUser) });
+
     const user = await User.findById(payload.sub);
     const hash = crypto.createHash("sha256").update(token).digest("hex");
     if (!user?.refreshTokens.some(item => item.tokenHash === hash && item.expiresAt > new Date())) throw new Error();
     res.json({ accessToken: accessToken(user) });
   } catch { res.status(401).json({ message: "Refresh token invalid" }); }
+});
+
+authRouter.get("/me", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    if (!token) return res.status(401).json({ message: "Authentication required" });
+    const payload = jwt.verify(token, accessSecret());
+    const demoUser = isLocalMode() ? findDemoUserById(payload.sub) : null;
+    if (demoUser) return res.json(publicDemoUser(demoUser));
+
+    const user = await User.findById(payload.sub).select("-refreshTokens");
+    if (!user) return res.status(401).json({ message: "Account not found" });
+    res.json({ id: user.id, name: user.name, email: user.email, role: user.role });
+  } catch {
+    res.status(401).json({ message: "Invalid or expired access token" });
+  }
 });
 
 authRouter.post("/logout", async (req, res) => {

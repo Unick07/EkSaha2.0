@@ -84,7 +84,6 @@ export default function Tickets() {
   }, [tickets]);
 
   return <div>
-    <div className="mb-7"><h2 className="text-2xl font-bold">Support queue</h2><p className="mt-1 text-sm text-muted">Triage, assign and resolve customer requests.</p></div>
     {loading && <div className="panel p-5 text-sm text-muted">Loading tickets...</div>}
     {error && <div className="panel border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>}
     {!loading && !error && <div className="grid gap-4">{tickets.map((ticket) => { const unread = unreadCount(ticket, user?.id); return <div className="panel flex flex-col justify-between gap-5 p-5 lg:flex-row lg:items-center" key={ticket.id}>

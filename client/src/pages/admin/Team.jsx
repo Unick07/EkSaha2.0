@@ -15,7 +15,7 @@ const formatDate = (value) => {
 
 const roleBadgeClass = {
   admin: "bg-primary/10 text-primary",
-  support: "bg-blue-500/10 text-blue-600 dark:text-blue-300",
+  support: "bg-primary/10 text-primary",
   billing: "bg-amber-500/10 text-amber-600 dark:text-amber-300",
 };
 
@@ -85,14 +85,14 @@ export default function Team() {
   };
 
   return <div>
-    <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h2 className="text-2xl font-bold">Team Management</h2><p className="mt-1 text-sm text-muted">Manage internal admin, support and billing access — not customer accounts.</p></div><Button onClick={() => setAddOpen(true)}><Plus size={16}/>Add team member</Button></div>
+    <div className="mb-7 flex justify-end"><Button onClick={() => setAddOpen(true)}><Plus size={16}/>Add team member</Button></div>
     {loading && <div className="panel p-5 text-sm text-muted">Loading team...</div>}
     {error && <div className="panel border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>}
     {!loading && !error && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {members.map((member) => <div className="panel flex flex-col gap-4 p-5" key={member.id}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-sm font-bold text-primary-foreground">{member.name?.[0]?.toUpperCase() || "?"}</span>
+            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-sm font-bold text-primary-foreground dark:text-slate-950">{member.name?.[0]?.toUpperCase() || "?"}</span>
             <div className="min-w-0"><div className="truncate font-semibold">{member.name}</div><div className="truncate text-xs text-muted">{member.email}</div></div>
           </div>
           <ActionMenu actions={[

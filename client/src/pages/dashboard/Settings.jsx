@@ -70,7 +70,7 @@ export default function Settings() {
   return <div className="mx-auto max-w-3xl space-y-6">
     <form onSubmit={saveProfile} className="panel p-7">
       <div className="flex items-center gap-4 border-b border-slate-100 pb-6 dark:border-white/10">
-        <span className="grid size-16 place-items-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 text-xl font-bold text-white">{(profile?.name || "?").split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase()}</span>
+        <span className="grid size-16 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-xl font-bold text-primary-foreground dark:text-slate-950">{(profile?.name || "?").split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase()}</span>
         <div><h2 className="font-bold">Profile details</h2><p className="text-sm text-slate-500">Keep your contact information current.</p></div>
       </div>
       <div className="mt-6 grid gap-5 sm:grid-cols-2">

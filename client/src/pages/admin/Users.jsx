@@ -106,7 +106,7 @@ export default function Users({ readOnly = false }) {
   };
 
   return <div>
-    <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h2 className="text-2xl font-bold">User management</h2><p className="mt-1 text-sm text-slate-500">{readOnly ? "View customer accounts, access and assigned plans." : "Manage customer accounts, access and assigned plans. Internal team access is managed on the Team page."}</p></div>{!readOnly && <Button onClick={() => setEditing({})}><Plus size={16}/>Add user</Button>}</div>
+    {!readOnly && <div className="mb-7 flex justify-end"><Button onClick={() => setEditing({})}><Plus size={16}/>Add user</Button></div>}
     <div className="panel mb-5 flex flex-col gap-3 p-4 sm:flex-row"><div className="relative flex-1"><Search className="absolute left-3 top-3.5 text-slate-400" size={16}/><input value={query} onChange={(event) => setQuery(event.target.value)} className="input pl-10" placeholder="Search users..."/></div><select value={plan} onChange={(event) => setPlan(event.target.value)} className="input sm:w-44"><option>All plans</option>{plans.map((item) => <option key={item}>{item}</option>)}</select><select value={role} onChange={(event) => setRole(event.target.value)} className="input sm:w-44"><option>All roles</option>{roles.map((item) => <option key={item}>{item}</option>)}</select></div>
     {loading && <div className="panel p-5 text-sm text-muted">Loading users...</div>}
     {error && <div className="panel border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>}
