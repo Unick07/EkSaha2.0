@@ -15,11 +15,11 @@ export function Modal({ open, onClose, title, description, children, size = "md"
 
   const widths = { sm: "max-w-md", md: "max-w-xl", lg: "max-w-3xl", xl: "max-w-5xl" };
   return (
-    <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/60 p-4 backdrop-blur-sm" onMouseDown={onClose}>
+    <div className="animate-modal-backdrop fixed inset-0 z-[80] grid place-items-center bg-slate-950/60 p-4 backdrop-blur-sm" onMouseDown={onClose}>
       <section
         aria-modal="true"
         role="dialog"
-        className={`max-h-[90vh] w-full overflow-auto rounded-3xl border border-border bg-surface text-text shadow-2xl ${widths[size]}`}
+        className={`animate-modal-panel max-h-[90vh] w-full overflow-auto rounded-3xl border border-border bg-surface text-text shadow-2xl ${widths[size]}`}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-border bg-surface p-6">
