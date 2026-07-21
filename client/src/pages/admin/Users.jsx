@@ -93,10 +93,16 @@ export default function Users({ readOnly = false }) {
     setEditing(null);
   };
 
-  const confirmDelete = () => {
-    setUsers((items) => items.filter((user) => user.id !== deleting.id));
-    setDeleting(null);
-    toast.success("User deleted locally. Real delete API wiring is still needed.");
+  const confirmDelete = async () => {
+    try {
+      await api.delete(`/admin/users/${deleting.id}`);
+      setUsers((items) => items.filter((user) => user.id !== deleting.id));
+      toast.success(`${deleting.name} was deleted.`);
+    } catch (caught) {
+      toast.error(caught.response?.data?.message || "Could not delete this user.");
+    } finally {
+      setDeleting(null);
+    }
   };
 
   return <div>
@@ -106,7 +112,7 @@ export default function Users({ readOnly = false }) {
     {error && <div className="panel border-red-200 bg-red-50 p-5 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>}
     {!loading && !error && <div className="panel overflow-hidden"><div className="overflow-x-auto"><table className="w-full min-w-[860px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-white/5"><tr><th className="p-5">User</th><th>Role</th><th>Plan</th><th>Created</th>{!readOnly && <th></th>}</tr></thead><tbody>{filtered.map((user) => <tr className="border-t border-slate-100 dark:border-white/10" key={user.id}><td className="p-5"><div className="font-semibold">{user.name}</div><div className="mt-1 text-xs text-slate-400">{user.email}</div></td><td><span className="rounded-full bg-surface-raised px-2.5 py-1 text-xs font-bold capitalize">{user.role}</span></td><td>{user.plan || "No plan"}</td><td className="text-slate-500">{formatDate(user.createdAt)}</td>{!readOnly && <td><ActionMenu actions={[{ label: "Edit user", icon: Edit3, onClick: () => setEditing(user) }, { label: "Assign strategist", icon: UserCog, onClick: () => setAssigning(user) }, { label: "Suspend", icon: ShieldBan, onClick: () => toast.success("Real status API wiring is still needed.") }, { label: "Delete user", icon: Trash2, danger: true, onClick: () => setDeleting(user) }]}/></td>}</tr>)}</tbody></table>{filtered.length === 0 && <div className="border-t border-border p-6 text-sm text-muted">No users match your filters.</div>}</div></div>}
     {!readOnly && <Modal open={Boolean(editing)} onClose={() => setEditing(null)} title={editing?.id ? "Edit user" : "Add user"}><form onSubmit={save} className="space-y-4"><input name="name" required className="input" defaultValue={editing?.name} placeholder="Full name"/><input name="email" required type="email" className="input" defaultValue={editing?.email} placeholder="Email"/><select name="role" className="input" defaultValue={editing?.role || "user"}><option>user</option><option>admin</option><option>support</option><option>billing</option></select><input name="plan" className="input" defaultValue={editing?.plan || ""} placeholder="Plan name"/><Button className="w-full">{editing?.id ? "Save changes" : "Add user"}</Button></form></Modal>}
-    {!readOnly && <ConfirmDialog open={Boolean(deleting)} onClose={() => setDeleting(null)} title="Delete user?" description={`${deleting?.name || "This user"} will be removed locally. The real delete API still needs to be wired.`} confirmLabel="Delete user" danger onConfirm={confirmDelete}/>}
+    {!readOnly && <ConfirmDialog open={Boolean(deleting)} onClose={() => setDeleting(null)} title="Delete user?" description={`Are you sure you want to delete ${deleting?.name || "this user"}? This cannot be undone.`} confirmLabel="Delete user" danger onConfirm={confirmDelete}/>}
     {!readOnly && <Modal open={Boolean(assigning)} onClose={() => setAssigning(null)} title="Assign strategist" description={assigning?.name}>
       <form onSubmit={assignStrategist} className="space-y-4">
         <select name="assignedTo" className="input" defaultValue={assigning?.assignedTo || ""}>

@@ -74,7 +74,7 @@ export default function Team() {
 
   const confirmRemove = async () => {
     try {
-      await api.patch(`/admin/users/${removing.id}/role`, { role: "user" });
+      await api.delete(`/admin/users/${removing.id}`);
       setMembers((items) => items.filter((item) => item.id !== removing.id));
       toast.success(`${removing.name} was removed from the team.`);
     } catch (caught) {
@@ -137,7 +137,7 @@ export default function Team() {
       open={Boolean(removing)}
       onClose={() => setRemoving(null)}
       title="Remove from team?"
-      description={`${removing?.name || "This member"} will lose admin access and become a regular user.`}
+      description={`Are you sure you want to delete ${removing?.name || "this team member"}? This will permanently remove their account and cannot be undone.`}
       confirmLabel="Remove from team"
       danger
       onConfirm={confirmRemove}

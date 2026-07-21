@@ -119,6 +119,26 @@ export async function handleAdmin(request, env, path) {
     return json(normalizeUser(await first(env.DB, "SELECT * FROM users WHERE id = ?", [userId])), {}, env, request);
   }
 
+  if (request.method === "DELETE" && userId) {
+    const admin = await requireRole(request, env, ["admin"]);
+    if (admin.id === userId) {
+      return error("You cannot delete your own account", 400, env, request);
+    }
+    const existing = await first(env.DB, "SELECT id FROM users WHERE id = ?", [userId]);
+    if (!existing) return error("User not found", 404, env, request);
+
+    // Own tickets/subscriptions/invoices/tokens cascade automatically, but
+    // FK enforcement is on and these references have no cascade — clear
+    // them first or the delete fails whenever this user is a strategist or
+    // ticket assignee rather than the ticket/subscription owner.
+    await run(env.DB, "UPDATE tickets SET assigned_to = NULL WHERE assigned_to = ?", [userId]);
+    await run(env.DB, "UPDATE users SET assigned_to = NULL WHERE assigned_to = ?", [userId]);
+    await run(env.DB, "UPDATE ticket_messages SET sender_id = NULL WHERE sender_id = ?", [userId]);
+    await run(env.DB, "DELETE FROM users WHERE id = ?", [userId]);
+
+    return json({ message: "User deleted successfully" }, {}, env, request);
+  }
+
   if (request.method === "GET" && path === "/admin/subscriptions") {
     const rows = await all(env.DB, `
       SELECT subscriptions.*, users.name AS user_name, users.email AS user_email, plans.name AS plan_name
