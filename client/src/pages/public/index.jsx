@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Calendar, Check, Clock, Link2, Linkedin, List, Mail, MapPin, Phone, Send, Twitter } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Check, Clock, Link2, Linkedin, Mail, MapPin, Phone, Send, Twitter } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button, PlanCard, SectionHeading } from "../../components/common/ui";
 import { plans, posts, services } from "../../data/siteData";
@@ -103,57 +102,33 @@ function parseContentBlocks(content) {
 }
 
 const HEADING_STYLES = {
-  1: { tag: "h2", className: "mb-5 mt-14 text-3xl" },
-  2: { tag: "h2", className: "mb-4 mt-12 text-2xl" },
-  3: { tag: "h3", className: "mb-3 mt-9 text-xl" },
+  1: { tag: "h2", className: "mb-2.5 mt-8 text-3xl" },
+  2: { tag: "h2", className: "mb-2 mt-7 text-2xl" },
+  3: { tag: "h3", className: "mb-2 mt-6 text-xl" },
 };
 
 function ContentBlock({ block }) {
   if (block.type === "heading") {
     const { tag: Tag, className } = HEADING_STYLES[block.level] || HEADING_STYLES[3];
-    return <Tag id={block.id} className={`scroll-mt-28 font-extrabold tracking-tight text-text ${className}`}>{block.text}</Tag>;
+    return <Tag id={block.id} className={`scroll-mt-24 font-extrabold tracking-tight text-text ${className}`}>{block.text}</Tag>;
   }
   if (block.type === "quote") {
-    return <blockquote className="my-7 border-l-4 border-primary/40 pl-5 italic text-muted">{block.text}</blockquote>;
+    return <blockquote className="my-4 border-l-4 border-primary/40 pl-5 italic text-muted">{block.text}</blockquote>;
   }
   if (block.type === "code") {
-    return <pre className="my-7 overflow-x-auto rounded-2xl bg-slate-900 p-5 text-sm leading-6 text-slate-100 dark:bg-black/40"><code>{block.text}</code></pre>;
+    return <pre className="my-4 overflow-x-auto rounded-2xl bg-slate-900 p-5 text-sm leading-6 text-slate-100 dark:bg-black/40"><code>{block.text}</code></pre>;
   }
   if (block.type === "list") {
     const Tag = block.ordered ? "ol" : "ul";
-    return <Tag className={`my-6 space-y-2 pl-6 marker:text-primary ${block.ordered ? "list-decimal" : "list-disc"}`}>
-      {block.items.map((item, index) => <li className="leading-[1.75]" key={index}>{item}</li>)}
+    return <Tag className={`my-4 space-y-1.5 pl-6 marker:text-primary ${block.ordered ? "list-decimal" : "list-disc"}`}>
+      {block.items.map((item, index) => <li className="leading-[1.6]" key={index}>{item}</li>)}
     </Tag>;
   }
-  return <p className="my-5 leading-[1.8]">{block.text}</p>;
+  return <p className="my-4 leading-[1.6]">{block.text}</p>;
 }
 
-// Rendered via a portal straight onto <body>: PublicLayout wraps every page
-// in framer-motion's <motion.main>, which sets an inline `transform` for its
-// page-transition animation. Per the CSS spec that makes <motion.main> the
-// containing block for any `position: fixed` descendant, so without the
-// portal this bar was "fixed" to the top of <main> - not the viewport - and
-// scrolled away instead of staying pinned.
-function ReadingProgressBar() {
-  const [progress, setProgress] = useState(0);
-  useEffect(() => {
-    const onScroll = () => {
-      const doc = document.documentElement;
-      const max = (doc.scrollHeight || 0) - doc.clientHeight;
-      setProgress(max > 0 ? Math.min(100, Math.max(0, (doc.scrollTop / max) * 100)) : 0);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-  return createPortal(
-    <div className="fixed inset-x-0 top-0 z-[60] h-1 bg-transparent">
-      <div className="h-full bg-gradient-to-r from-primary to-accent" style={{ width: `${progress}%` }} />
-    </div>,
-    document.body,
-  );
-}
-
+// Compact and merged straight into the hero's meta row - not a separate
+// section with its own margin.
 function ShareRow({ title, url }) {
   const copyLink = async () => {
     try {
@@ -167,14 +142,14 @@ function ShareRow({ title, url }) {
     { label: "Share on X", icon: Twitter, href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` },
     { label: "Share on LinkedIn", icon: Linkedin, href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}` },
   ];
-  return <div className="mt-8 flex items-center gap-2.5">
-    <button type="button" onClick={copyLink} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold text-slate-200 transition hover:bg-white/10">
-      <Link2 size={14} />Copy link
+  return <span className="flex items-center gap-1.5">
+    <button type="button" onClick={copyLink} aria-label="Copy link" className="grid size-6 place-items-center rounded-md text-slate-400 transition hover:bg-white/10 hover:text-slate-200">
+      <Link2 size={13} />
     </button>
-    {targets.map((target) => <a key={target.label} href={target.href} target="_blank" rel="noreferrer" aria-label={target.label} className="grid size-9 place-items-center rounded-full border border-white/15 bg-white/5 text-slate-200 transition hover:bg-white/10">
-      <target.icon size={15} />
+    {targets.map((target) => <a key={target.label} href={target.href} target="_blank" rel="noreferrer" aria-label={target.label} className="grid size-6 place-items-center rounded-md text-slate-400 transition hover:bg-white/10 hover:text-slate-200">
+      <target.icon size={13} />
     </a>)}
-  </div>;
+  </span>;
 }
 
 const normalizeStaticPost = (post) => ({ ...post, content: post.content || post.excerpt, image: post.image || null, source: "static" });
@@ -245,83 +220,59 @@ export function BlogPost() {
 
   if (!post) return <NotFound />;
 
-  const headings = blocks.filter((block) => block.type === "heading");
-  const showToc = headings.length > 1;
-
   const others = publishedPosts.filter((item) => `${item.source}-${item.slug}` !== `${post.source}-${post.slug}`);
   const related = [...others.filter((item) => item.category === post.category), ...others.filter((item) => item.category !== post.category)].slice(0, 3);
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
   return <article>
-    <ReadingProgressBar />
-    <header className="relative overflow-hidden bg-ink py-20 text-white sm:py-24">
+    <header className="relative overflow-hidden bg-ink py-10 text-white sm:py-12">
       <div className="grid-mask absolute inset-0 opacity-70" />
       <div className="absolute right-[8%] top-10 size-72 rounded-full bg-blue-600/20 blur-[110px]" />
       <div className="container-shell relative max-w-4xl">
         <Link to="/insights" className="inline-flex items-center gap-2 text-sm font-semibold text-blue-300 transition hover:text-blue-200"><ArrowLeft size={15} /> Back to insights</Link>
-        <div className="eyebrow mt-8 border-blue-400/20 bg-blue-400/10 text-blue-200">{post.category}</div>
-        <h1 className="mt-5 text-4xl font-extrabold leading-[1.12] tracking-[-.03em] sm:text-5xl lg:text-6xl">{post.title}</h1>
-        <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-400">
-          <span className="flex items-center gap-2"><span className="grid size-7 place-items-center rounded-lg bg-primary text-xs font-extrabold text-primary-foreground">E</span>By EkSaha Team</span>
-          <span className="flex items-center gap-1.5"><Calendar size={14} />{formatPostDate(post.date)}</span>
-          <span className="flex items-center gap-1.5"><Clock size={14} />{post.read} read</span>
+        <div className="eyebrow mt-4 border-blue-400/20 bg-blue-400/10 text-blue-200">{post.category}</div>
+        <h1 className="mt-3 text-3xl font-extrabold leading-[1.15] tracking-[-.02em] sm:text-4xl lg:text-5xl">{post.title}</h1>
+        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-400">
+          <span className="flex items-center gap-2"><span className="grid size-6 place-items-center rounded-md bg-primary text-[10px] font-extrabold text-primary-foreground">E</span>EkSaha Team</span>
+          <span className="flex items-center gap-1.5"><Calendar size={13} />{formatPostDate(post.date)}</span>
+          <span className="flex items-center gap-1.5"><Clock size={13} />{post.read} read</span>
+          <ShareRow title={post.title} url={shareUrl} />
         </div>
-        <ShareRow title={post.title} url={shareUrl} />
       </div>
     </header>
 
-    <div className="container-shell max-w-6xl py-16 sm:py-20">
-      {/* The grid's second track only exists to hold the ToC. When showToc is
-          false the <aside> below doesn't render, and grid-template-columns
-          without a matching child collapses the lone item into the first
-          (220px) track - that was the bug squeezing the whole article left.
-          Applying the grid classes only when there's actually a second child
-          avoids it entirely. */}
-      <div className={showToc ? "lg:grid lg:grid-cols-[220px_1fr] lg:gap-14" : ""}>
-        {showToc && <aside className="hidden lg:block">
-          <div className="sticky top-28">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted"><List size={13} />On this page</div>
-            <nav className="mt-4 space-y-2.5 border-l border-border pl-4 text-sm">
-              {headings.map((heading) => <a key={heading.id} href={`#${heading.id}`} className={`block text-muted transition hover:text-primary ${heading.level >= 3 ? "pl-3 text-xs" : ""}`}>{heading.text}</a>)}
-            </nav>
-          </div>
-        </aside>}
+    <div className="container-shell py-8 sm:py-10">
+      <div className="mx-auto max-w-[680px]">
+        {post.image && <img src={post.image} alt={post.title} loading="lazy" className="mb-6 h-[220px] w-full rounded-2xl object-cover shadow-md sm:h-[320px] lg:h-[400px]" />}
 
-        {/* Single shared container: the image, excerpt, body content, author
-            card and CTA all live in this one mx-auto max-w-[720px] column so
-            nothing can drift to a different width independently. */}
-        <div className="mx-auto w-full max-w-[720px]">
-          {post.image && <img src={post.image} alt={post.title} loading="lazy" className="mb-10 aspect-video w-full rounded-3xl object-cover shadow-xl" />}
+        <p className="mb-4 text-lg leading-[1.5] text-text">{post.excerpt}</p>
+        <div className="text-[17px] leading-[1.6] text-slate-600 dark:text-slate-300">
+          {blocks.map((block, index) => <ContentBlock block={block} key={index} />)}
+        </div>
 
-          <div className="text-[17px] leading-[1.8] text-slate-600 dark:text-slate-300">
-            <p className="text-xl leading-[1.65] text-text">{post.excerpt}</p>
-            {blocks.map((block, index) => <ContentBlock block={block} key={index} />)}
-          </div>
+        <div className="panel mt-8 flex items-center gap-3 p-4">
+          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground">E</span>
+          <p className="min-w-0 flex-1 text-sm leading-snug">
+            <span className="font-bold text-text">EkSaha Team</span>{" "}
+            <span className="text-muted">— practical thinking on SEO, web, advertising and IT support.</span>
+          </p>
+        </div>
 
-          <div className="panel mt-16 flex flex-col items-start gap-4 p-7 sm:flex-row sm:items-center">
-            <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary text-lg font-extrabold text-primary-foreground">E</span>
-            <div className="min-w-0 flex-1">
-              <div className="font-bold text-text">Written by the EkSaha team</div>
-              <p className="mt-1 text-sm text-muted">Practical thinking on SEO, web, advertising and IT support from the specialists who do the work.</p>
-            </div>
-          </div>
-
-          <div className="mt-10 overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-accent p-9 text-center text-primary-foreground sm:p-12">
-            <h3 className="text-2xl font-extrabold sm:text-3xl">Ready to grow your business?</h3>
-            <p className="mx-auto mt-3 max-w-xl text-sm text-primary-foreground/85 sm:text-base">Get started with EkSaha and put SEO, web, advertising and IT support on autopilot.</p>
-            <Button to="/pricing" variant="secondary" className="mt-7 border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20">Get started with EkSaha <ArrowRight size={16} /></Button>
-          </div>
+        <div className="mt-8 overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-accent p-6 text-center text-primary-foreground sm:p-8">
+          <h3 className="text-xl font-extrabold sm:text-2xl">Ready to grow your business?</h3>
+          <p className="mx-auto mt-2 max-w-md text-sm text-primary-foreground/85">Get started with EkSaha and put SEO, web, advertising and IT support on autopilot.</p>
+          <Button to="/pricing" variant="secondary" className="mt-5 border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20">Get started with EkSaha <ArrowRight size={16} /></Button>
         </div>
       </div>
 
-      {related.length > 0 && <div className="mt-20">
-        <h3 className="text-xl font-extrabold text-text">Keep reading</h3>
-        <div className="mt-6 grid gap-5 sm:grid-cols-3">
+      {related.length > 0 && <div className="mx-auto mt-12 max-w-3xl">
+        <h3 className="text-lg font-extrabold text-text">Keep reading</h3>
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
           {related.map((item, index) => <Link to={`/insights/${item.slug}`} className="panel group overflow-hidden" key={`${item.source}-${item.slug}`}>
-            {item.image ? <img src={item.image} alt={item.title} loading="lazy" className="h-32 w-full object-cover" /> : <div className={`h-32 bg-gradient-to-br ${services[index % services.length].accent}`} />}
-            <div className="p-5">
+            {item.image ? <img src={item.image} alt={item.title} loading="lazy" className="h-24 w-full object-cover" /> : <div className={`h-24 bg-gradient-to-br ${services[index % services.length].accent}`} />}
+            <div className="p-4">
               <div className="text-[11px] font-bold uppercase tracking-wider text-electric">{item.category}</div>
-              <h4 className="mt-2 text-sm font-bold leading-5 text-text group-hover:text-electric">{item.title}</h4>
+              <h4 className="mt-1.5 text-sm font-bold leading-5 text-text group-hover:text-electric">{item.title}</h4>
             </div>
           </Link>)}
         </div>
