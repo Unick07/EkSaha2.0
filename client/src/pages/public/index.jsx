@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Calendar, Check, Clock, Link2, Linkedin, List, Mail, MapPin, Phone, Send, Twitter } from "lucide-react";
 import toast from "react-hot-toast";
@@ -127,6 +128,12 @@ function ContentBlock({ block }) {
   return <p className="my-5 leading-[1.8]">{block.text}</p>;
 }
 
+// Rendered via a portal straight onto <body>: PublicLayout wraps every page
+// in framer-motion's <motion.main>, which sets an inline `transform` for its
+// page-transition animation. Per the CSS spec that makes <motion.main> the
+// containing block for any `position: fixed` descendant, so without the
+// portal this bar was "fixed" to the top of <main> - not the viewport - and
+// scrolled away instead of staying pinned.
 function ReadingProgressBar() {
   const [progress, setProgress] = useState(0);
   useEffect(() => {
@@ -139,9 +146,12 @@ function ReadingProgressBar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-  return <div className="fixed inset-x-0 top-0 z-[60] h-1 bg-transparent">
-    <div className="h-full bg-gradient-to-r from-primary to-accent" style={{ width: `${progress}%` }} />
-  </div>;
+  return createPortal(
+    <div className="fixed inset-x-0 top-0 z-[60] h-1 bg-transparent">
+      <div className="h-full bg-gradient-to-r from-primary to-accent" style={{ width: `${progress}%` }} />
+    </div>,
+    document.body,
+  );
 }
 
 function ShareRow({ title, url }) {
@@ -260,12 +270,14 @@ export function BlogPost() {
       </div>
     </header>
 
-    {post.image && <div className="container-shell max-w-5xl pt-14">
-      <img src={post.image} alt={post.title} loading="lazy" className="aspect-[16/7] w-full rounded-3xl object-cover shadow-xl" />
-    </div>}
-
     <div className="container-shell max-w-6xl py-16 sm:py-20">
-      <div className="lg:grid lg:grid-cols-[220px_1fr] lg:gap-14">
+      {/* The grid's second track only exists to hold the ToC. When showToc is
+          false the <aside> below doesn't render, and grid-template-columns
+          without a matching child collapses the lone item into the first
+          (220px) track - that was the bug squeezing the whole article left.
+          Applying the grid classes only when there's actually a second child
+          avoids it entirely. */}
+      <div className={showToc ? "lg:grid lg:grid-cols-[220px_1fr] lg:gap-14" : ""}>
         {showToc && <aside className="hidden lg:block">
           <div className="sticky top-28">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted"><List size={13} />On this page</div>
@@ -275,13 +287,20 @@ export function BlogPost() {
           </div>
         </aside>}
 
-        <div className="mx-auto w-full max-w-[68ch] text-[17px] leading-[1.8] text-slate-600 dark:text-slate-300">
-          <p className="text-xl leading-[1.65] text-text">{post.excerpt}</p>
-          {blocks.map((block, index) => <ContentBlock block={block} key={index} />)}
+        {/* Single shared container: the image, excerpt, body content, author
+            card and CTA all live in this one mx-auto max-w-[720px] column so
+            nothing can drift to a different width independently. */}
+        <div className="mx-auto w-full max-w-[720px]">
+          {post.image && <img src={post.image} alt={post.title} loading="lazy" className="mb-10 aspect-video w-full rounded-3xl object-cover shadow-xl" />}
+
+          <div className="text-[17px] leading-[1.8] text-slate-600 dark:text-slate-300">
+            <p className="text-xl leading-[1.65] text-text">{post.excerpt}</p>
+            {blocks.map((block, index) => <ContentBlock block={block} key={index} />)}
+          </div>
 
           <div className="panel mt-16 flex flex-col items-start gap-4 p-7 sm:flex-row sm:items-center">
             <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary text-lg font-extrabold text-primary-foreground">E</span>
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="font-bold text-text">Written by the EkSaha team</div>
               <p className="mt-1 text-sm text-muted">Practical thinking on SEO, web, advertising and IT support from the specialists who do the work.</p>
             </div>
