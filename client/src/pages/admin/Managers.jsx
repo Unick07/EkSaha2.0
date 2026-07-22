@@ -10,6 +10,61 @@ import { useAdminStore } from "../../store/useAdminStore";
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
+const slugify = (value) => String(value || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+
+// Bundles the title input with an auto-generated, optionally-editable slug so
+// admins don't have to hand-type a URL for every post. Still submits both
+// `title` and `slug` as plain form fields, so ResourceManager's save() -
+// which just reads FormData - needed no changes.
+function TitleSlugField({ label, initialTitle, initialSlug }) {
+  const [title, setTitle] = useState(initialTitle || "");
+  const [slug, setSlug] = useState(initialSlug || slugify(initialTitle));
+  const [slugTouched, setSlugTouched] = useState(Boolean(initialSlug));
+  const [editingSlug, setEditingSlug] = useState(false);
+
+  const onTitleChange = (event) => {
+    const value = event.target.value;
+    setTitle(value);
+    if (!slugTouched) setSlug(slugify(value));
+  };
+
+  const onSlugChange = (event) => {
+    setSlug(slugify(event.target.value));
+    setSlugTouched(true);
+  };
+
+  return <div>
+    <label className="block text-sm font-semibold">{label}
+      <input required name="title" className="input mt-2" value={title} onChange={onTitleChange} placeholder="Your post title" />
+    </label>
+    <input type="hidden" name="slug" value={slug} />
+    <div className="mt-2 text-xs text-muted">
+      {editingSlug ? <span className="inline-flex flex-wrap items-center gap-1.5">
+        <span>URL: eksaha.com/blog/</span>
+        <input className="input w-auto min-w-0 flex-1 px-2 py-1 text-xs" value={slug} onChange={onSlugChange} placeholder="my-blog-post" />
+        <button type="button" onClick={() => setEditingSlug(false)} className="font-bold text-primary hover:text-accent">Done</button>
+      </span> : <span>
+        URL: eksaha.com/blog/{slug || "..."}{" "}
+        <button type="button" onClick={() => setEditingSlug(true)} className="font-bold text-primary hover:text-accent">Edit</button>
+      </span>}
+    </div>
+  </div>;
+}
+
+function StatusToggleField({ name, label, initialValue }) {
+  const [published, setPublished] = useState(initialValue === "Published");
+  return <div>
+    <span className="mb-2 block text-sm font-semibold">{label}</span>
+    <input type="hidden" name={name} value={published ? "Published" : "Draft"} />
+    <button type="button" onClick={() => setPublished((value) => !value)} className="flex items-center gap-3">
+      <span className={`relative h-7 w-12 shrink-0 rounded-full border transition ${published ? "border-primary bg-primary" : "border-border bg-surface-raised"}`}>
+        <span className={`absolute top-0.5 size-6 rounded-full bg-white shadow transition-transform ${published ? "translate-x-5" : "translate-x-0.5"}`} />
+      </span>
+      <span className={`text-sm font-bold ${published ? "text-primary" : "text-muted"}`}>{published ? "Published" : "Draft"}</span>
+    </button>
+  </div>;
+}
+
 function ImageUploadField({ name, label, initialValue }) {
   const [imageUrl, setImageUrl] = useState(initialValue || "");
   const [uploading, setUploading] = useState(false);
@@ -69,12 +124,6 @@ function ImageUploadField({ name, label, initialValue }) {
   </div>;
 }
 
-const formatToday = () => new Date().toLocaleDateString("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
 // Types backed by a real D1-backed endpoint — same API the admin, support and
 // billing workspaces all call, so every workspace shows identical live data.
 const API_ENDPOINTS = { Blog: "/posts" };
@@ -98,18 +147,49 @@ const configs = {
     singular: "Blog",
     columns: ["Title", "Slug", "Category", "Status", "Updated"],
     fields: [
-      { name: "title", label: "Post title" },
-      { name: "slug", label: "URL slug", placeholder: "my-blog-post" },
+      { name: "title", label: "Post title", type: "title-slug" },
       { name: "image", label: "Featured image", type: "image" },
       { name: "excerpt", label: "Excerpt" },
       { name: "content", label: "Markdown content", multiline: true },
-      { name: "category", label: "Category" },
-      { name: "status", label: "Status", options: ["Draft", "Published"] },
-      { name: "updated", label: "Updated", defaultValue: formatToday() },
+      { name: "category", label: "Category", options: ["Insights", "SEO", "Web", "Strategy", "Ads", "IT Support"], row: "meta" },
+      { name: "status", label: "Status", type: "status-toggle", options: ["Draft", "Published"], row: "meta" },
     ],
     values: (item) => [item.title, item.slug, item.category, item.status, item.updated],
   },
 };
+
+function renderField(field, editing) {
+  if (field.type === "title-slug") {
+    return <TitleSlugField key={field.name} label={field.label} initialTitle={editing?.title} initialSlug={editing?.slug} />;
+  }
+  if (field.type === "image") {
+    return <ImageUploadField key={field.name} name={field.name} label={field.label} initialValue={editing?.[field.name]} />;
+  }
+  if (field.type === "status-toggle") {
+    return <StatusToggleField key={field.name} name={field.name} label={field.label} initialValue={editing?.[field.name]} />;
+  }
+
+  const currentValue = editing?.[field.name];
+  // A dropdown's options can't cover every value a record might already have
+  // (e.g. free-text data from before this field became a fixed list) - if the
+  // current value isn't one of them, it's appended so saving never silently
+  // swaps it out for whatever option happens to render first.
+  const options = field.options && currentValue && !field.options.some((option) => (typeof option === "object" ? option.value : option) === currentValue)
+    ? [...field.options, currentValue]
+    : field.options;
+  const firstOptionValue = options ? (typeof options[0] === "object" ? options[0]?.value : options[0]) : undefined;
+
+  return <label className="block text-sm font-semibold" key={field.name}>
+    {field.label}
+    {options ? <select required className="input mt-2" name={field.name} defaultValue={currentValue || firstOptionValue}>
+      {options.map((option) => {
+        const value = typeof option === "object" ? option.value : option;
+        const text = typeof option === "object" ? option.label : option;
+        return <option key={value} value={value}>{text}</option>;
+      })}
+    </select> : field.multiline ? <textarea required className="input mt-2 min-h-40 resize-none" name={field.name} defaultValue={currentValue || field.defaultValue || ""} placeholder={field.placeholder} /> : <input required className="input mt-2" type={field.type || "text"} name={field.name} defaultValue={currentValue || field.defaultValue || ""} placeholder={field.placeholder} />}
+  </label>;
+}
 
 export function ResourceManager({ type }) {
   const config = configs[type];
@@ -230,24 +310,22 @@ export function ResourceManager({ type }) {
     </div>
 
     <Modal open={Boolean(editing)} onClose={() => setEditing(null)} title={`${editing?.id ? "Edit" : "Create"} ${config.singular}`}>
-      <form className="space-y-4" onSubmit={save}>
-        {config.fields.filter((field) => !(field.hideWhenEditing && editing?.id)).map((field) => {
-          if (field.type === "image") {
-            return <ImageUploadField key={field.name} name={field.name} label={field.label} initialValue={editing?.[field.name]} />;
+      <form className="space-y-5" onSubmit={save}>
+        {(() => {
+          const fields = config.fields.filter((field) => !(field.hideWhenEditing && editing?.id));
+          const nodes = [];
+          for (let i = 0; i < fields.length; i += 1) {
+            const field = fields[i];
+            const next = fields[i + 1];
+            if (field.row && next?.row === field.row) {
+              nodes.push(<div className="grid grid-cols-2 gap-4" key={`row-${field.row}`}>{renderField(field, editing)}{renderField(next, editing)}</div>);
+              i += 1;
+            } else {
+              nodes.push(renderField(field, editing));
+            }
           }
-          const options = field.options;
-          const firstOptionValue = options ? (typeof options[0] === "object" ? options[0]?.value : options[0]) : undefined;
-          return <label className="block text-sm font-semibold" key={field.name}>
-            {field.label}
-            {options ? <select required className="input mt-2" name={field.name} defaultValue={editing?.[field.name] || firstOptionValue}>
-              {options.map((option) => {
-                const value = typeof option === "object" ? option.value : option;
-                const text = typeof option === "object" ? option.label : option;
-                return <option key={value} value={value}>{text}</option>;
-              })}
-            </select> : field.multiline ? <textarea required className="input mt-2 min-h-40 resize-none" name={field.name} defaultValue={editing?.[field.name] || field.defaultValue || ""} placeholder={field.placeholder} /> : <input required className="input mt-2" type={field.type || "text"} name={field.name} defaultValue={editing?.[field.name] || field.defaultValue || ""} placeholder={field.placeholder} />}
-          </label>;
-        })}
+          return nodes;
+        })()}
         <Button className="w-full">Save {config.singular.toLowerCase()}</Button>
       </form>
     </Modal>
