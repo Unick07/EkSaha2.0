@@ -58,8 +58,8 @@ export function PlanCard({ plan, billing = "monthly" }) {
     <div className="mt-6 flex items-end gap-1"><span className="text-4xl font-extrabold tracking-tight">${price.toLocaleString()}</span><span className="mb-1 text-sm text-muted">/mo</span></div>
     {billing === "yearly" && <span className="mt-1 text-xs font-semibold text-emerald-600">Billed yearly, save 20%</span>}
     {user
-      ? <Button onClick={choosePlan} variant={plan.popular ? "primary" : "secondary"} className="mt-7 w-full">Start with {plan.name}<ArrowRight size={16} /></Button>
-      : <Button to="/signup" variant={plan.popular ? "primary" : "secondary"} className="mt-7 w-full">Start with {plan.name}<ArrowRight size={16} /></Button>}
+      ? <Button onClick={choosePlan} variant={plan.popular ? "primary" : "secondary"} className="mt-7 w-full">{plan.cta || `Start with ${plan.name}`}<ArrowRight size={16} /></Button>
+      : <Button to="/signup" variant={plan.popular ? "primary" : "secondary"} className="mt-7 w-full">{plan.cta || `Start with ${plan.name}`}<ArrowRight size={16} /></Button>}
     <div className="mt-7 space-y-3 border-t border-border pt-6">
       {plan.features.map((feature) => <div className="flex items-start gap-3 text-sm" key={feature}><span className="mt-0.5 rounded-full bg-primary/10 p-1 text-primary"><Check size={12} /></span>{feature}</div>)}
     </div>

@@ -50,22 +50,25 @@ export const services = [
 export const plans = [
   {
     name: "Starter",
-    monthly: 499,
-    description: "A focused digital foundation for early-stage teams.",
-    features: ["1 core service", "Up to 10 requests / month", "Monthly strategy call", "48-hour response", "Performance dashboard"],
+    monthly: 599,
+    description: "A reliable specialist lane for small teams with one clear priority.",
+    cta: "Build my foundation",
+    features: ["1 core service", "Up to 15 requests / month", "Monthly strategy call", "48-hour response target", "Performance dashboard", "Client success support"],
   },
   {
     name: "Growth",
-    monthly: 999,
-    description: "A flexible growth team for businesses gaining traction.",
+    monthly: 1299,
+    description: "The cross-functional growth team for organizations building momentum.",
     popular: true,
-    features: ["3 core services", "Unlimited requests", "Biweekly strategy calls", "24-hour response", "Advanced analytics", "Dedicated strategist"],
+    cta: "Start scaling",
+    features: ["Any 3 core services", "Unlimited request queue", "Biweekly strategy calls", "24-hour response target", "Advanced analytics", "Dedicated strategist"],
   },
   {
     name: "Enterprise",
-    monthly: 1999,
-    description: "Embedded digital and IT support for scaling operations.",
-    features: ["All services included", "Unlimited priority requests", "Weekly strategy calls", "4-hour response", "Custom reporting", "Dedicated account team"],
+    monthly: 2499,
+    description: "Embedded digital and IT capability for complex, scaling operations.",
+    cta: "Get enterprise support",
+    features: ["All 4 services included", "Unlimited priority queue", "Weekly strategy calls", "4-hour response target", "Custom executive reporting", "Dedicated account team"],
   },
 ];
 

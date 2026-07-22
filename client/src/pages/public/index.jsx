@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Calendar, Check, Clock, Mail, MapPin, Phone, Send } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Clock, Mail, MapPin, Phone, Send } from "lucide-react";
 import toast from "react-hot-toast";
-import { Button, PlanCard, SectionHeading } from "../../components/common/ui";
-import { plans, posts, services } from "../../data/siteData";
+import { Button, SectionHeading } from "../../components/common/ui";
+import { posts, services } from "../../data/siteData";
 import { useAdminStore } from "../../store/useAdminStore";
-import { useAppStore } from "../../store/useAppStore";
 
 const normalizeStaticPost = (post) => ({ ...post, content: post.content || post.excerpt, source: "static" });
 const normalizeAdminPost = (post) => ({
@@ -50,11 +49,7 @@ export function ServicePage() {
   </>;
 }
 
-export function Pricing() {
-  const { billing, setBilling } = useAppStore();
-  const allFeatures = ["Core service access", "Request volume", "Strategy calls", "Response target", "Analytics dashboard", "Dedicated strategist"];
-  return <><section className="bg-ink py-24 text-center text-white"><div className="container-shell"><span className="eyebrow">Pricing</span><h1 className="text-5xl font-extrabold tracking-[-.05em]">A better team. A simpler bill.</h1><p className="mx-auto mt-5 max-w-2xl text-on-brand-muted">No setup fees, hidden markups or long contracts. Just clear capacity and an experienced team.</p><div className="mx-auto mt-8 flex w-fit rounded-xl border border-primary-foreground/15 bg-primary-foreground/10 p-1">{["monthly", "yearly"].map(item => <button key={item} onClick={() => setBilling(item)} className={`rounded-lg px-5 py-2 text-sm font-bold capitalize transition ${billing === item ? "bg-primary text-primary-foreground" : "text-on-brand-muted hover:bg-primary-foreground/10"}`}>{item}</button>)}</div></div></section><section className="py-20"><div className="container-shell"><div className="grid gap-6 lg:grid-cols-3">{plans.map(plan => <PlanCard plan={plan} billing={billing} key={plan.name} />)}</div><div className="mt-20 overflow-x-auto rounded-3xl border border-border"><table className="w-full min-w-[700px] text-left text-sm"><thead className="bg-surface-raised"><tr><th className="p-5">Compare plans</th>{plans.map(p => <th className="p-5" key={p.name}>{p.name}</th>)}</tr></thead><tbody>{allFeatures.map((feature, i) => <tr className="border-t border-border" key={feature}><td className="p-5 font-semibold">{feature}</td>{plans.map((p, pi) => <td className="p-5 text-muted" key={p.name}>{i === 0 ? (pi === 0 ? "1 service" : pi === 1 ? "3 services" : "All services") : i === 1 ? (pi === 0 ? "10 / month" : "Unlimited") : <Check size={17} className="text-emerald-500" />}</td>)}</tr>)}</tbody></table></div></div></section></>;
-}
+export { default as Pricing } from "./Pricing";
 
 export function About() {
   const values = [["Clarity over theatre", "Useful work, plain language and an honest view of what moves the needle."], ["Own the outcome", "We care about the result after the deliverable, not just the handoff."], ["Small teams, senior people", "Lean collaboration with experienced specialists close to the work."]];
