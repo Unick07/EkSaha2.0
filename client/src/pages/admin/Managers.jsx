@@ -1,11 +1,73 @@
-import { useEffect, useState } from "react";
-import { Edit3, Plus, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Edit3, ImagePlus, LoaderCircle, Plus, Trash2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "../../components/common/ui";
 import ActionMenu from "../../components/dashboard/ActionMenu";
 import { ConfirmDialog, Modal } from "../../components/dashboard/Modal";
 import api from "../../services/http/api";
 import { useAdminStore } from "../../store/useAdminStore";
+
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+function ImageUploadField({ name, label, initialValue }) {
+  const [imageUrl, setImageUrl] = useState(initialValue || "");
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const inputRef = useRef(null);
+
+  const upload = async (file) => {
+    if (!file) return;
+    if (!IMAGE_TYPES.includes(file.type)) {
+      toast.error("Please choose a JPG, PNG, WEBP or GIF image.");
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error("Images must be under 5MB.");
+      return;
+    }
+    const form = new FormData();
+    form.append("image", file);
+    setUploading(true);
+    setProgress(0);
+    try {
+      const { data } = await api.post("/admin/upload-image", form, {
+        onUploadProgress: (event) => setProgress(event.total ? Math.round((event.loaded / event.total) * 100) : 0),
+      });
+      setImageUrl(data.url);
+    } catch (caught) {
+      toast.error(caught.response?.data?.message || "Could not upload image.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return <div>
+    <span className="mb-2 block text-sm font-semibold">{label}</span>
+    <input type="hidden" name={name} value={imageUrl} />
+    {imageUrl ? <div className="relative overflow-hidden rounded-xl border border-border">
+      <img src={imageUrl} alt="Featured" className="h-40 w-full object-cover" />
+      <button type="button" onClick={() => setImageUrl("")} className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-lg bg-black/60 px-2.5 py-1.5 text-xs font-bold text-white transition hover:bg-black/80">
+        <X size={13} />Remove
+      </button>
+    </div> : <button
+      type="button"
+      onClick={() => inputRef.current?.click()}
+      disabled={uploading}
+      className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-surface-raised py-9 text-sm text-muted transition hover:border-primary/40 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {uploading ? <>
+        <LoaderCircle size={20} className="animate-spin text-primary" />
+        <span>Uploading... {progress}%</span>
+      </> : <>
+        <ImagePlus size={22} />
+        <span className="font-semibold">Click to upload a featured image</span>
+        <span className="text-xs text-muted">JPG, PNG, WEBP or GIF, up to 5MB</span>
+      </>}
+    </button>}
+    <input ref={inputRef} type="file" accept={IMAGE_TYPES.join(",")} className="hidden" onChange={(event) => upload(event.target.files?.[0])} />
+  </div>;
+}
 
 const formatToday = () => new Date().toLocaleDateString("en-US", {
   month: "short",
@@ -38,6 +100,7 @@ const configs = {
     fields: [
       { name: "title", label: "Post title" },
       { name: "slug", label: "URL slug", placeholder: "my-blog-post" },
+      { name: "image", label: "Featured image", type: "image" },
       { name: "excerpt", label: "Excerpt" },
       { name: "content", label: "Markdown content", multiline: true },
       { name: "category", label: "Category" },
@@ -169,6 +232,9 @@ export function ResourceManager({ type }) {
     <Modal open={Boolean(editing)} onClose={() => setEditing(null)} title={`${editing?.id ? "Edit" : "Create"} ${config.singular}`}>
       <form className="space-y-4" onSubmit={save}>
         {config.fields.filter((field) => !(field.hideWhenEditing && editing?.id)).map((field) => {
+          if (field.type === "image") {
+            return <ImageUploadField key={field.name} name={field.name} label={field.label} initialValue={editing?.[field.name]} />;
+          }
           const options = field.options;
           const firstOptionValue = options ? (typeof options[0] === "object" ? options[0]?.value : options[0]) : undefined;
           return <label className="block text-sm font-semibold" key={field.name}>
