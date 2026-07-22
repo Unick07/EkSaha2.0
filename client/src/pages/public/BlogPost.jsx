@@ -386,15 +386,19 @@ export default function BlogPost() {
   return <article>
     <ReadingProgressBar />
 
-    <header className="relative overflow-hidden bg-ink py-16 text-white sm:py-20">
+    <header className="relative overflow-hidden bg-ink py-7 text-white sm:py-9">
       <div className="grid-mask absolute inset-0 opacity-70" />
       <div className="absolute right-[8%] top-10 size-72 rounded-full bg-blue-600/20 blur-[110px]" />
       <div className="container-shell relative max-w-4xl">
         <Link to="/insights" className="inline-flex items-center gap-2 text-sm font-semibold text-blue-300 transition hover:text-blue-200"><ArrowLeft size={15} /> Back to insights</Link>
-        <div className="eyebrow mt-6 border-blue-400/20 bg-blue-400/10 text-blue-200">{post.category}</div>
-        <h1 className="mt-4 text-4xl font-extrabold leading-[1.1] tracking-[-.03em] sm:text-5xl lg:text-6xl">{post.title}</h1>
-        <p className="mt-5 max-w-2xl text-lg leading-relaxed text-slate-300 sm:text-xl">{post.excerpt}</p>
-        <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-400">
+        {/* mb-0 cancels the shared .eyebrow class's own baked-in mb-4 (used
+            on ~10 other pages, so it can't change globally) - without it,
+            the collapsed margin with the title's mt-2 below would stay
+            pinned near 16px no matter how small mt-2 got. */}
+        <div className="eyebrow mb-0 mt-2 border-blue-400/20 bg-blue-400/10 text-blue-200">{post.category}</div>
+        <h1 className="mt-2 text-4xl font-extrabold leading-[1.1] tracking-[-.03em] sm:text-5xl lg:text-6xl">{post.title}</h1>
+        <p className="mt-3 max-w-2xl text-lg leading-relaxed text-slate-300 sm:text-xl">{post.excerpt}</p>
+        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-400">
           <span className="flex items-center gap-2"><span className="grid size-7 place-items-center rounded-lg bg-primary text-xs font-extrabold text-primary-foreground">E</span>EkSaha Team</span>
           <span className="flex items-center gap-1.5"><Calendar size={14} />{formatPostDate(post.date)}</span>
           <span className="flex items-center gap-1.5"><Clock size={14} />{post.read} read</span>
