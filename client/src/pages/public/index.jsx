@@ -1,11 +1,171 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Calendar, Check, Clock, Mail, MapPin, Phone, Send } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Check, Clock, Link2, Linkedin, List, Mail, MapPin, Phone, Send, Twitter } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button, PlanCard, SectionHeading } from "../../components/common/ui";
 import { plans, posts, services } from "../../data/siteData";
 import { useAdminStore } from "../../store/useAdminStore";
 import { useAppStore } from "../../store/useAppStore";
+
+// Raw ISO timestamps from the server ("2026-07-22T00:28:05.113Z") and the
+// static posts' already-readable strings ("May 28, 2026") both parse fine
+// here, so every post's date renders the same human way regardless of source.
+function formatPostDate(value) {
+  if (!value) return "Recently";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+
+const slugifyHeading = (value) => String(value).toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+
+// A small, dependency-free stand-in for a real markdown parser: just enough
+// to recognize headings, blockquotes, fenced code and lists so the content
+// area can style them properly and the table of contents has something to
+// link to. Nothing beyond this line-by-line block scanning (no inline bold/
+// italic/links) - a full parser is a bigger addition than this redesign calls for.
+function parseContentBlocks(content) {
+  const lines = String(content || "").split("\n");
+  const blocks = [];
+  const seenIds = new Set();
+  let list = null;
+  let i = 0;
+
+  const flushList = () => {
+    if (list) blocks.push(list);
+    list = null;
+  };
+
+  const uniqueId = (text) => {
+    const base = slugifyHeading(text) || "section";
+    let id = base;
+    let suffix = 2;
+    while (seenIds.has(id)) { id = `${base}-${suffix}`; suffix += 1; }
+    seenIds.add(id);
+    return id;
+  };
+
+  while (i < lines.length) {
+    const trimmed = lines[i].trim();
+
+    if (!trimmed) { flushList(); i += 1; continue; }
+
+    const heading = trimmed.match(/^(#{1,3})\s+(.*)$/);
+    if (heading) {
+      flushList();
+      const text = heading[2];
+      blocks.push({ type: "heading", level: heading[1].length, text, id: uniqueId(text) });
+      i += 1;
+      continue;
+    }
+
+    if (trimmed.startsWith("```")) {
+      flushList();
+      const codeLines = [];
+      i += 1;
+      while (i < lines.length && !lines[i].trim().startsWith("```")) {
+        codeLines.push(lines[i]);
+        i += 1;
+      }
+      i += 1;
+      blocks.push({ type: "code", text: codeLines.join("\n") });
+      continue;
+    }
+
+    if (trimmed.startsWith(">")) {
+      flushList();
+      blocks.push({ type: "quote", text: trimmed.replace(/^>\s?/, "") });
+      i += 1;
+      continue;
+    }
+
+    if (/^[-*]\s+/.test(trimmed)) {
+      if (!list || list.ordered) { flushList(); list = { type: "list", ordered: false, items: [] }; }
+      list.items.push(trimmed.replace(/^[-*]\s+/, ""));
+      i += 1;
+      continue;
+    }
+
+    if (/^\d+\.\s+/.test(trimmed)) {
+      if (!list || !list.ordered) { flushList(); list = { type: "list", ordered: true, items: [] }; }
+      list.items.push(trimmed.replace(/^\d+\.\s+/, ""));
+      i += 1;
+      continue;
+    }
+
+    flushList();
+    blocks.push({ type: "paragraph", text: trimmed });
+    i += 1;
+  }
+  flushList();
+  return blocks;
+}
+
+const HEADING_STYLES = {
+  1: { tag: "h2", className: "mb-5 mt-14 text-3xl" },
+  2: { tag: "h2", className: "mb-4 mt-12 text-2xl" },
+  3: { tag: "h3", className: "mb-3 mt-9 text-xl" },
+};
+
+function ContentBlock({ block }) {
+  if (block.type === "heading") {
+    const { tag: Tag, className } = HEADING_STYLES[block.level] || HEADING_STYLES[3];
+    return <Tag id={block.id} className={`scroll-mt-28 font-extrabold tracking-tight text-text ${className}`}>{block.text}</Tag>;
+  }
+  if (block.type === "quote") {
+    return <blockquote className="my-7 border-l-4 border-primary/40 pl-5 italic text-muted">{block.text}</blockquote>;
+  }
+  if (block.type === "code") {
+    return <pre className="my-7 overflow-x-auto rounded-2xl bg-slate-900 p-5 text-sm leading-6 text-slate-100 dark:bg-black/40"><code>{block.text}</code></pre>;
+  }
+  if (block.type === "list") {
+    const Tag = block.ordered ? "ol" : "ul";
+    return <Tag className={`my-6 space-y-2 pl-6 marker:text-primary ${block.ordered ? "list-decimal" : "list-disc"}`}>
+      {block.items.map((item, index) => <li className="leading-[1.75]" key={index}>{item}</li>)}
+    </Tag>;
+  }
+  return <p className="my-5 leading-[1.8]">{block.text}</p>;
+}
+
+function ReadingProgressBar() {
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    const onScroll = () => {
+      const doc = document.documentElement;
+      const max = (doc.scrollHeight || 0) - doc.clientHeight;
+      setProgress(max > 0 ? Math.min(100, Math.max(0, (doc.scrollTop / max) * 100)) : 0);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  return <div className="fixed inset-x-0 top-0 z-[60] h-1 bg-transparent">
+    <div className="h-full bg-gradient-to-r from-primary to-accent" style={{ width: `${progress}%` }} />
+  </div>;
+}
+
+function ShareRow({ title, url }) {
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied.");
+    } catch {
+      toast.error("Could not copy the link.");
+    }
+  };
+  const targets = [
+    { label: "Share on X", icon: Twitter, href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` },
+    { label: "Share on LinkedIn", icon: Linkedin, href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}` },
+  ];
+  return <div className="mt-8 flex items-center gap-2.5">
+    <button type="button" onClick={copyLink} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-bold text-slate-200 transition hover:bg-white/10">
+      <Link2 size={14} />Copy link
+    </button>
+    {targets.map((target) => <a key={target.label} href={target.href} target="_blank" rel="noreferrer" aria-label={target.label} className="grid size-9 place-items-center rounded-full border border-white/15 bg-white/5 text-slate-200 transition hover:bg-white/10">
+      <target.icon size={15} />
+    </a>)}
+  </div>;
+}
 
 const normalizeStaticPost = (post) => ({ ...post, content: post.content || post.excerpt, image: post.image || null, source: "static" });
 const normalizeAdminPost = (post) => ({
@@ -64,13 +224,91 @@ export function About() {
 
 export function Blog() {
   const publishedPosts = usePublishedPosts();
-  return <><section className="bg-slate-50 py-24 text-center dark:bg-white/[.025]"><div className="container-shell"><span className="eyebrow">EkSaha field notes</span><h1 className="text-5xl font-extrabold tracking-[-.05em]">Ideas for better digital operations.</h1><p className="mx-auto mt-5 max-w-xl text-slate-500">Practical thinking on growth, websites and resilient IT for small teams.</p></div></section><section className="py-20"><div className="container-shell grid gap-6 lg:grid-cols-3">{publishedPosts.map((post, i) => <Link to={`/insights/${post.slug}`} className="panel group overflow-hidden" key={`${post.source}-${post.slug}`}>{post.image ? <img src={post.image} alt={post.title} loading="lazy" className="h-48 w-full object-cover" /> : <div className={`h-48 bg-gradient-to-br ${services[i % services.length].accent}`} />}<div className="p-6"><div className="text-xs font-bold uppercase tracking-wider text-electric">{post.category}</div><h2 className="mt-3 text-xl font-bold leading-7 group-hover:text-electric">{post.title}</h2><p className="mt-3 text-sm leading-6 text-slate-500">{post.excerpt}</p><div className="mt-6 flex gap-4 text-xs text-slate-400"><span className="flex gap-1"><Calendar size={13}/>{post.date}</span><span className="flex gap-1"><Clock size={13}/>{post.read}</span></div></div></Link>)}</div>{publishedPosts.length === 0 && <div className="container-shell"><div className="panel p-10 text-center text-slate-500">No published insights yet.</div></div>}</section></>;
+  return <><section className="bg-slate-50 py-24 text-center dark:bg-white/[.025]"><div className="container-shell"><span className="eyebrow">EkSaha field notes</span><h1 className="text-5xl font-extrabold tracking-[-.05em]">Ideas for better digital operations.</h1><p className="mx-auto mt-5 max-w-xl text-slate-500">Practical thinking on growth, websites and resilient IT for small teams.</p></div></section><section className="py-20"><div className="container-shell grid gap-6 lg:grid-cols-3">{publishedPosts.map((post, i) => <Link to={`/insights/${post.slug}`} className="panel group overflow-hidden" key={`${post.source}-${post.slug}`}>{post.image ? <img src={post.image} alt={post.title} loading="lazy" className="h-48 w-full object-cover" /> : <div className={`h-48 bg-gradient-to-br ${services[i % services.length].accent}`} />}<div className="p-6"><div className="text-xs font-bold uppercase tracking-wider text-electric">{post.category}</div><h2 className="mt-3 text-xl font-bold leading-7 group-hover:text-electric">{post.title}</h2><p className="mt-3 text-sm leading-6 text-slate-500">{post.excerpt}</p><div className="mt-6 flex gap-4 text-xs text-slate-400"><span className="flex gap-1"><Calendar size={13}/>{formatPostDate(post.date)}</span><span className="flex gap-1"><Clock size={13}/>{post.read}</span></div></div></Link>)}</div>{publishedPosts.length === 0 && <div className="container-shell"><div className="panel p-10 text-center text-slate-500">No published insights yet.</div></div>}</section></>;
 }
 
 export function BlogPost() {
-  const { slug } = useParams(); const publishedPosts = usePublishedPosts(); const post = publishedPosts.find(p => p.slug === slug) || publishedPosts[0];
+  const { slug } = useParams();
+  const publishedPosts = usePublishedPosts();
+  const post = publishedPosts.find((p) => p.slug === slug) || publishedPosts[0];
+  const blocks = useMemo(() => parseContentBlocks(post?.content), [post?.content]);
+
   if (!post) return <NotFound />;
-  return <article><header className="bg-ink py-24 text-white"><div className="container-shell max-w-4xl"><Link to="/insights" className="flex items-center gap-2 text-sm text-blue-300"><ArrowLeft size={15}/> Back to insights</Link><div className="mt-10 text-sm font-bold uppercase tracking-wider text-blue-300">{post.category}</div><h1 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-6xl">{post.title}</h1><div className="mt-6 flex gap-5 text-sm text-slate-400"><span>{post.date}</span><span>{post.read} read</span></div></div></header>{post.image && <div className="container-shell max-w-4xl pt-14"><img src={post.image} alt={post.title} loading="lazy" className="aspect-[16/7] w-full rounded-3xl object-cover" /></div>}<div className="container-shell max-w-3xl py-20 text-lg leading-8 text-slate-600 dark:text-slate-300"><p className="text-xl leading-9">{post.excerpt}</p>{post.content.split("\n").filter(Boolean).map((paragraph, index) => <p className="mt-5" key={`${post.slug}-${index}`}>{paragraph}</p>)}</div></article>;
+
+  const headings = blocks.filter((block) => block.type === "heading");
+  const showToc = headings.length > 1;
+
+  const others = publishedPosts.filter((item) => `${item.source}-${item.slug}` !== `${post.source}-${post.slug}`);
+  const related = [...others.filter((item) => item.category === post.category), ...others.filter((item) => item.category !== post.category)].slice(0, 3);
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+
+  return <article>
+    <ReadingProgressBar />
+    <header className="relative overflow-hidden bg-ink py-20 text-white sm:py-24">
+      <div className="grid-mask absolute inset-0 opacity-70" />
+      <div className="absolute right-[8%] top-10 size-72 rounded-full bg-blue-600/20 blur-[110px]" />
+      <div className="container-shell relative max-w-4xl">
+        <Link to="/insights" className="inline-flex items-center gap-2 text-sm font-semibold text-blue-300 transition hover:text-blue-200"><ArrowLeft size={15} /> Back to insights</Link>
+        <div className="eyebrow mt-8 border-blue-400/20 bg-blue-400/10 text-blue-200">{post.category}</div>
+        <h1 className="mt-5 text-4xl font-extrabold leading-[1.12] tracking-[-.03em] sm:text-5xl lg:text-6xl">{post.title}</h1>
+        <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-400">
+          <span className="flex items-center gap-2"><span className="grid size-7 place-items-center rounded-lg bg-primary text-xs font-extrabold text-primary-foreground">E</span>By EkSaha Team</span>
+          <span className="flex items-center gap-1.5"><Calendar size={14} />{formatPostDate(post.date)}</span>
+          <span className="flex items-center gap-1.5"><Clock size={14} />{post.read} read</span>
+        </div>
+        <ShareRow title={post.title} url={shareUrl} />
+      </div>
+    </header>
+
+    {post.image && <div className="container-shell max-w-5xl pt-14">
+      <img src={post.image} alt={post.title} loading="lazy" className="aspect-[16/7] w-full rounded-3xl object-cover shadow-xl" />
+    </div>}
+
+    <div className="container-shell max-w-6xl py-16 sm:py-20">
+      <div className="lg:grid lg:grid-cols-[220px_1fr] lg:gap-14">
+        {showToc && <aside className="hidden lg:block">
+          <div className="sticky top-28">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted"><List size={13} />On this page</div>
+            <nav className="mt-4 space-y-2.5 border-l border-border pl-4 text-sm">
+              {headings.map((heading) => <a key={heading.id} href={`#${heading.id}`} className={`block text-muted transition hover:text-primary ${heading.level >= 3 ? "pl-3 text-xs" : ""}`}>{heading.text}</a>)}
+            </nav>
+          </div>
+        </aside>}
+
+        <div className="mx-auto w-full max-w-[68ch] text-[17px] leading-[1.8] text-slate-600 dark:text-slate-300">
+          <p className="text-xl leading-[1.65] text-text">{post.excerpt}</p>
+          {blocks.map((block, index) => <ContentBlock block={block} key={index} />)}
+
+          <div className="panel mt-16 flex flex-col items-start gap-4 p-7 sm:flex-row sm:items-center">
+            <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary text-lg font-extrabold text-primary-foreground">E</span>
+            <div>
+              <div className="font-bold text-text">Written by the EkSaha team</div>
+              <p className="mt-1 text-sm text-muted">Practical thinking on SEO, web, advertising and IT support from the specialists who do the work.</p>
+            </div>
+          </div>
+
+          <div className="mt-10 overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-accent p-9 text-center text-primary-foreground sm:p-12">
+            <h3 className="text-2xl font-extrabold sm:text-3xl">Ready to grow your business?</h3>
+            <p className="mx-auto mt-3 max-w-xl text-sm text-primary-foreground/85 sm:text-base">Get started with EkSaha and put SEO, web, advertising and IT support on autopilot.</p>
+            <Button to="/pricing" variant="secondary" className="mt-7 border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20">Get started with EkSaha <ArrowRight size={16} /></Button>
+          </div>
+        </div>
+      </div>
+
+      {related.length > 0 && <div className="mt-20">
+        <h3 className="text-xl font-extrabold text-text">Keep reading</h3>
+        <div className="mt-6 grid gap-5 sm:grid-cols-3">
+          {related.map((item, index) => <Link to={`/insights/${item.slug}`} className="panel group overflow-hidden" key={`${item.source}-${item.slug}`}>
+            {item.image ? <img src={item.image} alt={item.title} loading="lazy" className="h-32 w-full object-cover" /> : <div className={`h-32 bg-gradient-to-br ${services[index % services.length].accent}`} />}
+            <div className="p-5">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-electric">{item.category}</div>
+              <h4 className="mt-2 text-sm font-bold leading-5 text-text group-hover:text-electric">{item.title}</h4>
+            </div>
+          </Link>)}
+        </div>
+      </div>}
+    </div>
+  </article>;
 }
 
 export function Contact() {
