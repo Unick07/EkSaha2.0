@@ -3,9 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#051C3C" />
+    <meta name="theme-color" content="#F6FAF9" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="description" content="EkSaha - subscription IT, web, SEO and advertising support for growing businesses." />
-    <link rel="icon" type="image/svg+xml" href="/brand/eksaha-icon.svg" />
+    <link id="app-favicon" rel="icon" type="image/svg+xml" href="/brand/eksaha-icon.svg" />
+    <script>
+      (() => {
+        let preference = "system";
+        let savedTheme = "light";
+
+        try {
+          const savedState = JSON.parse(localStorage.getItem("eksaha-app"))?.state;
+          preference = savedState?.themePreference || "system";
+          savedTheme = savedState?.theme || "light";
+        } catch {
+          // A malformed preference should never prevent the application loading.
+        }
+
+        const systemDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const appDarkMode = preference === "manual"
+          ? savedTheme === "dark"
+          : systemDarkMode;
+        const favicon = document.getElementById("app-favicon");
+        const themeColor = document.querySelector('meta[name="theme-color"]');
+
+        document.documentElement.classList.toggle("dark", appDarkMode);
+        document.documentElement.style.colorScheme = appDarkMode ? "dark" : "light";
+        favicon.href = systemDarkMode ? "/brand/eksaha-icon-white.svg" : "/brand/eksaha-icon.svg";
+        themeColor.content = appDarkMode ? "#111827" : "#F6FAF9";
+      })();
+    </script>
     <title>EkSaha | Your on-demand digital team</title>
   </head>
   <body>

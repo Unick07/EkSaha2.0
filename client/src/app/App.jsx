@@ -44,15 +44,49 @@ const AdminSettings = from(adminPages, "AdminSettings");
 export default function App() {
   const restoreSession = useAppStore((state) => state.restoreSession);
   const theme = useAppStore((state) => state.theme);
+  const themePreference = useAppStore((state) => state.themePreference);
+  const syncThemeWithSystem = useAppStore((state) => state.syncThemeWithSystem);
 
   useEffect(() => {
     restoreSession();
   }, [restoreSession]);
 
-  // Applied here (not just in the public Navbar) so the class is set on every
-  // route, including dashboard/admin pages that never mount Navbar at all.
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
+    if (themePreference !== "system") return undefined;
+
+    const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
+    const applySystemTheme = (event) => syncThemeWithSystem(event.matches ? "dark" : "light");
+
+    applySystemTheme(colorScheme);
+    colorScheme.addEventListener("change", applySystemTheme);
+    return () => colorScheme.removeEventListener("change", applySystemTheme);
+  }, [syncThemeWithSystem, themePreference]);
+
+  // The favicon always follows the browser/device color scheme, independent
+  // of a manual in-app theme override, so it stays legible in the browser UI.
+  useEffect(() => {
+    const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
+    const applySystemFavicon = (event) => {
+      document.getElementById("app-favicon")?.setAttribute(
+        "href",
+        event.matches ? "/brand/eksaha-icon-white.svg" : "/brand/eksaha-icon.svg",
+      );
+    };
+
+    applySystemFavicon(colorScheme);
+    colorScheme.addEventListener("change", applySystemFavicon);
+    return () => colorScheme.removeEventListener("change", applySystemFavicon);
+  }, []);
+
+  // Keep the page and browser chrome in sync on every route,
+  // including dashboard/admin pages that never mount the public Navbar.
+  useEffect(() => {
+    const darkMode = theme === "dark";
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+
+    document.documentElement.classList.toggle("dark", darkMode);
+    document.documentElement.style.colorScheme = darkMode ? "dark" : "light";
+    themeColor?.setAttribute("content", darkMode ? "#111827" : "#F6FAF9");
   }, [theme]);
 
   return <><Suspense fallback={<PageLoader/>}><Routes>
