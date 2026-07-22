@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useParams } from "react-router-dom";
-import { AlertTriangle, ArrowLeft, ArrowRight, Calendar, Check, CheckCircle2, Clock, Copy, Info, Lightbulb } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Calendar, Check, CheckCircle2, Clock, Copy, Globe, Info, Lightbulb, Megaphone, Search, ShieldCheck, Sparkles, Target } from "lucide-react";
 import { Button } from "../../components/common/ui";
 import { services } from "../../data/siteData";
 import { formatPostDate, usePublishedPosts } from "./blogData";
@@ -270,6 +270,85 @@ function useActiveHeading(headingIds) {
   return activeId;
 }
 
+// Generic placeholder facts per category, shown in the right rail's "Did you
+// know?" card. Static for now, as specified - not derived from real data.
+const CATEGORY_FACTS = {
+  SEO: [
+    "73% of clicks go to the first 3 Google search results.",
+    "53% of all website traffic comes from organic search.",
+    "The average first-page Google result is 1,447 words long.",
+  ],
+  Web: [
+    "A 1-second delay in page load can reduce conversions by 7%.",
+    "88% of users are less likely to return after a bad experience.",
+    "Mobile devices drive over 60% of global web traffic.",
+  ],
+  Ads: [
+    "Google Ads reaches over 90% of internet users worldwide.",
+    "Retargeted ads see a 10x higher click-through rate on average.",
+    "Cost per click varies by more than 400% across industries.",
+  ],
+  "IT Support": [
+    "60% of small businesses close within 6 months of a major data breach.",
+    "Proactive IT maintenance can cut downtime by up to 85%.",
+    "Average IT downtime costs over $5,600 per minute.",
+  ],
+  Strategy: [
+    "Companies with a documented strategy grow 2x faster than those without.",
+    "70% of strategic plans fail from poor execution, not poor planning.",
+    "Quarterly strategy reviews outperform annual ones by 30%.",
+  ],
+  Insights: [
+    "Data-driven companies are 23x more likely to acquire customers.",
+    "Only 32% of businesses say they get real value from their data.",
+    "Teams that share insights weekly make decisions 5x faster.",
+  ],
+};
+const DEFAULT_FACTS = [
+  "Businesses using a subscription digital team save an average of 40% versus hiring in-house.",
+  "Consistent execution beats sporadic bursts of effort for long-term growth.",
+  "Small, senior teams often outperform larger, junior-heavy agencies.",
+];
+
+const CATEGORY_ICON = { SEO: Search, Web: Globe, Ads: Megaphone, "IT Support": ShieldCheck, Strategy: Target, Insights: Sparkles };
+
+// Left rail, below the ToC: a simple icon-based category card rather than a
+// cropped featured image - works for every post, including ones with no
+// image at all, and stays visually consistent post to post.
+function CategoryVisual({ category }) {
+  const Icon = CATEGORY_ICON[category] || Sparkles;
+  return <div className="panel flex flex-col items-center gap-2 p-5 text-center">
+    <span className="grid size-11 place-items-center rounded-2xl bg-primary/10 text-primary"><Icon size={20} /></span>
+    <div className="text-xs font-bold uppercase tracking-wider text-muted">Category</div>
+    <div className="text-sm font-bold text-text">{category}</div>
+  </div>;
+}
+
+function FunFactsCard({ category }) {
+  const facts = CATEGORY_FACTS[category] || DEFAULT_FACTS;
+  return <div className="panel p-5">
+    <div className="flex items-center gap-2.5">
+      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent"><Lightbulb size={16} /></span>
+      <h4 className="font-bold text-text">Did you know?</h4>
+    </div>
+    <ul className="mt-4 space-y-3">
+      {facts.map((fact, index) => <li className="flex gap-2.5 text-sm leading-6 text-muted" key={index}>
+        <span className="mt-2 size-1 shrink-0 rounded-full bg-accent" aria-hidden="true" />
+        {fact}
+      </li>)}
+    </ul>
+  </div>;
+}
+
+function SidebarCta() {
+  return <div className="panel p-5">
+    <span className="grid size-9 place-items-center rounded-xl bg-primary text-sm font-extrabold text-primary-foreground">E</span>
+    <h4 className="mt-3 font-bold text-text">Ready to grow your business?</h4>
+    <p className="mt-1.5 text-sm leading-6 text-muted">Let's build something great together.</p>
+    <Button to="/signup" className="mt-4 w-full">Get Started</Button>
+  </div>;
+}
+
 function TableOfContents({ headings, activeId }) {
   return <nav aria-label="Table of contents" className="text-sm">
     <div className="text-xs font-bold uppercase tracking-wider text-muted">On this page</div>
@@ -328,22 +407,30 @@ export default function BlogPost() {
     </div>}
 
     <div className="container-shell py-14 sm:py-16">
-      {/* Both side rails are always real grid children (never conditionally
-          removed) so the 3-column layout can't collapse for posts with no
-          headings - the exact bug from two redesigns ago, fixed properly
-          this time by never letting the grid have fewer children than tracks. */}
+      {/* Both <aside> elements are always real grid children - only their
+          inner content (e.g. the ToC) is conditional - so the 3-column
+          layout can't collapse for posts with no headings, the exact bug
+          from two redesigns ago. Each rail's contents share one sticky
+          wrapper so they scroll and stick together as a single unit rather
+          than overlapping if stuck independently. */}
       <div className="lg:grid lg:grid-cols-[240px_minmax(0,760px)_240px] lg:gap-10 xl:gap-14">
         <aside className="hidden lg:block">
-          {headings.length > 1 && <div className="sticky top-28">
-            <TableOfContents headings={headings} activeId={activeHeadingId} />
-          </div>}
+          <div className="sticky top-28 space-y-4">
+            {headings.length > 1 && <TableOfContents headings={headings} activeId={activeHeadingId} />}
+            <CategoryVisual category={post.category} />
+          </div>
         </aside>
 
         <div className="mx-auto w-full max-w-[760px] text-[18px] leading-[1.8] text-slate-600 dark:text-slate-300">
           {blocks.map((block, index) => <ContentBlock block={block} key={index} />)}
         </div>
 
-        <aside className="hidden lg:block" aria-hidden="true" />
+        <aside className="hidden lg:block">
+          <div className="sticky top-28 space-y-4">
+            <FunFactsCard category={post.category} />
+            <SidebarCta />
+          </div>
+        </aside>
       </div>
 
       {related.length > 0 && <div className="mx-auto mt-16 max-w-5xl">
