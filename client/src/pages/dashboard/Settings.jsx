@@ -69,9 +69,9 @@ export default function Settings() {
 
   return <div className="mx-auto max-w-3xl space-y-6">
     <form onSubmit={saveProfile} className="panel p-7">
-      <div className="flex items-center gap-4 border-b border-slate-100 pb-6 dark:border-white/10">
-        <span className="grid size-16 place-items-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 text-xl font-bold text-white">{(profile?.name || "?").split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase()}</span>
-        <div><h2 className="font-bold">Profile details</h2><p className="text-sm text-slate-500">Keep your contact information current.</p></div>
+      <div className="flex items-center gap-4 border-b border-border pb-6 dark:border-white/10">
+        <span className="grid size-16 place-items-center rounded-full bg-gradient-to-br from-brand-navy to-brand-teal text-xl font-bold text-white">{(profile?.name || "?").split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase()}</span>
+        <div><h2 className="font-bold">Profile details</h2><p className="text-sm text-muted">Keep your contact information current.</p></div>
       </div>
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         <label className="text-sm font-semibold">Full name<input name="name" required className="input mt-2" defaultValue={profile?.name}/></label>
@@ -82,13 +82,13 @@ export default function Settings() {
 
     <form onSubmit={changePassword} className="panel p-7">
       <h3 className="font-bold">Change password</h3>
-      <p className="mt-1 text-sm text-slate-500">Choose a strong password you don't use anywhere else.</p>
+      <p className="mt-1 text-sm text-muted">Choose a strong password you don't use anywhere else.</p>
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         <label className="text-sm font-semibold sm:col-span-2">Current password<input name="currentPassword" required type="password" className="input mt-2"/></label>
         <label className="text-sm font-semibold">New password
           <input name="newPassword" required type="password" minLength={8} className="input mt-2" value={newPassword} onChange={(event) => setNewPassword(event.target.value)}/>
           {newPassword && <div className="mt-2">
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-raised">
               <div className={`h-full rounded-full transition-all ${strength.barColor}`} style={{ width: `${(strength.passed / PASSWORD_RULES.length) * 100}%` }} />
             </div>
             <div className={`mt-1.5 text-xs font-bold ${strength.textColor}`}>{strength.label}</div>

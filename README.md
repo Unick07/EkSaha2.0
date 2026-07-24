@@ -56,10 +56,12 @@ npm run check
 npm audit
 ```
 
-## Demo Access
+## Disposable Local Access
 
-- User: `user@eksaha.dev` / `password`
-- Admin: `admin@eksaha.dev` / `password`
+These in-memory accounts are available only through the development API on localhost. They are never written to MongoDB or production D1, and their sessions reset whenever the local API restarts.
+
+- User: `local.user@eksaha.test` / `LocalUser!2026`
+- Admin: `local.admin@eksaha.test` / `LocalAdmin!2026`
 
 Without external payment or OAuth credentials, those integrations remain in demo mode.
 # EkSaha

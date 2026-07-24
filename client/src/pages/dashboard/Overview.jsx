@@ -81,7 +81,7 @@ export default function Overview() {
   ];
 
   return <div className="space-y-7">
-    <div className="overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-accent p-7 text-primary-foreground">
+    <div className="overflow-hidden rounded-3xl bg-gradient-to-r from-brand-navy to-brand-teal-deep p-7 text-white">
       <div className="flex flex-col justify-between gap-7 sm:flex-row sm:items-end">
         <div>
           <div className="text-sm opacity-80">Current plan</div>
@@ -96,7 +96,7 @@ export default function Overview() {
         <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-amber-500/15 text-amber-600"><MailWarning size={20}/></span>
         <div>
           <h3 className="font-bold">Please verify your email address</h3>
-          <p className="mt-1 text-sm text-slate-500">We sent a verification code to {user.email}. Check your inbox to confirm your account.</p>
+          <p className="mt-1 text-sm text-muted">We sent a verification code to {user.email}. Check your inbox to confirm your account.</p>
         </div>
       </div>
       <Button onClick={resendVerification} disabled={resending} className="w-full shrink-0 sm:w-auto">{resending ? "Sending..." : "Resend verification"}</Button>
@@ -106,26 +106,26 @@ export default function Overview() {
         <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/15 text-primary"><Sparkles size={20}/></span>
         <div>
           <h3 className="font-bold">Choose a plan to unlock your dashboard</h3>
-          <p className="mt-1 text-sm text-slate-500">You're signed in, but no plan is attached to your account yet — this is common right after signing up with Google. Pick a plan to get full access to services, tickets and billing.</p>
+          <p className="mt-1 text-sm text-muted">You're signed in, but no plan is attached to your account yet — this is common right after signing up with Google. Pick a plan to get full access to services, tickets and billing.</p>
         </div>
       </div>
       <Button to="/signup?step=2&google=true" className="w-full shrink-0 sm:w-auto">Choose your plan <ArrowRight size={16}/></Button>
     </div>}
-    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{stats.map(([Icon, value, label, copy]) => <div className="panel p-5" key={label}><Icon size={20} className="text-electric"/><div className="mt-5 text-2xl font-extrabold">{value}</div><div className="mt-1 text-sm font-semibold">{label}</div><div className="mt-1 text-xs text-slate-500">{copy}</div></div>)}</div>
+    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{stats.map(([Icon, value, label, copy]) => <div className="panel p-5" key={label}><Icon size={20} className="text-electric"/><div className="mt-5 text-2xl font-extrabold">{value}</div><div className="mt-1 text-sm font-semibold">{label}</div><div className="mt-1 text-xs text-muted">{copy}</div></div>)}</div>
     <div className="grid gap-7 xl:grid-cols-[1.3fr_.7fr]">
       <div className="panel p-6">
         <div className="flex items-center justify-between"><h3 className="font-bold">Active work</h3><Button to="/dashboard/services" variant="ghost">View all</Button></div>
-        <div className="mt-4 text-sm text-slate-500">No active services yet. Visit the services workspace to request one.</div>
+        <div className="mt-4 text-sm text-muted">No active services yet. Visit the services workspace to request one.</div>
       </div>
       <div className="panel p-6">
         <h3 className="font-bold">Your strategist</h3>
-        {strategistLoading ? <p className="mt-6 text-sm text-slate-500">Loading...</p> : strategist ? <>
+        {strategistLoading ? <p className="mt-6 text-sm text-muted">Loading...</p> : strategist ? <>
           <div className="mt-6 flex items-center gap-4">
-            <span className="grid size-14 place-items-center rounded-full bg-gradient-to-br from-violet-400 to-blue-500 text-lg font-bold text-white">{initials(strategist.name)}</span>
-            <div><div className="font-bold">{strategist.name}</div><div className="text-xs capitalize text-slate-500">{strategist.role}</div></div>
+            <span className="grid size-14 place-items-center rounded-full bg-gradient-to-br from-brand-navy to-brand-teal text-lg font-bold text-white">{initials(strategist.name)}</span>
+            <div><div className="font-bold">{strategist.name}</div><div className="text-xs capitalize text-muted">{strategist.role}</div></div>
           </div>
           <Button onClick={() => setMessageOpen(true)} variant="secondary" className="mt-6 w-full">Message {strategist.name.split(" ")[0]}</Button>
-        </> : <p className="mt-6 text-sm leading-6 text-slate-500">No strategist assigned yet. Our team will pair you with one shortly.</p>}
+        </> : <p className="mt-6 text-sm leading-6 text-muted">No strategist assigned yet. Our team will pair you with one shortly.</p>}
       </div>
     </div>
     <Modal open={messageOpen} onClose={() => setMessageOpen(false)} title={`Message ${strategist?.name || "your strategist"}`} description="Your strategist will reply in the dashboard and by email."><form onSubmit={sendMessage}><textarea required className="input min-h-36 resize-none" placeholder="Share a question or update..." /><Button className="mt-4 w-full">Send message <Send size={16}/></Button></form></Modal>
