@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+<<<<<<< HEAD
 import { ArrowLeft, ArrowRight, Calendar, Clock, Mail, MapPin, Phone, Send } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button, SectionHeading } from "../../components/common/ui";
@@ -37,6 +37,14 @@ function usePublishedPosts() {
 
   return [...publishedAdminPosts, ...posts.map(normalizeStaticPost)];
 }
+=======
+import { ArrowRight, Calendar, Check, Clock, Mail, MapPin, Phone, Send } from "lucide-react";
+import toast from "react-hot-toast";
+import { Button, PlanCard, SectionHeading } from "../../components/common/ui";
+import { plans, services } from "../../data/siteData";
+import { useAppStore } from "../../store/useAppStore";
+import { formatPostDate, usePublishedPosts } from "./blogData";
+>>>>>>> main
 
 export function ServicePage() {
   const { slug } = useParams();
@@ -58,6 +66,7 @@ export function About() {
 
 export function Blog() {
   const publishedPosts = usePublishedPosts();
+<<<<<<< HEAD
   return <><section className="bg-surface-raised/60 py-24 text-center"><div className="container-shell"><span className="eyebrow">EkSaha field notes</span><h1 className="text-5xl font-extrabold tracking-[-.05em]">Ideas for better digital operations.</h1><p className="mx-auto mt-5 max-w-xl text-muted">Practical thinking on growth, websites and resilient IT for small teams.</p></div></section><section className="py-20"><div className="container-shell grid gap-6 lg:grid-cols-3">{publishedPosts.map((post, i) => <Link to={`/insights/${post.slug}`} className="panel group overflow-hidden" key={`${post.source}-${post.slug}`}><div className={`h-48 bg-gradient-to-br ${services[i % services.length].accent}`} /><div className="p-6"><div className="text-xs font-bold uppercase tracking-wider text-primary">{post.category}</div><h2 className="mt-3 text-xl font-bold leading-7 group-hover:text-primary">{post.title}</h2><p className="mt-3 text-sm leading-6 text-muted">{post.excerpt}</p><div className="mt-6 flex gap-4 text-xs text-muted/75"><span className="flex gap-1"><Calendar size={13}/>{post.date}</span><span className="flex gap-1"><Clock size={13}/>{post.read}</span></div></div></Link>)}</div>{publishedPosts.length === 0 && <div className="container-shell"><div className="panel p-10 text-center text-muted">No published insights yet.</div></div>}</section></>;
 }
 
@@ -66,12 +75,22 @@ export function BlogPost() {
   if (!post) return <NotFound />;
   return <article><header className="bg-ink py-24 text-white"><div className="container-shell max-w-4xl"><Link to="/insights" className="flex items-center gap-2 text-sm text-primary"><ArrowLeft size={15}/> Back to insights</Link><div className="mt-10 text-sm font-bold uppercase tracking-wider text-primary">{post.category}</div><h1 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-6xl">{post.title}</h1><div className="mt-6 flex gap-5 text-sm text-on-brand-muted"><span>{post.date}</span><span>{post.read} read</span></div></div></header><div className="container-shell max-w-3xl py-20 text-lg leading-8 text-muted"><p className="text-xl leading-9">{post.excerpt}</p>{post.content.split("\n").filter(Boolean).map((paragraph, index) => <p className="mt-5" key={`${post.slug}-${index}`}>{paragraph}</p>)}</div></article>;
 }
+=======
+  return <><section className="bg-slate-50 py-24 text-center dark:bg-white/[.025]"><div className="container-shell"><span className="eyebrow">EkSaha field notes</span><h1 className="text-5xl font-extrabold tracking-[-.05em]">Ideas for better digital operations.</h1><p className="mx-auto mt-5 max-w-xl text-slate-500">Practical thinking on growth, websites and resilient IT for small teams.</p></div></section><section className="py-20"><div className="container-shell grid gap-6 lg:grid-cols-3">{publishedPosts.map((post, i) => <Link to={`/insights/${post.slug}`} className="panel group overflow-hidden" key={`${post.source}-${post.slug}`}>{post.image ? <img src={post.image} alt={post.title} loading="lazy" className="h-48 w-full object-cover" /> : <div className={`h-48 bg-gradient-to-br ${services[i % services.length].accent}`} />}<div className="p-6"><div className="text-xs font-bold uppercase tracking-wider text-electric">{post.category}</div><h2 className="mt-3 text-xl font-bold leading-7 group-hover:text-electric">{post.title}</h2><p className="mt-3 text-sm leading-6 text-slate-500">{post.excerpt}</p><div className="mt-6 flex gap-4 text-xs text-slate-400"><span className="flex gap-1"><Calendar size={13}/>{formatPostDate(post.date)}</span><span className="flex gap-1"><Clock size={13}/>{post.read}</span></div></div></Link>)}</div>{publishedPosts.length === 0 && <div className="container-shell"><div className="panel p-10 text-center text-slate-500">No published insights yet.</div></div>}</section></>;
+}
+
+export { default as BlogPost } from "./BlogPost";
+>>>>>>> main
 
 export function Contact() {
   const submit = e => { e.preventDefault(); e.currentTarget.reset(); toast.success("Thanks — we’ll be in touch within one business day."); };
   return <section className="py-24"><div className="container-shell grid gap-14 lg:grid-cols-[.8fr_1.2fr]"><div><span className="eyebrow">Let’s talk</span><h1 className="text-5xl font-extrabold tracking-[-.05em]">What are you trying to move forward?</h1><p className="mt-6 text-lg leading-8 text-muted">Tell us about the goal, the friction, or the idea. We’ll come back with a clear point of view.</p><div className="mt-10 space-y-5 text-sm"><div className="flex gap-3"><Mail className="text-electric" size={19}/>hello@eksaha.com</div><div className="flex gap-3"><Phone className="text-electric" size={19}/>+1 (555) 014-8820</div><div className="flex gap-3"><MapPin className="text-electric" size={19}/>Remote-first · working worldwide</div></div></div><form onSubmit={submit} className="panel grid gap-5 p-7 sm:grid-cols-2"><label className="text-sm font-semibold">Name<input required className="input mt-2" placeholder="Your name"/></label><label className="text-sm font-semibold">Work email<input required type="email" className="input mt-2" placeholder="you@company.com"/></label><label className="text-sm font-semibold sm:col-span-2">What can we help with?<select className="input mt-2"><option>SEO & organic growth</option><option>Website design & development</option><option>Digital advertising</option><option>IT support</option><option>A combination</option></select></label><label className="text-sm font-semibold sm:col-span-2">Tell us a little more<textarea required className="input mt-2 min-h-36 resize-none" placeholder="Goals, timing, current challenges..."/></label><Button className="sm:col-span-2">Send inquiry <Send size={16}/></Button></form></div></section>;
 }
 
+<<<<<<< HEAD
 export function NotFound() {
   return <section className="grid min-h-[70vh] place-items-center text-center"><div><div className="text-8xl font-extrabold text-primary/20 dark:text-primary/10">404</div><h1 className="mt-[-25px] text-3xl font-bold">This page took a wrong turn.</h1><p className="mt-4 text-muted">The link may be old, but your next step doesn’t have to be.</p><Button to="/" className="mt-7">Back home</Button></div></section>;
 }
+=======
+export { default as NotFound } from "./NotFound";
+>>>>>>> main

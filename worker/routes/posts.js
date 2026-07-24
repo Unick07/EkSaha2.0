@@ -31,8 +31,8 @@ export async function handlePosts(request, env, path) {
     const timestamp = nowIso();
     const postId = generateId();
     await run(env.DB, `
-      INSERT INTO blog_posts (id, title, slug, excerpt, content, category, tags, published, author_id, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO blog_posts (id, title, slug, excerpt, content, category, tags, published, author_id, image_url, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       postId,
       body.title,
@@ -43,6 +43,7 @@ export async function handlePosts(request, env, path) {
       stringifyJson(body.tags),
       publishedFrom(body),
       user.id,
+      body.image || null,
       timestamp,
       timestamp,
     ]);
@@ -56,7 +57,7 @@ export async function handlePosts(request, env, path) {
     const body = await readJson(request);
     await run(env.DB, `
       UPDATE blog_posts
-      SET title = ?, slug = ?, excerpt = ?, content = ?, category = ?, tags = ?, published = ?, updated_at = ?
+      SET title = ?, slug = ?, excerpt = ?, content = ?, category = ?, tags = ?, published = ?, image_url = ?, updated_at = ?
       WHERE id = ?
     `, [
       body.title ?? existing.title,
@@ -66,6 +67,7 @@ export async function handlePosts(request, env, path) {
       body.category ?? existing.category,
       body.tags ? stringifyJson(body.tags) : existing.tags,
       body.published != null || body.status ? publishedFrom(body) : existing.published,
+      body.image !== undefined ? (body.image || null) : existing.image_url,
       nowIso(),
       id,
     ]);

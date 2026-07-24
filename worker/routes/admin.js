@@ -3,6 +3,8 @@ import { all, first, generateId, normalizeUser, nowIso, run } from "../lib/db.js
 import { error, json, readJson } from "../lib/http.js";
 
 const TEAM_ROLES = ["admin", "support", "billing"];
+const IMAGE_EXT_BY_TYPE = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 export async function handleAdmin(request, env, path) {
   if (!path.startsWith("/admin")) return null;
@@ -59,6 +61,26 @@ export async function handleAdmin(request, env, path) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [id, body.name.trim(), email, await hashPassword(body.password), role, null, null, timestamp, timestamp]);
     return json(normalizeUser(await first(env.DB, "SELECT * FROM users WHERE id = ?", [id])), { status: 201 }, env, request);
+  }
+
+  if (request.method === "POST" && path === "/admin/upload-image") {
+    await requireRole(request, env, ["admin", "support"]);
+    if (!env.BLOG_IMAGES) return error("Image storage is not configured", 500, env, request);
+
+    const form = await request.formData();
+    const file = form.get("image");
+    if (!(file instanceof File)) return error("An image file is required", 400, env, request);
+
+    // Extension is derived from the validated MIME type, not the client-
+    // supplied filename, so a mislabeled file can't smuggle in a bad extension.
+    const ext = IMAGE_EXT_BY_TYPE[file.type];
+    if (!ext) return error("Images must be JPG, PNG, WEBP or GIF", 400, env, request);
+    if (file.size > MAX_IMAGE_BYTES) return error("Images must be under 5MB", 400, env, request);
+
+    const filename = `${Date.now()}-${generateId().slice(0, 8)}.${ext}`;
+    await env.BLOG_IMAGES.put(filename, await file.arrayBuffer(), { httpMetadata: { contentType: file.type } });
+    const url = `${env.CLIENT_URL || "https://eksaha.com"}/api/images/${filename}`;
+    return json({ url, filename }, { status: 201 }, env, request);
   }
 
   const roleChangeId = path.match(/^\/admin\/users\/([^/]+)\/role$/)?.[1];

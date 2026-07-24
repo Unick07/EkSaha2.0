@@ -81,6 +81,7 @@ export function normalizePost(row) {
     excerpt: row.excerpt,
     content: row.content,
     category: row.category,
+    image: row.image_url ?? row.image ?? null,
     tags: parseJson(row.tags),
     published: bool(row.published),
     status: bool(row.published) ? "Published" : "Draft",

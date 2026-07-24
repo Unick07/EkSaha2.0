@@ -13,6 +13,10 @@ binding = "DB"
 database_name = "eksaha-db"
 database_id = "a31db9fd-1f2d-4b10-9373-79325b0c905c"
 
+[[r2_buckets]]
+binding = "BLOG_IMAGES"
+bucket_name = "eksaha-blog-images"
+
 [vars]
 CLIENT_URL = "https://eksaha.com"
 RESEND_FROM_EMAIL = "accounts@eksaha.com"
