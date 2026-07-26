@@ -104,6 +104,7 @@ export function normalizeTicket(row, messages = undefined) {
     priority: row.priority,
     status: row.status,
     category: row.category || "General",
+    serviceId: row.service_id ?? row.serviceId ?? null,
     assignedTo: row.assigned_to ?? row.assignedTo ?? null,
     assignee: row.assignee_name || row.assignee || "Unassigned",
     messages,

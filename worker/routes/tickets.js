@@ -281,9 +281,9 @@ export async function handleTickets(request, env, path) {
     const timestamp = nowIso();
     const ticketId = body.id || generateId();
     await run(env.DB, `
-      INSERT INTO tickets (id, user_id, subject, priority, status, assigned_to, category, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [ticketId, user.id, body.subject, (body.priority || "medium").toLowerCase(), "open", body.assignedTo || null, normalizeCategory(body.category), timestamp, timestamp]);
+      INSERT INTO tickets (id, user_id, subject, priority, status, assigned_to, category, service_id, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [ticketId, user.id, body.subject, (body.priority || "medium").toLowerCase(), "open", body.assignedTo || null, normalizeCategory(body.category), body.serviceId || null, timestamp, timestamp]);
     await run(env.DB, `
       INSERT INTO ticket_messages (id, ticket_id, sender_id, body, attachments, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?)

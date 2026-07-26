@@ -1,4 +1,4 @@
-import { requireRole } from "../lib/auth.js";
+import { requireRole, requireUser } from "../lib/auth.js";
 import { all, first, generateId, normalizeService, nowIso, run } from "../lib/db.js";
 import { error, json, readJson } from "../lib/http.js";
 
@@ -14,6 +14,21 @@ async function assertValidOwner(env, ownerId) {
 
 export async function handleServices(request, env, path) {
   if (!path.startsWith("/services")) return null;
+
+  // Open to any authenticated user (not just staff) - powers the "My services"
+  // dashboard page and the ticket create form's service picker.
+  if (request.method === "GET" && path === "/services/me") {
+    const user = await requireUser(request, env);
+    const rows = await all(env.DB, `
+      SELECT services.*
+      FROM service_assignments
+      JOIN services ON services.id = service_assignments.service_id
+      WHERE service_assignments.user_id = ? AND service_assignments.status = 'Active' AND services.status != 'Archived'
+      ORDER BY service_assignments.assigned_at DESC
+    `, [user.id]);
+    return json(rows.map(normalizeService), {}, env, request);
+  }
+
   await requireRole(request, env, ["admin", "support", "billing"]);
 
   if (request.method === "GET" && path === "/services") {

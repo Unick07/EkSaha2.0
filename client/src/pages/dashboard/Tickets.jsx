@@ -27,7 +27,7 @@ const PRIORITIES = [
 ];
 
 const MESSAGE_MAX = 2000;
-const emptyForm = { subject: "", category: "General", priority: "medium", message: "" };
+const emptyForm = { subject: "", category: "General", priority: "medium", serviceId: "", message: "" };
 
 export default function Tickets() {
   const { user } = useAuth();
@@ -35,6 +35,7 @@ export default function Tickets() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [services, setServices] = useState([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -64,6 +65,14 @@ export default function Tickets() {
     const interval = window.setInterval(() => loadTickets(false), 15000);
     return () => window.clearInterval(interval);
   }, [loadTickets]);
+
+  useEffect(() => {
+    let active = true;
+    api.get("/services/me")
+      .then(({ data }) => { if (active) setServices(data || []); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   const closeCreate = () => {
     if (submitting) return;
@@ -140,6 +149,17 @@ export default function Tickets() {
             })}
           </div>
         </div>
+
+        {services.length > 0 && <label className="block text-sm font-semibold">Related service (optional)
+          <select
+            value={form.serviceId}
+            onChange={(event) => setForm((prev) => ({ ...prev, serviceId: event.target.value }))}
+            className="input mt-2"
+          >
+            <option value="">No specific service</option>
+            {services.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}
+          </select>
+        </label>}
 
         <div>
           <span className="block text-sm font-semibold">Priority</span>
