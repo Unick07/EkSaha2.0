@@ -36,7 +36,6 @@ const AdminUsersReadOnly = from(adminPages, "AdminUsersReadOnly");
 const AdminSubscriptions = from(adminPages, "AdminSubscriptions");
 const AdminTickets = from(adminPages, "AdminTickets");
 const AdminTeam = from(adminPages, "AdminTeam");
-const AdminAnalytics = from(adminPages, "AdminAnalytics");
 const AdminInvoices = from(adminPages, "AdminInvoices");
 const ResourceManager = from(adminPages, "ResourceManager");
 const AdminSettings = from(adminPages, "AdminSettings");
@@ -124,7 +123,6 @@ export default function App() {
       <Route path="team" element={<AdminTeam/>}/>
       <Route path="blog" element={<ResourceManager type="Blog"/>}/>
       <Route path="invoices" element={<AdminInvoices/>}/>
-      <Route path="analytics" element={<AdminAnalytics/>}/>
       <Route path="settings" element={<AdminSettings/>}/>
     </Route>
     <Route path="/support" element={<AppShell variant="support"/>}>
