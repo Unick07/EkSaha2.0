@@ -15,3 +15,9 @@ const ticketsRouteByRole = {
 };
 
 export const ticketsRouteForRole = (role) => ticketsRouteByRole[role] || "/dashboard/tickets";
+
+export const roleBadgeClass = {
+  admin: "bg-primary/10 text-primary",
+  support: "bg-primary/10 text-primary",
+  billing: "bg-amber-500/10 text-amber-600 dark:text-amber-300",
+};

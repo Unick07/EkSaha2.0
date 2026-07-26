@@ -132,18 +132,6 @@ const API_ENDPOINTS = { Blog: "/posts" };
 const DELETE_SUPPORTED = { Blog: true };
 
 const configs = {
-  Services: {
-    collection: "services",
-    singular: "Service",
-    columns: ["Name", "Owner", "Active clients", "Status"],
-    fields: [
-      { name: "name", label: "Service name" },
-      { name: "owner", label: "Owner" },
-      { name: "activeClients", label: "Active clients", type: "number" },
-      { name: "status", label: "Status", options: ["Active", "Paused"] },
-    ],
-    values: (item) => [item.name, item.owner, item.activeClients, item.status],
-  },
   Blog: {
     collection: "posts",
     singular: "Blog",

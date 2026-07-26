@@ -6,18 +6,13 @@ import ActionMenu from "../../components/dashboard/ActionMenu";
 import { ConfirmDialog, Modal } from "../../components/dashboard/Modal";
 import api from "../../services/http/api";
 import useHeaderAction from "../../hooks/useHeaderAction";
+import { roleBadgeClass } from "../../lib/roles";
 
 const TEAM_ROLES = ["admin", "support", "billing"];
 
 const formatDate = (value) => {
   if (!value) return "Not available";
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
-};
-
-const roleBadgeClass = {
-  admin: "bg-primary/10 text-primary",
-  support: "bg-primary/10 text-primary",
-  billing: "bg-amber-500/10 text-amber-600 dark:text-amber-300",
 };
 
 export default function Team() {
