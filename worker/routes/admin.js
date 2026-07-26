@@ -162,8 +162,10 @@ export async function handleAdmin(request, env, path) {
     await run(env.DB, "UPDATE tickets SET assigned_to = NULL WHERE assigned_to = ?", [userId]);
     await run(env.DB, "UPDATE users SET assigned_to = NULL WHERE assigned_to = ?", [userId]);
     await run(env.DB, "UPDATE blog_posts SET author_id = NULL WHERE author_id = ?", [userId]);
+    await run(env.DB, "UPDATE services SET owner_id = NULL WHERE owner_id = ?", [userId]);
 
     await run(env.DB, "DELETE FROM refresh_tokens WHERE user_id = ?", [userId]);
+    await run(env.DB, "DELETE FROM service_assignments WHERE user_id = ?", [userId]);
     await run(env.DB, "DELETE FROM ticket_messages WHERE sender_id = ?", [userId]);
     // Also covers messages other people left on this user's own tickets —
     // ticket_messages.ticket_id does cascade in the schema, but nothing

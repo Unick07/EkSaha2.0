@@ -113,6 +113,26 @@ export function normalizeTicket(row, messages = undefined) {
   };
 }
 
+export function normalizeService(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    description: row.description,
+    category: row.category,
+    status: row.status,
+    monthlyPrice: row.monthly_price ?? row.monthlyPrice ?? 0,
+    ownerId: row.owner_id ?? row.ownerId ?? null,
+    owner: row.owner_name || row.owner || undefined,
+    clientCount: row.client_count ?? row.clientCount ?? undefined,
+    serviceCount: row.service_count ?? row.serviceCount ?? undefined,
+    openTicketCount: row.ticket_count ?? row.open_ticket_count ?? row.openTicketCount ?? undefined,
+    createdAt: row.created_at ?? row.createdAt ?? null,
+    updatedAt: row.updated_at ?? row.updatedAt ?? null,
+  };
+}
+
 export function normalizeInvoice(row) {
   if (!row) return null;
   return {

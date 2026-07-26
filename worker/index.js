@@ -5,6 +5,7 @@ import { handleSubscriptions } from "./routes/subscriptions.js";
 import { handleTickets } from "./routes/tickets.js";
 import { handleInvoices } from "./routes/invoices.js";
 import { handleAdmin } from "./routes/admin.js";
+import { handleServices } from "./routes/services.js";
 import { handleUsers } from "./routes/users.js";
 import { handleNotifications } from "./routes/notifications.js";
 import { handleImages } from "./routes/images.js";
@@ -26,6 +27,7 @@ async function routeApi(request, env) {
   const handlers = [
     (req, e) => handleAuth(req, e, path.replace(/^\/auth/, "")),
     (req, e) => handleAdmin(req, e, path),
+    (req, e) => handleServices(req, e, path),
     (req, e) => handleUsers(req, e, path),
     (req, e) => handleNotifications(req, e, path),
     (req, e) => handlePlans(req, e, path),
