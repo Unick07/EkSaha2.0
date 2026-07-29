@@ -1,22 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="300" viewBox="0 0 800 300" role="img" aria-labelledby="title desc">
-  <title id="title">EkSaha horizontal logo</title>
-  <desc id="desc">EkSaha ES monogram and outlined wordmark. Colors adapt to light and dark themes.</desc>
+  <title id="title">EkSaha stacked logo for dark backgrounds</title>
+  <desc id="desc">Light stacked EkSaha ES monogram and outlined wordmark with teal accents.</desc>
   <style>
     :root {
-      --eksaha-primary: #051C3C;
+      --eksaha-primary: #F4F7FA;
       --eksaha-accent: #0FA89E;
     }
-    .primary-fill { fill: #051C3C; fill: var(--eksaha-primary, #051C3C); }
-    .primary-stroke { fill: none; stroke: #051C3C; stroke: var(--eksaha-primary, #051C3C); }
+    .primary-fill { fill: #F4F7FA; fill: var(--eksaha-primary, #F4F7FA); }
+    .primary-stroke { fill: none; stroke: #F4F7FA; stroke: var(--eksaha-primary, #F4F7FA); }
     .accent-fill { fill: #0FA89E; fill: var(--eksaha-accent, #0FA89E); }
-    @media (prefers-color-scheme: dark) {
-      :root { --eksaha-primary: #F4F7FA; }
-    }
   </style>
 
-  <g id="horizontal-logo" data-layer="Horizontal Logo">
-    <g id="monogram-icon" data-layer="Reference-Inspired Monogram Icon" transform="translate(34 30)">
+  <g id="stacked-logo" data-layer="Stacked Logo">
+    <g id="monogram-icon" data-layer="Reference-Inspired Monogram Icon" transform="translate(310 0) scale(.75)">
       <path id="open-circle" class="primary-stroke" d="M185.26 36.47A106 106 0 1 0 220.80 87.24" stroke-width="14"/>
       <g id="monogram-letters" data-layer="ES" transform="translate(-21.5 -5) scale(1.25)">
         <path id="monogram-e" class="primary-fill" d="M53.12 135V64.93H105.08V76.78H67.27V92.31H102.45V104.12H67.27V123.19H106.42V135Z"/>
@@ -25,20 +22,15 @@
       <rect id="orbit-accent" class="accent-fill" x="195" y="43" width="24" height="24" rx="1.5"/>
     </g>
 
-    <g id="wordmark" data-layer="Inter Bold Outlined Wordmark" transform="translate(294 90) scale(.88)">
+    <g id="wordmark" data-layer="Inter Bold Outlined Wordmark" transform="translate(215 188) scale(.75)">
       <path id="wordmark-e" class="primary-fill" d="M9.02 119V19.17H75.86V36.14H29.49V60.24H72.33V76.92H29.49V102.03H76V119Z"/>
-
       <g id="wordmark-k" data-layer="Accented k">
         <path class="primary-fill" d="M107.4 97.06V72.89H110.44L134.94 44.09H158.17L125.81 81.66H121.07ZM89.16 119V19.17H109.26V119ZM135.92 119 113.46 86.15 126.89 71.89 159.61 119Z"/>
         <path id="k-diagonal-accent" class="accent-fill" d="M110.44 72.89 134.94 44.09H158.17L125.81 81.66H121.07Z"/>
       </g>
-
       <path id="wordmark-s" class="primary-fill" d="M203.1 120.45Q191.12 120.45 182.24 116.77Q173.36 113.09 168.4 105.86Q163.44 98.64 163.13 88.02H183.03Q183.42 93.07 186.04 96.45Q188.65 99.83 193.02 101.52Q197.38 103.2 202.89 103.2Q208.35 103.2 212.42 101.61Q216.5 100.01 218.76 97.13Q221.02 94.25 221.02 90.48Q221.02 87.03 219 84.72Q216.97 82.41 213.13 80.75Q209.29 79.1 203.82 77.81L192.85 75.08Q180.18 71.99 172.99 65.39Q165.8 58.79 165.8 47.89Q165.8 38.87 170.68 32.11Q175.56 25.34 184.04 21.59Q192.52 17.83 203.36 17.83Q214.44 17.83 222.68 21.62Q230.92 25.41 235.52 32.13Q240.13 38.85 240.29 47.62H220.52Q219.94 41.62 215.38 38.32Q210.82 35.02 203.17 35.02Q197.97 35.02 194.29 36.51Q190.61 38.01 188.69 40.63Q186.77 43.25 186.77 46.6Q186.77 50.27 189 52.7Q191.24 55.12 194.9 56.64Q198.56 58.16 202.76 59.17L211.76 61.37Q218.06 62.81 223.5 65.22Q228.93 67.64 233.01 71.16Q237.09 74.67 239.36 79.48Q241.63 84.29 241.63 90.57Q241.63 99.65 237.05 106.38Q232.47 113.1 223.85 116.78Q215.24 120.45 203.1 120.45Z"/>
-
       <path id="wordmark-a-first" class="primary-fill" d="M274.05 120.45Q266.91 120.45 261.26 117.94Q255.61 115.42 252.38 110.44Q249.14 105.46 249.14 98.06Q249.14 91.77 251.43 87.57Q253.73 83.37 257.71 80.8Q261.69 78.24 266.76 76.9Q271.83 75.56 277.38 75.04Q283.86 74.38 287.85 73.8Q291.84 73.23 293.7 72Q295.56 70.77 295.56 68.35V68.02Q295.56 64.81 294.2 62.59Q292.84 60.37 290.22 59.19Q287.61 58.01 283.79 58.01Q279.95 58.01 277.07 59.18Q274.19 60.35 272.36 62.3Q270.52 64.25 269.71 66.68L251.28 63.62Q253.19 57.08 257.68 52.52Q262.18 47.96 268.85 45.56Q275.52 43.16 283.85 43.16Q289.88 43.16 295.58 44.59Q301.27 46.01 305.8 49.06Q310.33 52.1 312.99 56.92Q315.65 61.75 315.65 68.57V119H296.59V108.6H295.94Q294.12 112.08 291.11 114.75Q288.09 117.42 283.86 118.94Q279.62 120.45 274.05 120.45ZM279.71 106.36Q284.46 106.36 288.05 104.47Q291.64 102.58 293.67 99.37Q295.71 96.16 295.71 92.22V84.12Q294.79 84.73 293 85.27Q291.2 85.81 289 86.24Q286.79 86.67 284.64 86.98Q282.49 87.3 280.83 87.54Q277.12 88.04 274.31 89.23Q271.5 90.43 269.95 92.44Q268.4 94.44 268.4 97.46Q268.4 100.37 269.86 102.35Q271.33 104.33 273.87 105.35Q276.42 106.36 279.71 106.36Z"/>
-
       <path id="wordmark-h" class="primary-fill" d="M350.13 75.63V119H330.04V19.17H349.77V62.79H348.12Q351.07 53.42 357.08 48.29Q363.08 43.16 372.57 43.16Q380.36 43.16 386.16 46.54Q391.96 49.93 395.16 56.25Q398.36 62.57 398.36 71.36V119H378.24V74.86Q378.24 67.88 374.64 63.91Q371.04 59.94 364.68 59.94Q360.44 59.94 357.15 61.8Q353.86 63.66 351.99 67.15Q350.13 70.64 350.13 75.63Z"/>
-
       <g id="wordmark-a-final" data-layer="Accented a">
         <path class="primary-fill" d="M433.65 120.45Q426.51 120.45 420.86 117.94Q415.21 115.42 411.98 110.44Q408.74 105.46 408.74 98.06Q408.74 91.77 411.03 87.57Q413.33 83.37 417.31 80.8Q421.29 78.24 426.36 76.9Q431.43 75.56 436.98 75.04Q443.46 74.38 447.45 73.8Q451.44 73.23 453.3 72Q455.16 70.77 455.16 68.35V68.02Q455.16 64.81 453.8 62.59Q452.44 60.37 449.82 59.19Q447.2 58.01 443.39 58.01Q439.55 58.01 436.67 59.18Q433.79 60.35 431.96 62.3Q430.12 64.25 429.31 66.68L410.88 63.62Q412.79 57.08 417.28 52.52Q421.77 47.96 428.45 45.56Q435.12 43.16 443.45 43.16Q449.48 43.16 455.18 44.59Q460.87 46.01 465.4 49.06Q469.93 52.1 472.59 56.92Q475.25 61.75 475.25 68.57V119H456.19V108.6H455.53Q453.72 112.08 450.71 114.75Q447.69 117.42 443.46 118.94Q439.22 120.45 433.65 120.45ZM439.31 106.36Q444.06 106.36 447.65 104.47Q451.24 102.58 453.27 99.37Q455.31 96.16 455.31 92.22V84.12Q454.39 84.73 452.6 85.27Q450.8 85.81 448.6 86.24Q446.39 86.67 444.24 86.98Q442.09 87.3 440.42 87.54Q436.72 88.04 433.91 89.23Q431.1 90.43 429.55 92.44Q427.99 94.44 427.99 97.46Q427.99 100.37 429.46 102.35Q430.93 104.33 433.47 105.35Q436.02 106.36 439.31 106.36Z"/>
         <rect id="a-tail-accent" class="accent-fill" x="470" y="22" width="14" height="14" rx="1.5"/>

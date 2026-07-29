@@ -61,6 +61,114 @@ async function handleDemo(request, env, path) {
 
 const slugify = (value) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
 
+const PUBLIC_ROUTES = [
+  "/",
+  "/services/seo",
+  "/services/web",
+  "/services/ads",
+  "/services/it-support",
+  "/pricing",
+  "/about",
+  "/insights",
+  "/contact",
+];
+
+const STATIC_INSIGHTS = [
+  { slug: "technical-seo-checklist", lastmod: "2026-05-28" },
+  { slug: "subscription-digital-team", lastmod: "2026-05-15" },
+  { slug: "saas-landing-page", lastmod: "2026-04-30" },
+];
+
+function publicOrigin(request, env) {
+  const fallback = new URL(request.url).origin;
+  try {
+    return new URL(env.CLIENT_URL || fallback).origin;
+  } catch {
+    return fallback;
+  }
+}
+
+function escapeXml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+}
+
+function sitemapDate(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
+}
+
+function validPublicSlug(value) {
+  const slug = String(value || "").trim();
+  return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) ? slug : null;
+}
+
+async function publishedInsightUrls(env) {
+  if (!env.DB) return [];
+
+  try {
+    return await all(
+      env.DB,
+      "SELECT slug, updated_at FROM blog_posts WHERE published = 1 ORDER BY updated_at DESC",
+    );
+  } catch (caught) {
+    console.error("Could not load published posts for sitemap", caught);
+    return [];
+  }
+}
+
+async function serveSitemap(request, env) {
+  const origin = publicOrigin(request, env);
+  const urls = new Map(PUBLIC_ROUTES.map((path) => [path, null]));
+
+  for (const post of STATIC_INSIGHTS) {
+    urls.set(`/insights/${post.slug}`, post.lastmod);
+  }
+
+  for (const post of await publishedInsightUrls(env)) {
+    const slug = validPublicSlug(post.slug);
+    if (slug) urls.set(`/insights/${slug}`, sitemapDate(post.updated_at));
+  }
+
+  const entries = [...urls].map(([path, lastmod]) => {
+    const location = escapeXml(new URL(path, `${origin}/`).href);
+    const modified = lastmod ? `\n    <lastmod>${escapeXml(lastmod)}</lastmod>` : "";
+    return `  <url>\n    <loc>${location}</loc>${modified}\n  </url>`;
+  });
+
+  const xml = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...entries,
+    "</urlset>",
+    "",
+  ].join("\n");
+
+  return new Response(request.method === "HEAD" ? null : xml, {
+    headers: {
+      "Content-Type": "application/xml; charset=UTF-8",
+      "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+    },
+  });
+}
+
+function serveRobots(request, env) {
+  const sitemapUrl = new URL("/sitemap.xml", `${publicOrigin(request, env)}/`).href;
+  const body = `User-agent: *\nAllow: /\n\nSitemap: ${sitemapUrl}\n`;
+
+  return new Response(request.method === "HEAD" ? null : body, {
+    headers: {
+      "Content-Type": "text/plain; charset=UTF-8",
+      "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+    },
+  });
+}
+
 async function handleDemoPosts(request, env, path) {
   if (request.method === "GET" && path === "/posts") {
     const url = new URL(request.url);
@@ -117,6 +225,14 @@ async function serveAsset(request, env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if ((request.method === "GET" || request.method === "HEAD") && url.pathname === "/sitemap.xml") {
+      return serveSitemap(request, env);
+    }
+
+    if ((request.method === "GET" || request.method === "HEAD") && url.pathname === "/robots.txt") {
+      return serveRobots(request, env);
+    }
+
     if (url.pathname.startsWith("/api/") || url.pathname === "/api") {
       return routeApi(request, env);
     }

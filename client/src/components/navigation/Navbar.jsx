@@ -82,8 +82,8 @@ export default function Navbar() {
   return <header ref={headerRef} className={`${isLanding ? "fixed inset-x-0 top-0" : "sticky top-0"} z-50 px-3 py-3 sm:px-5`}>
     <div className="container-shell">
       <nav className="relative flex h-16 items-center justify-between rounded-3xl border border-border/70 bg-surface/90 px-3 shadow-xl shadow-brand-navy/5 backdrop-blur-2xl dark:shadow-black/20 lg:px-4" aria-label="Main navigation">
-        <Link to="/" aria-label="EkSaha home" className="group inline-flex rounded-xl px-1 py-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20" onClick={closeAllMenus}>
-          <BrandLogo alt="" size="sm" imageClassName="transition-transform duration-200 group-hover:scale-[1.02] sm:h-8" />
+        <Link to="/" aria-label="EkSaha home" className="group inline-flex rounded-xl px-1 py-1 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20" onClick={closeAllMenus}>
+          <BrandLogo alt="" size="sm" imageClassName="transition-transform duration-200 group-hover:scale-[1.02]" />
         </Link>
 
         <div className="absolute left-1/2 hidden -translate-x-1/2 items-center rounded-full border border-border/70 bg-background/70 p-1 shadow-inner lg:flex">
