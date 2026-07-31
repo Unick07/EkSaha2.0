@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, ChevronDown, Play, Star } from "lucide-react";
+import { ArrowRight, Building2, CheckCircle2, ChevronDown, Play, Star, UserRound } from "lucide-react";
 import { Button, FadeIn, PlanCard, SectionHeading } from "../../components/common/ui";
 import { features, plans, services, testimonials, trustedCompanies } from "../../data/siteData";
+import { audienceOptions, individualPricing } from "../../data/pricingData";
 import { useAppStore } from "../../store/useAppStore";
 
 const faqs = [
@@ -12,8 +13,29 @@ const faqs = [
   ["Will I have a dedicated contact?", "Growth and Enterprise members get a dedicated strategist. Starter members work with our shared client success team."],
 ];
 
+const pricingAudienceIcons = {
+  individuals: UserRound,
+  organizations: Building2,
+};
+
 function TrustedCompanies() {
-  const marqueeCompanies = [...trustedCompanies, ...trustedCompanies];
+  const marqueeGroup = [...trustedCompanies, ...trustedCompanies, ...trustedCompanies];
+
+  const renderCollaboration = (company, index, copy) => <div
+    className="group flex h-24 min-w-64 items-center justify-center gap-4 rounded-3xl border border-border/70 bg-surface px-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-brand-navy/10"
+    key={`${copy}-${company.name}-${index}`}
+  >
+    {company.logo && <img
+      src={company.logo}
+      alt=""
+      className="max-h-14 max-w-20 object-contain opacity-80 transition duration-300 group-hover:opacity-100"
+      loading="lazy"
+    />}
+    <span className="text-left">
+      <span className="block text-lg font-extrabold tracking-tight text-text transition duration-300 group-hover:text-primary">{company.name}</span>
+      <span className="mt-1 block text-[10px] font-bold uppercase tracking-[.2em] text-muted">{company.sector}</span>
+    </span>
+  </div>;
 
   return <section className="relative z-10 -mt-12 pb-20">
     <div className="container-shell">
@@ -30,40 +52,18 @@ function TrustedCompanies() {
             <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-text">Partnering with teams that move fast.</h2>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center text-xs font-bold text-muted sm:min-w-[360px]">
-            {[["120+", "teams"], ["34", "active partners"], ["4.9/5", "avg rating"]].map(([value, label]) => <div className="rounded-2xl bg-surface-raised/70 px-3 py-3 shadow-sm shadow-brand-navy/5" key={label}>
+            {[["2", "operating countries"], ["4", "core service areas"], ["Worldwide", "service coverage"]].map(([value, label]) => <div className="rounded-2xl bg-surface-raised/70 px-3 py-3 shadow-sm shadow-brand-navy/5" key={label}>
               <div className="text-base text-text">{value}</div>
               <div className="mt-1 uppercase tracking-wider">{label}</div>
             </div>)}
           </div>
         </div>
 
-        <div className="relative mt-8 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-          <motion.div
-            className="flex w-max items-center gap-10"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-          >
-            {marqueeCompanies.map((company, index) => <motion.a
-              href={company.url}
-              aria-label={company.name}
-              target={company.url ? "_blank" : undefined}
-              rel={company.url ? "noreferrer" : undefined}
-              whileHover={{ y: -4, scale: 1.02 }}
-              className={`group flex h-24 items-center justify-center rounded-3xl bg-transparent px-4 transition duration-300 hover:bg-surface-raised/70 hover:shadow-xl hover:shadow-brand-navy/10 ${company.showName ? "min-w-72 gap-4" : "min-w-48"}`}
-              key={`${company.name}-${index}`}
-            >
-              <img
-                src={company.logo}
-                alt={company.name}
-                className={`${company.showName ? "max-h-16 max-w-20 group-hover:[filter:brightness(0)_saturate(100%)_invert(42%)_sepia(93%)_saturate(1991%)_hue-rotate(206deg)_brightness(98%)_contrast(96%)]" : "max-h-16 max-w-40 saturate-0 group-hover:saturate-100"} object-contain opacity-75 transition duration-300 group-hover:opacity-100`}
-                loading="lazy"
-              />
-              {company.showName && <span className="text-left">
-                <span className="block text-lg font-extrabold tracking-tight text-text transition duration-300 group-hover:text-primary">{company.name}</span>
-                <span className="mt-1 block text-[10px] font-bold uppercase tracking-[.2em] text-muted">{company.sector}</span>
-              </span>}
-            </motion.a>)}
-          </motion.div>
+        <div className="relative mt-8 overflow-hidden py-2 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
+          <div className="trusted-collaboration-track">
+            <div className="trusted-collaboration-group">{marqueeGroup.map((company, index) => renderCollaboration(company, index, "primary"))}</div>
+            <div className="trusted-collaboration-group" aria-hidden="true">{marqueeGroup.map((company, index) => renderCollaboration(company, index, "duplicate"))}</div>
+          </div>
         </div>
       </motion.div>
     </div>
@@ -73,6 +73,17 @@ function TrustedCompanies() {
 export default function Home() {
   const { billing, setBilling } = useAppStore();
   const [faq, setFaq] = useState(0);
+  const [pricingAudience, setPricingAudience] = useState("individuals");
+  const [selectedIndividualServices, setSelectedIndividualServices] = useState(["seo", "web"]);
+  const selectedModules = individualPricing.services.filter((service) => selectedIndividualServices.includes(service.id));
+  const moduleSubtotal = selectedModules.reduce((sum, service) => sum + service.price, 0);
+  const individualDiscountRate = individualPricing.discounts[selectedIndividualServices.length] || 0;
+  const individualDiscount = Math.round(moduleSubtotal * individualDiscountRate);
+  const individualTotal = individualPricing.basePrice + moduleSubtotal - individualDiscount;
+  const toggleIndividualService = (id) => setSelectedIndividualServices((current) => current.includes(id)
+    ? current.filter((item) => item !== id)
+    : [...current, id]);
+
   return <div className="overflow-hidden">
     <section className="relative bg-ink pb-24 pt-20 text-white sm:pt-28 lg:pb-32 lg:pt-36">
       <div className="grid-mask absolute inset-0 opacity-80" />
@@ -117,15 +128,93 @@ export default function Home() {
       <div className="mt-14 grid gap-5 lg:grid-cols-3">{testimonials.map((item) => <div key={item.name} className="rounded-3xl border border-white/10 bg-white/[.05] p-7"><div className="flex gap-1 text-amber-400">{[1,2,3,4,5].map(i => <Star key={i} size={15} fill="currentColor" />)}</div><blockquote className="mt-6 text-base leading-7 text-white/85">“{item.quote}”</blockquote><div className="mt-7 border-t border-white/10 pt-5"><div className="font-bold">{item.name}</div><div className="mt-1 text-xs text-on-brand-muted">{item.role}</div></div></div>)}</div>
     </div></section>
 
-    <section className="py-24 sm:py-32"><div className="container-shell">
-      <SectionHeading center eyebrow="Simple pricing" title="One subscription. A full team." copy="Start where you are. Upgrade, downgrade, or pause as priorities change." />
-      <div className="mx-auto mt-8 flex w-fit rounded-xl border border-border bg-surface-raised p-1">{["monthly", "yearly"].map(item => <button key={item} onClick={() => setBilling(item)} className={`rounded-lg px-5 py-2 text-sm font-bold capitalize transition ${billing === item ? "bg-primary text-primary-foreground shadow-sm" : "text-muted hover:bg-surface hover:text-text"}`}>{item}{item === "yearly" && <span className="ml-2 text-xs text-emerald-500">-20%</span>}</button>)}</div>
-      <div className="mt-10 grid gap-6 lg:grid-cols-3">{plans.map(plan => <PlanCard key={plan.name} plan={plan} billing={billing} />)}</div>
-    </div></section>
+    <section className="relative overflow-hidden bg-surface-raised/55 py-24 sm:py-32">
+      <div className="absolute -right-32 top-8 size-80 rounded-full bg-primary/10 blur-3xl" aria-hidden="true" />
+      <div className="container-shell relative">
+        <div className="overflow-hidden rounded-[2rem] bg-ink p-6 text-white shadow-2xl shadow-brand-navy/15 sm:p-8">
+          <div className="grid gap-7 lg:grid-cols-[1fr_minmax(420px,.85fr)] lg:items-end">
+            <div className="max-w-2xl">
+              <span className="eyebrow">Flexible pricing paths</span>
+              <h2 className="text-3xl font-extrabold tracking-[-.04em] sm:text-4xl">Choose support built around how you work.</h2>
+              <p className="mt-4 leading-7 text-on-brand-muted">Build a focused combination as an individual, or choose coordinated capacity for your organization.</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/10 p-1.5" role="tablist" aria-label="Choose individual or organization pricing">
+              {audienceOptions.map((option) => {
+                const selected = pricingAudience === option.id;
+                const Icon = pricingAudienceIcons[option.id];
+                return <button
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  aria-controls={`home-${option.id}-pricing`}
+                  onClick={() => setPricingAudience(option.id)}
+                  className={`min-w-0 rounded-xl px-3 py-3 text-left transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-on-brand-accent/30 sm:px-4 ${selected ? "bg-on-brand-accent text-ink shadow-lg" : "text-white hover:bg-white/10"}`}
+                  key={option.id}
+                >
+                  <span className="flex items-center gap-2.5">
+                    <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${selected ? "bg-ink/10" : "bg-white/10 text-on-brand-accent"}`}><Icon size={17} /></span>
+                    <span className="min-w-0"><span className="block text-sm font-extrabold">{option.shortLabel}</span><span className={`mt-0.5 hidden text-[11px] sm:block ${selected ? "text-ink/70" : "text-on-brand-muted"}`}>{option.description}</span></span>
+                  </span>
+                </button>;
+              })}
+            </div>
+          </div>
+        </div>
+
+        {pricingAudience === "individuals"
+          ? <div id="home-individuals-pricing" role="tabpanel" className="mt-8 grid gap-6 lg:grid-cols-[1.35fr_.65fr]">
+            <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm sm:p-7">
+              <div className="flex flex-col justify-between gap-3 border-b border-border pb-5 sm:flex-row sm:items-end">
+                <div><span className="text-xs font-extrabold uppercase tracking-[.18em] text-primary">Individual plan builder</span><h3 className="mt-2 text-2xl font-extrabold">Select the specialist support you need.</h3><p className="mt-2 text-sm leading-6 text-muted">Every plan starts with the ${individualPricing.basePrice} workspace base. Add or remove services below.</p></div>
+                <span className="w-fit rounded-full bg-primary/10 px-3 py-1.5 text-xs font-extrabold text-primary">{selectedIndividualServices.length} selected</span>
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {individualPricing.services.map((service) => {
+                  const selected = selectedIndividualServices.includes(service.id);
+                  const Icon = services.find((item) => item.slug === service.id)?.icon;
+                  return <button
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => toggleIndividualService(service.id)}
+                    className={`group rounded-2xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 ${selected ? "border-primary bg-primary/[.07] shadow-sm" : "border-border bg-surface hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"}`}
+                    key={service.id}
+                  >
+                    <span className="flex items-start justify-between gap-3"><span className={`grid size-10 place-items-center rounded-xl ${selected ? "bg-primary text-primary-foreground" : "bg-surface-raised text-muted group-hover:text-primary"}`}>{Icon && <Icon size={18} />}</span><CheckCircle2 size={19} className={selected ? "text-primary" : "text-border"} /></span>
+                    <span className="mt-4 flex items-start justify-between gap-3"><span className="font-extrabold">{service.shortName}</span><span className="whitespace-nowrap text-sm font-extrabold text-primary">+${service.price}/mo</span></span>
+                    <span className="mt-2 block text-xs leading-5 text-muted">{service.description}</span>
+                  </button>;
+                })}
+              </div>
+            </div>
+
+            <aside className="overflow-hidden rounded-3xl border border-border bg-surface shadow-xl shadow-brand-navy/10" aria-live="polite">
+              <div className="bg-ink p-6 text-white">
+                <span className="text-xs font-extrabold uppercase tracking-[.18em] text-on-brand-accent">Estimated monthly plan</span>
+                <div className="mt-3 flex items-end gap-2"><strong className="text-5xl tracking-[-.05em]">${individualTotal.toLocaleString()}</strong><span className="mb-1 text-sm text-on-brand-muted">/month</span></div>
+                <p className="mt-3 text-xs leading-5 text-on-brand-muted">{individualDiscountRate > 0 ? `${Math.round(individualDiscountRate * 100)}% multi-service saving applied.` : "Select two services to unlock a module saving."}</p>
+              </div>
+              <div className="p-6">
+                <div className="space-y-3 text-sm"><div className="flex justify-between gap-3"><span className="text-muted">Workspace base</span><strong>${individualPricing.basePrice}</strong></div>{selectedModules.map((service) => <div className="flex justify-between gap-3" key={service.id}><span className="text-muted">{service.shortName}</span><strong>+${service.price}</strong></div>)}{individualDiscount > 0 && <div className="flex justify-between gap-3 text-emerald-700 dark:text-emerald-300"><span>Bundle saving</span><strong>−${individualDiscount}</strong></div>}</div>
+                <Button to="/pricing" className="mt-6 w-full">Open the full plan builder <ArrowRight size={16} /></Button>
+                <p className="mt-3 text-center text-xs leading-5 text-muted">Review the complete breakdown before choosing a plan.</p>
+              </div>
+            </aside>
+          </div>
+          : <div id="home-organizations-pricing" role="tabpanel" className="mt-8">
+            <div className="grid gap-5 rounded-3xl border border-border bg-surface p-5 shadow-sm sm:p-7 lg:grid-cols-[1fr_auto] lg:items-end">
+              <div><span className="text-xs font-extrabold uppercase tracking-[.18em] text-primary">Organization subscriptions</span><h3 className="mt-2 text-2xl font-extrabold">Choose the capacity your team needs.</h3><p className="mt-2 text-sm leading-6 text-muted">Coordinate SEO, web, advertising, and IT support through one accountable delivery model.</p></div>
+              <div><div className="mb-2 text-xs font-extrabold uppercase tracking-wider text-muted">Choose billing</div><div className="flex rounded-xl border border-border bg-surface-raised p-1" role="group" aria-label="Billing frequency">{["monthly", "yearly"].map((item) => <button type="button" key={item} onClick={() => setBilling(item)} aria-pressed={billing === item} className={`min-h-10 rounded-lg px-5 py-2 text-sm font-extrabold capitalize transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 ${billing === item ? "bg-primary text-primary-foreground shadow-md" : "text-text hover:bg-surface"}`}>{item}{item === "yearly" && <span className={`ml-2 text-xs ${billing === item ? "text-primary-foreground" : "text-emerald-700 dark:text-emerald-300"}`}>−20%</span>}</button>)}</div></div>
+            </div>
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">{["One accountable team", "Clear service coverage", "Room to adapt"].map((label) => <div className="flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-xs font-extrabold text-muted shadow-sm" key={label}><CheckCircle2 size={16} className="text-primary" />{label}</div>)}</div>
+            <div className="mt-8 grid gap-6 lg:grid-cols-3">{plans.map((plan) => <PlanCard key={plan.name} plan={plan} billing={billing} />)}</div>
+            <div className="mt-8 text-center"><Button to="/pricing" variant="secondary">Compare every organization plan <ArrowRight size={16} /></Button></div>
+          </div>}
+      </div>
+    </section>
 
     <section className="bg-surface-raised/60 py-24 sm:py-32"><div className="container-shell grid gap-12 lg:grid-cols-[.8fr_1.2fr]">
       <SectionHeading eyebrow="FAQ" title="Questions, answered." copy="Still deciding? Book a free 30-minute call and we’ll help you map the right next step." />
-      <div className="space-y-3">{faqs.map(([question, answer], index) => <div className="panel overflow-hidden" key={question}><button onClick={() => setFaq(faq === index ? -1 : index)} className="flex w-full items-center justify-between gap-4 p-5 text-left font-bold">{question}<ChevronDown className={`shrink-0 transition ${faq === index ? "rotate-180" : ""}`} size={18} /></button>{faq === index && <p className="px-5 pb-5 text-sm leading-6 text-muted">{answer}</p>}</div>)}</div>
+      <div className="space-y-3">{faqs.map(([question, answer], index) => <div className="panel overflow-hidden" key={question}><button onClick={() => setFaq(faq === index ? -1 : index)} className="flex w-full items-center justify-between gap-4 p-5 text-left font-bold transition hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-primary/20">{question}<ChevronDown className={`shrink-0 transition ${faq === index ? "rotate-180" : ""}`} size={18} /></button>{faq === index && <p className="px-5 pb-5 text-sm leading-6 text-muted">{answer}</p>}</div>)}</div>
     </div></section>
 
     <section className="py-20"><div className="container-shell"><div className="relative overflow-hidden rounded-[2rem] border border-primary/15 bg-ink px-7 py-14 text-center text-white shadow-2xl shadow-brand-navy/20 sm:px-12"><div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(2,139,127,.24),transparent_34%),radial-gradient(circle_at_88%_12%,rgba(100,216,202,.16),transparent_30%)]" /><div className="absolute -right-20 -top-20 size-72 rounded-full border-[42px] border-brand-teal/15" /><div className="absolute -bottom-24 left-1/2 size-80 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" /><h2 className="relative text-3xl font-extrabold tracking-tight sm:text-4xl">Your next growth chapter can start this week.</h2><p className="relative mx-auto mt-4 max-w-xl text-on-brand-muted">Tell us where you’re headed. We’ll show you the clearest path there.</p><Button to="/contact" className="relative mt-8 shadow-lg shadow-brand-navy/20">Book your free strategy call <ArrowRight size={16} /></Button></div></div></section>

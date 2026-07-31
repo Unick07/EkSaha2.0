@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useParams } from "react-router-dom";
 import { AlertTriangle, ArrowLeft, ArrowRight, Calendar, Check, CheckCircle2, Clock, Copy, Globe, Info, Lightbulb, Megaphone, Search, ShieldCheck, Sparkles, Target } from "lucide-react";
-import { Button } from "../../components/common/ui";
+import { Button, PageLoader } from "../../components/common/ui";
 import { services } from "../../data/siteData";
-import { formatPostDate, usePublishedPosts } from "./blogData";
+import { createArticleSeo } from "../../seo/metadata";
+import { useSeo } from "../../seo/useSeo";
+import { formatPostDate, usePublishedPostsState } from "./blogData";
 import NotFound from "./NotFound";
 
 const slugifyHeading = (value) => String(value).toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
@@ -193,13 +195,47 @@ function CodeBlock({ code, language }) {
   </div>;
 }
 
+function safeContentLink(value) {
+  const href = String(value || "").trim();
+  if (href.startsWith("/") || href.startsWith("#")) return href;
+  try {
+    const url = new URL(href);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+function renderInlineContent(value) {
+  const text = String(value || "");
+  const nodes = [];
+  const pattern = /\[([^\]]+)\]\(([^)\s]+)\)/g;
+  let cursor = 0;
+  let match = pattern.exec(text);
+  while (match) {
+    if (match.index > cursor) nodes.push(text.slice(cursor, match.index));
+    const href = safeContentLink(match[2]);
+    if (href?.startsWith("/")) {
+      nodes.push(<Link className="font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary" to={href} key={`${match.index}-${href}`}>{match[1]}</Link>);
+    } else if (href) {
+      nodes.push(<a className="font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary" href={href} key={`${match.index}-${href}`}>{match[1]}</a>);
+    } else {
+      nodes.push(match[0]);
+    }
+    cursor = match.index + match[0].length;
+    match = pattern.exec(text);
+  }
+  if (cursor < text.length) nodes.push(text.slice(cursor));
+  return nodes;
+}
+
 function ContentBlock({ block }) {
   if (block.type === "heading") {
     const { tag: Tag, className } = HEADING_STYLES[block.level] || HEADING_STYLES[3];
     return <Tag id={block.id} className={`scroll-mt-24 font-extrabold tracking-tight text-text ${className}`}>{block.text}</Tag>;
   }
   if (block.type === "callout") {
-    return <Callout type={block.calloutType}>{block.text}</Callout>;
+    return <Callout type={block.calloutType}>{renderInlineContent(block.text)}</Callout>;
   }
   if (block.type === "image") {
     return <figure className="my-6">
@@ -208,7 +244,7 @@ function ContentBlock({ block }) {
     </figure>;
   }
   if (block.type === "quote") {
-    return <blockquote className="my-5 border-l-4 border-primary/40 pl-5 italic text-muted">{block.text}</blockquote>;
+    return <blockquote className="my-5 border-l-4 border-primary/40 pl-5 italic text-muted">{renderInlineContent(block.text)}</blockquote>;
   }
   if (block.type === "code") {
     return <CodeBlock code={block.text} language={block.language} />;
@@ -216,10 +252,10 @@ function ContentBlock({ block }) {
   if (block.type === "list") {
     const Tag = block.ordered ? "ol" : "ul";
     return <Tag className={`my-4 space-y-1.5 pl-6 marker:text-primary ${block.ordered ? "list-decimal" : "list-disc"}`}>
-      {block.items.map((item, index) => <li className="leading-[1.7]" key={index}>{item}</li>)}
+      {block.items.map((item, index) => <li className="leading-[1.7]" key={index}>{renderInlineContent(item)}</li>)}
     </Tag>;
   }
-  return <p className="my-4 leading-[1.8]">{block.text}</p>;
+  return <p className="my-4 leading-[1.8]">{renderInlineContent(block.text)}</p>;
 }
 
 // PublicLayout wraps every route in framer-motion's <motion.main>, which
@@ -228,8 +264,10 @@ function ContentBlock({ block }) {
 // descendants, so this has to escape it via a portal onto <body> or it
 // ends up "fixed" to the top of <main> instead of the viewport.
 function ReadingProgressBar() {
+  const [mounted, setMounted] = useState(false);
   const [progress, setProgress] = useState(0);
   useEffect(() => {
+    setMounted(true);
     const onScroll = () => {
       const doc = document.documentElement;
       const max = (doc.scrollHeight || 0) - doc.clientHeight;
@@ -239,6 +277,7 @@ function ReadingProgressBar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+  if (!mounted || typeof document === "undefined") return null;
   return createPortal(
     <div className="fixed inset-x-0 top-0 z-[60] h-[3px] bg-transparent">
       <div className="h-full bg-gradient-to-r from-primary to-accent" style={{ width: `${progress}%` }} />
@@ -371,13 +410,16 @@ function TableOfContents({ headings, activeId }) {
 
 export default function BlogPost() {
   const { slug } = useParams();
-  const publishedPosts = usePublishedPosts();
-  const post = publishedPosts.find((p) => p.slug === slug) || publishedPosts[0];
+  const { loading, posts: publishedPosts } = usePublishedPostsState();
+  const post = publishedPosts.find((p) => p.slug === slug);
+  const seo = useMemo(() => createArticleSeo(post), [post]);
+  useSeo(seo);
   const blocks = useMemo(() => parseContentBlocks(post?.content), [post?.content]);
   const headings = useMemo(() => blocks.filter((block) => block.type === "heading"), [blocks]);
   const headingIds = useMemo(() => headings.map((heading) => heading.id), [headings]);
   const activeHeadingId = useActiveHeading(headingIds);
 
+  if (loading && !post) return <PageLoader />;
   if (!post) return <NotFound />;
 
   const others = publishedPosts.filter((item) => `${item.source}-${item.slug}` !== `${post.source}-${post.slug}`);

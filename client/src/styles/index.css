@@ -60,13 +60,25 @@
   .input { @apply w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text outline-none transition placeholder:text-muted focus:border-primary focus:ring-4 focus:ring-primary/15; }
   .theme-surface { @apply bg-surface text-text; }
   .theme-muted { @apply text-muted; }
-  .icon-button { @apply grid size-10 place-items-center rounded-2xl border border-transparent text-muted transition hover:border-border hover:bg-surface-raised hover:text-text; }
-  .soft-button { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-5 py-3 text-sm font-bold text-text transition hover:border-primary/40 hover:bg-primary/10; }
-  .text-action { @apply inline-flex items-center gap-2 text-sm font-bold text-primary transition hover:text-accent; }
-  .danger-button { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700 dark:bg-red-400 dark:text-ink dark:hover:bg-red-300; }
+  .icon-button { @apply grid size-10 cursor-pointer place-items-center rounded-2xl border border-border/70 bg-surface text-muted shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 disabled:pointer-events-none disabled:opacity-50; }
+  .soft-button { @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-surface px-5 py-3 text-sm font-extrabold text-text shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 active:translate-y-0 disabled:pointer-events-none disabled:opacity-50; }
+  .text-action { @apply inline-flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-sm font-extrabold text-primary transition hover:bg-primary/10 hover:text-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20; }
+  .danger-button { @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-700 bg-red-600 px-5 py-3 text-sm font-extrabold text-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/25 active:translate-y-0 disabled:pointer-events-none disabled:opacity-50 dark:border-red-300 dark:bg-red-400 dark:text-ink dark:hover:bg-red-300; }
   .success-pill { @apply rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300; }
   .warning-pill { @apply rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-700 dark:text-amber-300; }
   .info-pill { @apply rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary; }
+
+  .bg-ink .button-primary {
+    @apply border-on-brand-accent bg-on-brand-accent text-ink shadow-lg shadow-black/20 hover:bg-white hover:text-ink;
+  }
+
+  .bg-ink .button-secondary {
+    @apply border-white/30 bg-white/10 text-white shadow-lg shadow-black/10 hover:border-on-brand-accent hover:bg-on-brand-accent hover:text-ink;
+  }
+
+  .bg-ink .button-ghost {
+    @apply text-white hover:border-white/20 hover:bg-white/10;
+  }
 }
 
 .grid-mask {
@@ -87,6 +99,32 @@
 
 .animate-modal-backdrop { animation: modal-backdrop-in .18s ease-out; }
 .animate-modal-panel { animation: modal-panel-in .25s cubic-bezier(0.16, 1, 0.3, 1); }
+
+@keyframes trusted-collaboration-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+.trusted-collaboration-track {
+  display: flex;
+  width: max-content;
+  animation: trusted-collaboration-marquee 28s linear infinite;
+  will-change: transform;
+}
+
+.trusted-collaboration-group {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trusted-collaboration-track {
+    animation: none;
+  }
+}
 
 @layer utilities {
   /* Dark-mode brand fills use light teal with navy foreground for contrast. */

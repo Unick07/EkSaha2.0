@@ -1,11 +1,16 @@
 name = "eksaha"
 main = "worker/index.js"
-compatibility_date = "2026-06-23"
+compatibility_date = "2026-07-29"
+
+[[routes]]
+pattern = "eksaha.com"
+custom_domain = true
 
 [assets]
 directory = "./client/dist"
 binding = "ASSETS"
-not_found_handling = "single-page-application"
+not_found_handling = "404-page"
+html_handling = "drop-trailing-slash"
 run_worker_first = true
 
 [[d1_databases]]

@@ -1,23 +1,27 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import PublicLayout from "../layouts/PublicLayout";
 import AppShell from "../layouts/AppShell";
 import { PageLoader } from "../components/common/ui";
 import BackToTop from "../components/common/BackToTop";
+import RouteSeo from "../seo/RouteSeo";
 import { useAppStore } from "../store/useAppStore";
+import { useAdminStore } from "../store/useAdminStore";
 
-const Home = lazy(() => import("../pages/public/Home"));
 const from = (loader, name) => lazy(() => loader().then((module) => ({ default: module[name] })));
 const publicPages = () => import("../pages/public");
 const authPages = () => import("../pages/auth");
 const dashboardPages = () => import("../pages/dashboard");
 const adminPages = () => import("../pages/admin");
+const Home = lazy(() => import("../pages/public/Home"));
 const ServicePage = from(publicPages, "ServicePage");
 const Pricing = from(publicPages, "Pricing");
 const About = from(publicPages, "About");
 const Blog = from(publicPages, "Blog");
 const BlogPost = from(publicPages, "BlogPost");
 const Contact = from(publicPages, "Contact");
+const Privacy = from(publicPages, "Privacy");
+const Terms = from(publicPages, "Terms");
 const NotFound = from(publicPages, "NotFound");
 const Login = from(authPages, "Login");
 const Signup = from(authPages, "Signup");
@@ -41,6 +45,11 @@ const AdminInvoices = from(adminPages, "AdminInvoices");
 const ResourceManager = from(adminPages, "ResourceManager");
 const AdminSettings = from(adminPages, "AdminSettings");
 
+function LegacyBlogPostRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/insights/${slug}`} replace />;
+}
+
 export default function App() {
   const restoreSession = useAppStore((state) => state.restoreSession);
   const theme = useAppStore((state) => state.theme);
@@ -48,7 +57,21 @@ export default function App() {
   const syncThemeWithSystem = useAppStore((state) => state.syncThemeWithSystem);
 
   useEffect(() => {
-    restoreSession();
+    let active = true;
+    const hydrateStores = async () => {
+      try {
+        await Promise.all([
+          useAppStore.persist.rehydrate(),
+          useAdminStore.persist.rehydrate(),
+        ]);
+      } finally {
+        if (active) await restoreSession();
+      }
+    };
+    hydrateStores();
+    return () => {
+      active = false;
+    };
   }, [restoreSession]);
 
   useEffect(() => {
@@ -89,7 +112,7 @@ export default function App() {
     themeColor?.setAttribute("content", darkMode ? "#111827" : "#F6FAF9");
   }, [theme]);
 
-  return <><Suspense fallback={<PageLoader/>}><Routes>
+  return <><RouteSeo/><Suspense fallback={<PageLoader/>}><Routes>
     <Route element={<PublicLayout/>}>
       <Route index element={<Home/>}/>
       <Route path="services/:slug" element={<ServicePage/>}/>
@@ -97,9 +120,11 @@ export default function App() {
       <Route path="about" element={<About/>}/>
       <Route path="insights" element={<Blog/>}/>
       <Route path="insights/:slug" element={<BlogPost/>}/>
-      <Route path="blog" element={<Blog/>}/>
-      <Route path="blog/:slug" element={<BlogPost/>}/>
+      <Route path="blog" element={<Navigate to="/insights" replace/>}/>
+      <Route path="blog/:slug" element={<LegacyBlogPostRedirect/>}/>
       <Route path="contact" element={<Contact/>}/>
+      <Route path="privacy" element={<Privacy/>}/>
+      <Route path="terms" element={<Terms/>}/>
       <Route path="*" element={<NotFound/>}/>
     </Route>
     <Route path="/login" element={<Login/>}/>

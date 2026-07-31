@@ -11,6 +11,7 @@ import { handleNotifications } from "./routes/notifications.js";
 import { handleImages } from "./routes/images.js";
 import { all, first, generateId, intBool, normalizePost, nowIso, run } from "./lib/db.js";
 import { corsHeaders, error, json, readJson } from "./lib/http.js";
+import { createArticleSeo, injectSeoAndFallback, renderArticleFallback } from "./lib/seo.js";
 
 async function routeApi(request, env) {
   const url = new URL(request.url);
@@ -71,6 +72,8 @@ const PUBLIC_ROUTES = [
   "/about",
   "/insights",
   "/contact",
+  "/privacy",
+  "/terms",
 ];
 
 const STATIC_INSIGHTS = [
@@ -109,17 +112,14 @@ function validPublicSlug(value) {
 }
 
 async function publishedInsightUrls(env) {
-  if (!env.DB) return [];
-
-  try {
-    return await all(
-      env.DB,
-      "SELECT slug, updated_at FROM blog_posts WHERE published = 1 ORDER BY updated_at DESC",
-    );
-  } catch (caught) {
-    console.error("Could not load published posts for sitemap", caught);
-    return [];
-  }
+  if (!env.DB) throw new Error("D1 binding is unavailable");
+  return all(
+    env.DB,
+    `SELECT slug, COALESCE(updated_at, created_at) AS lastmod
+     FROM blog_posts
+     WHERE published = 1
+     ORDER BY COALESCE(updated_at, created_at) DESC`,
+  );
 }
 
 async function serveSitemap(request, env) {
@@ -130,9 +130,28 @@ async function serveSitemap(request, env) {
     urls.set(`/insights/${post.slug}`, post.lastmod);
   }
 
-  for (const post of await publishedInsightUrls(env)) {
+  let publishedPosts;
+  try {
+    publishedPosts = await publishedInsightUrls(env);
+  } catch (caught) {
+    console.error(JSON.stringify({
+      message: "Could not generate sitemap",
+      error: caught instanceof Error ? caught.message : String(caught),
+    }));
+    return new Response("Sitemap temporarily unavailable.", {
+      status: 503,
+      headers: {
+        "Content-Type": "text/plain; charset=UTF-8",
+        "Cache-Control": "no-store",
+        "Retry-After": "60",
+        "X-Robots-Tag": "noindex",
+      },
+    });
+  }
+
+  for (const post of publishedPosts) {
     const slug = validPublicSlug(post.slug);
-    if (slug) urls.set(`/insights/${slug}`, sitemapDate(post.updated_at));
+    if (slug) urls.set(`/insights/${slug}`, sitemapDate(post.lastmod));
   }
 
   const entries = [...urls].map(([path, lastmod]) => {
@@ -152,14 +171,22 @@ async function serveSitemap(request, env) {
   return new Response(request.method === "HEAD" ? null : xml, {
     headers: {
       "Content-Type": "application/xml; charset=UTF-8",
-      "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+      "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
     },
   });
 }
 
 function serveRobots(request, env) {
   const sitemapUrl = new URL("/sitemap.xml", `${publicOrigin(request, env)}/`).href;
-  const body = `User-agent: *\nAllow: /\n\nSitemap: ${sitemapUrl}\n`;
+  const body = [
+    "User-agent: *",
+    "Allow: /",
+    "Disallow: /api/",
+    "",
+    "# Private app pages remain crawlable so search engines can read their noindex directives.",
+    `Sitemap: ${sitemapUrl}`,
+    "",
+  ].join("\n");
 
   return new Response(request.method === "HEAD" ? null : body, {
     headers: {
@@ -207,6 +234,99 @@ async function handleDemoPosts(request, env, path) {
   return null;
 }
 
+function assetRequest(request, pathname) {
+  const url = new URL(request.url);
+  url.pathname = pathname;
+  url.search = "";
+  return new Request(url, request);
+}
+
+function withResponseHeaders(response, additionalHeaders, status = response.status) {
+  const headers = new Headers(response.headers);
+  for (const [name, value] of Object.entries(additionalHeaders)) headers.set(name, value);
+  return new Response(response.body, { status, statusText: response.statusText, headers });
+}
+
+function legacyBlogRedirect(url) {
+  if (url.pathname === "/blog") return "/insights";
+  const match = url.pathname.match(/^\/blog\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/);
+  return match ? `/insights/${match[1]}` : null;
+}
+
+function isPrivateAppRoute(pathname) {
+  return [
+    /^\/(?:login|signup|forgot-password|verify-email)$/,
+    /^\/auth(?:\/|$)/,
+    /^\/(?:reset-password|password-reset)(?:\/|$)/,
+    /^\/(?:dashboard|admin|support|billing|account)(?:\/|$)/,
+  ].some((pattern) => pattern.test(pathname));
+}
+
+async function servePrivateApp(request, env) {
+  const response = await env.ASSETS.fetch(assetRequest(request, "/__app"));
+  return withResponseHeaders(response, {
+    "Cache-Control": "private, no-store",
+    "X-Robots-Tag": "noindex, nofollow",
+  });
+}
+
+async function serveNotFound(request, env, response = null) {
+  const notFoundResponse = response || await env.ASSETS.fetch(assetRequest(request, "/404"));
+  return withResponseHeaders(notFoundResponse, {
+    "Cache-Control": "public, max-age=60",
+    "X-Robots-Tag": "noindex, nofollow",
+  }, 404);
+}
+
+async function publishedInsight(env, slug) {
+  if (!env.DB) return null;
+  return first(
+    env.DB,
+    "SELECT slug, title, excerpt, content, category, image_url, created_at, updated_at FROM blog_posts WHERE slug = ? AND published = 1 LIMIT 1",
+    [slug],
+  );
+}
+
+async function serveDynamicInsight(request, env, slug) {
+  let post;
+  try {
+    post = await publishedInsight(env, slug);
+  } catch (caught) {
+    console.error(JSON.stringify({
+      message: "Could not resolve published insight",
+      error: caught instanceof Error ? caught.message : String(caught),
+      slug,
+    }));
+    return new Response("The article is temporarily unavailable.", {
+      status: 503,
+      headers: {
+        "Content-Type": "text/plain; charset=UTF-8",
+        "Retry-After": "60",
+        "X-Robots-Tag": "noindex, nofollow",
+      },
+    });
+  }
+
+  if (!post) return serveNotFound(request, env);
+
+  const shell = await env.ASSETS.fetch(assetRequest(request, "/__app"));
+  if (!shell.ok) {
+    console.error(JSON.stringify({ message: "Prerender shell is unavailable", status: shell.status }));
+    return new Response("The article is temporarily unavailable.", { status: 503 });
+  }
+
+  // The shell is a small, bounded build artifact. Buffering it lets the
+  // Worker replace the complete SEO marker atomically for database articles.
+  const document = await shell.text();
+  const seo = createArticleSeo(post, publicOrigin(request, env));
+  const html = injectSeoAndFallback(document, seo, renderArticleFallback(post));
+  const headers = new Headers(shell.headers);
+  headers.set("Cache-Control", "public, max-age=300, stale-while-revalidate=3600");
+  headers.set("Content-Type", "text/html; charset=UTF-8");
+  headers.delete("Content-Length");
+  return new Response(request.method === "HEAD" ? null : html, { status: 200, headers });
+}
+
 async function serveAsset(request, env) {
   if (!env.ASSETS) {
     console.error("Static assets binding is not available", { url: request.url });
@@ -214,12 +334,7 @@ async function serveAsset(request, env) {
   }
 
   const response = await env.ASSETS.fetch(request);
-  if (response.status !== 404) return response;
-
-  const url = new URL(request.url);
-  url.pathname = "/index.html";
-  url.search = "";
-  return env.ASSETS.fetch(new Request(url, request));
+  return response.status === 404 ? serveNotFound(request, env, response) : response;
 }
 
 export default {
@@ -239,6 +354,34 @@ export default {
 
     if (url.pathname === "/health") {
       return json({ status: "ok", database: env.DB ? "connected" : "missing" }, {}, env, request);
+    }
+
+    if (request.method === "GET" || request.method === "HEAD") {
+      const redirectPath = legacyBlogRedirect(url);
+      if (redirectPath) {
+        url.pathname = redirectPath;
+        return Response.redirect(url.href, 301);
+      }
+
+      if (url.pathname.length > 1 && url.pathname.endsWith("/")) {
+        url.pathname = url.pathname.replace(/\/+$/, "");
+        return Response.redirect(url.href, 308);
+      }
+
+      if (url.pathname === "/404" || url.pathname === "/__app") {
+        return serveNotFound(request, env);
+      }
+
+      if (isPrivateAppRoute(url.pathname)) {
+        return servePrivateApp(request, env);
+      }
+
+      const insightSlug = url.pathname.match(/^\/insights\/([a-z0-9]+(?:-[a-z0-9]+)*)$/)?.[1];
+      if (insightSlug) {
+        const staticArticle = await env.ASSETS.fetch(request);
+        if (staticArticle.status !== 404) return staticArticle;
+        return serveDynamicInsight(request, env, insightSlug);
+      }
     }
 
     return serveAsset(request, env);

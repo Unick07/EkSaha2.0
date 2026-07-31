@@ -15,10 +15,11 @@ export function AuthShell({ title, copy, children }) {
     <div className="hidden bg-surface p-12 lg:flex lg:flex-col lg:justify-between">
       <Link to="/" aria-label="EkSaha home" className="inline-flex"><BrandLogo alt="" /></Link>
       <div>
-        <div className="max-w-lg text-4xl font-extrabold leading-tight">"The best extension of our team we could have asked for."</div>
-        <div className="mt-6 text-sm text-muted">Maya Chen - Co-founder, Northstar</div>
+        <div className="text-xs font-extrabold uppercase tracking-[.2em] text-primary">A principle from our co-founder</div>
+        <div className="mt-4 max-w-lg text-4xl font-extrabold leading-tight">“Sustainable growth begins with clear priorities and consistent execution.”</div>
+        <div className="mt-6 text-sm font-bold text-text">Unick Silwal <span className="font-medium text-muted">— Co-founder and CEO, EkSaha</span></div>
       </div>
-      <div className="text-xs text-muted">Trusted by 120+ ambitious teams</div>
+      <div className="text-xs text-muted">SEO, web, ads and IT—one team built to grow your business</div>
     </div>
     <main className="flex items-center justify-center px-5 py-12">
       <div className="w-full max-w-md">

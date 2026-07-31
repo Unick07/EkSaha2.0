@@ -8,11 +8,11 @@ import { homeForRole } from "../../lib/roles";
 
 export function Button({ children, to, variant = "primary", className = "", ...props }) {
   const styles = {
-    primary: "bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90",
-    secondary: "border border-border bg-surface text-text hover:border-primary/40 hover:bg-primary/10",
-    ghost: "text-muted hover:bg-surface-raised",
+    primary: "button-primary border border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:-translate-y-0.5 hover:bg-primary hover:shadow-xl hover:shadow-primary/30 active:translate-y-0",
+    secondary: "button-secondary border border-border bg-surface text-text shadow-sm hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10 hover:shadow-md active:translate-y-0",
+    ghost: "button-ghost border border-transparent text-text hover:border-border hover:bg-surface-raised",
   };
-  const classes = `inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition ${styles[variant]} ${className}`;
+  const classes = `inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-extrabold transition duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 ${styles[variant]} ${className}`;
   return to
     ? <Link className={classes} to={to} {...props}>{children}</Link>
     : <button className={classes} {...props}>{children}</button>;

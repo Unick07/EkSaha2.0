@@ -7,8 +7,8 @@ export const services = [
     title: "SEO that compounds",
     short: "Technical, content and authority systems that turn search into a reliable growth channel.",
     accent: "from-brand-navy to-brand-teal",
-    metric: "+186%",
-    metricLabel: "average organic growth",
+    metric: "Full-funnel",
+    metricLabel: "technical, content and authority SEO",
     features: ["Technical audits", "Content strategy", "Local SEO", "Monthly reporting"],
     tools: ["Ahrefs", "Semrush", "Search Console", "Screaming Frog"],
   },
@@ -18,8 +18,8 @@ export const services = [
     title: "Web services",
     short: "Conversion-led websites that load quickly, scale cleanly and stay maintained.",
     accent: "from-teal-700 to-brand-teal",
-    metric: "1.2s",
-    metricLabel: "average load time",
+    metric: "Performance-led",
+    metricLabel: "fast, accessible and maintainable websites",
     features: ["UX & UI design", "React development", "Hosting & security", "Ongoing maintenance"],
     tools: ["React", "Next.js", "Figma", "Vercel"],
   },
@@ -29,8 +29,8 @@ export const services = [
     title: "Digital advertising",
     short: "High-intent campaigns with transparent reporting and relentless experimentation.",
     accent: "from-brand-navy to-teal-500",
-    metric: "3.8x",
-    metricLabel: "average return on ad spend",
+    metric: "Measured",
+    metricLabel: "tracking-led campaign improvement",
     features: ["Google Ads", "Meta campaigns", "Creative testing", "Conversion tracking"],
     tools: ["Google Ads", "Meta", "GA4", "Looker Studio"],
   },
@@ -40,8 +40,8 @@ export const services = [
     title: "IT support",
     short: "Responsive help desk and proactive monitoring without the cost of an in-house team.",
     accent: "from-teal-600 to-teal-300",
-    metric: "12m",
-    metricLabel: "median first response",
+    metric: "Responsive",
+    metricLabel: "clear support and escalation",
     features: ["Unlimited help desk", "Device monitoring", "Cloud administration", "Security guidance"],
     tools: ["Microsoft 365", "Google Workspace", "JumpCloud", "Cloudflare"],
   },
@@ -80,20 +80,7 @@ export const testimonials = [
 
 export const trustedCompanies = [
   { name: "Algories Technology", sector: "Technology Partner", logo: "/logos/algories-technology-transparent.png",  showName: true },
-  { name: "Northstar", sector: "SaaS Growth", logo: "/logos/northstar.svg" },
-  { name: "Alder & Co.", sector: "Retail Ops", logo: "/logos/alder-co.svg" },
-  { name: "Layerpath", sector: "Cloud Systems", logo: "/logos/layerpath.svg" },
-  { name: "Brightway", sector: "Paid Media", logo: "/logos/brightway.svg" },
-  { name: "Modulo", sector: "Web Platforms", logo: "/logos/modulo.svg" },
-  { name: "Orbitlane", sector: "IT Support", logo: "/logos/orbitlane.svg" },
-  { name: "Stackline", sector: "Analytics", logo: "/logos/stackline.svg" },
-  { name: "NovaWorks", sector: "SEO Systems", logo: "/logos/novaworks.svg" },
-];
-
-export const posts = [
-  { slug: "technical-seo-checklist", category: "SEO", title: "The technical SEO checklist we use before every launch", excerpt: "A practical framework for shipping websites that search engines and humans can navigate.", date: "May 28, 2026", read: "7 min" },
-  { slug: "subscription-digital-team", category: "Strategy", title: "When a subscription digital team makes sense", excerpt: "How to compare an in-house hire, agency retainer, freelancers, and a subscription partner.", date: "May 15, 2026", read: "5 min" },
-  { slug: "saas-landing-page", category: "Web", title: "Seven signals your landing page is leaking demand", excerpt: "Small experience problems that quietly lower trust and conversion rates.", date: "April 30, 2026", read: "6 min" },
+  { name: "Dvitix", sector: "Collaboration Partner", logo: null, showName: true },
 ];
 
 export const features = [

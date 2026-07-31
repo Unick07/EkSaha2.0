@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /api/
 
+# Private app pages remain crawlable so search engines can read their noindex directives.
 Sitemap: https://eksaha.com/sitemap.xml
