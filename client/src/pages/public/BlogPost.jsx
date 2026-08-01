@@ -407,7 +407,7 @@ export default function BlogPost() {
     </header>
 
     {post.image && <div className="container-shell max-w-4xl pt-10">
-      <img src={post.image} alt={post.title} loading="lazy" className="h-[260px] w-full rounded-2xl object-cover shadow-lg sm:h-[380px]" />
+      <img src={post.image} alt={post.title} loading="eager" fetchPriority="high" className="h-[260px] w-full rounded-2xl object-cover shadow-lg sm:h-[380px]" />
     </div>}
 
     <div className="container-shell py-14 sm:py-16">
