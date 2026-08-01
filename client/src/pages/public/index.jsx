@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowRight, Calendar, Clock, Mail, MapPin, Phone, Send } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button, SectionHeading } from "../../components/common/ui";
 import { services } from "../../data/siteData";
+import api from "../../services/http/api";
 import { formatPostDate, usePublishedPosts } from "./blogData";
 
 export function ServicePage() {
@@ -30,9 +32,28 @@ export function Blog() {
 
 export { default as BlogPost } from "./BlogPost";
 
+const emptyContactForm = { name: "", email: "", service: "SEO & organic growth", message: "" };
+
 export function Contact() {
-  const submit = e => { e.preventDefault(); e.currentTarget.reset(); toast.success("Thanks — we’ll be in touch within one business day."); };
-  return <section className="py-24"><div className="container-shell grid gap-14 lg:grid-cols-[.8fr_1.2fr]"><div><span className="eyebrow">Let’s talk</span><h1 className="text-5xl font-extrabold tracking-[-.05em]">What are you trying to move forward?</h1><p className="mt-6 text-lg leading-8 text-muted">Tell us about the goal, the friction, or the idea. We’ll come back with a clear point of view.</p><div className="mt-10 space-y-5 text-sm"><div className="flex gap-3"><Mail className="text-electric" size={19}/>hello@eksaha.com</div><div className="flex gap-3"><Phone className="text-electric" size={19}/>+1 (555) 014-8820</div><div className="flex gap-3"><MapPin className="text-electric" size={19}/>Remote-first · working worldwide</div></div></div><form onSubmit={submit} className="panel grid gap-5 p-7 sm:grid-cols-2"><label className="text-sm font-semibold">Name<input required className="input mt-2" placeholder="Your name"/></label><label className="text-sm font-semibold">Work email<input required type="email" className="input mt-2" placeholder="you@company.com"/></label><label className="text-sm font-semibold sm:col-span-2">What can we help with?<select className="input mt-2"><option>SEO & organic growth</option><option>Website design & development</option><option>Digital advertising</option><option>IT support</option><option>A combination</option></select></label><label className="text-sm font-semibold sm:col-span-2">Tell us a little more<textarea required className="input mt-2 min-h-36 resize-none" placeholder="Goals, timing, current challenges..."/></label><Button className="sm:col-span-2">Send inquiry <Send size={16}/></Button></form></div></section>;
+  const [form, setForm] = useState(emptyContactForm);
+  const [submitting, setSubmitting] = useState(false);
+  const setField = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setSubmitting(true);
+    try {
+      await api.post("/contact", form);
+      toast.success("Thanks — we’ll be in touch within one business day.");
+      setForm(emptyContactForm);
+    } catch (caught) {
+      toast.error(caught.response?.data?.message || "Could not send your message. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return <section className="py-24"><div className="container-shell grid gap-14 lg:grid-cols-[.8fr_1.2fr]"><div><span className="eyebrow">Let’s talk</span><h1 className="text-5xl font-extrabold tracking-[-.05em]">What are you trying to move forward?</h1><p className="mt-6 text-lg leading-8 text-muted">Tell us about the goal, the friction, or the idea. We’ll come back with a clear point of view.</p><div className="mt-10 space-y-5 text-sm"><div className="flex gap-3"><Mail className="text-electric" size={19}/>hello@eksaha.com</div><div className="flex gap-3"><Phone className="text-electric" size={19}/>+1 (555) 014-8820</div><div className="flex gap-3"><MapPin className="text-electric" size={19}/>Remote-first · working worldwide</div></div></div><form onSubmit={submit} className="panel grid gap-5 p-7 sm:grid-cols-2"><label className="text-sm font-semibold">Name<input required className="input mt-2" placeholder="Your name" value={form.name} onChange={setField("name")}/></label><label className="text-sm font-semibold">Work email<input required type="email" className="input mt-2" placeholder="you@company.com" value={form.email} onChange={setField("email")}/></label><label className="text-sm font-semibold sm:col-span-2">What can we help with?<select className="input mt-2" value={form.service} onChange={setField("service")}><option>SEO & organic growth</option><option>Website design & development</option><option>Digital advertising</option><option>IT support</option><option>A combination</option></select></label><label className="text-sm font-semibold sm:col-span-2">Tell us a little more<textarea required className="input mt-2 min-h-36 resize-none" placeholder="Goals, timing, current challenges..." value={form.message} onChange={setField("message")}/></label><Button disabled={submitting} className="sm:col-span-2">{submitting ? "Sending..." : "Send inquiry"} <Send size={16}/></Button></form></div></section>;
 }
 
 export { default as NotFound } from "./NotFound";

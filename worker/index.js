@@ -9,6 +9,7 @@ import { handleServices } from "./routes/services.js";
 import { handleUsers } from "./routes/users.js";
 import { handleNotifications } from "./routes/notifications.js";
 import { handleImages } from "./routes/images.js";
+import { handlePublicForms } from "./routes/public.js";
 import { all, first, generateId, intBool, normalizePost, nowIso, run } from "./lib/db.js";
 import { corsHeaders, error, json, readJson } from "./lib/http.js";
 
@@ -36,6 +37,7 @@ async function routeApi(request, env) {
     (req, e) => handleTickets(req, e, path),
     (req, e) => handleInvoices(req, e, path),
     (req, e) => handleImages(req, e, path),
+    (req, e) => handlePublicForms(req, e, path),
     (req, e) => handleDemo(req, e, path),
   ];
 
