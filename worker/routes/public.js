@@ -1,6 +1,7 @@
 import { first, generateId, normalizeLead, nowIso, run } from "../lib/db.js";
 import { error, json, readJson } from "../lib/http.js";
 import { sendEmail } from "../lib/email.js";
+import { verifyTurnstile } from "../lib/turnstile.js";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -55,6 +56,9 @@ function contactConfirmationHtml(name) {
 export async function handlePublicForms(request, env, path) {
   if (path === "/contact" && request.method === "POST") {
     const body = await readJson(request);
+    if (!(await verifyTurnstile(body.turnstileToken, env.TURNSTILE_SECRET_KEY))) {
+      return error("Verification failed, please try again", 400, env, request);
+    }
     const name = body.name?.trim();
     const email = body.email?.trim();
     const message = body.message?.trim();
@@ -98,6 +102,9 @@ export async function handlePublicForms(request, env, path) {
 
   if (path === "/newsletter" && request.method === "POST") {
     const body = await readJson(request);
+    if (!(await verifyTurnstile(body.turnstileToken, env.TURNSTILE_SECRET_KEY))) {
+      return error("Verification failed, please try again", 400, env, request);
+    }
     const email = body.email?.trim().toLowerCase();
     if (!email || !EMAIL_RE.test(email)) {
       return error("A valid email address is required", 400, env, request);
