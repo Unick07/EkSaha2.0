@@ -8,6 +8,16 @@
     <meta name="description" content="EkSaha - subscription IT, web, SEO and advertising support for growing businesses." />
     <link id="app-favicon" rel="icon" type="image/svg+xml" href="/brand/eksaha-icon.svg" />
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4Y19V7DDGV"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      // send_page_view is off here because the React Router listener in
+      // App.jsx fires every page_view, including the first one - leaving
+      // this on would double-count the initial page load.
+      gtag('config', 'G-4Y19V7DDGV', { send_page_view: false });
+    </script>
     <script>
       (() => {
         let preference = "system";

@@ -7,6 +7,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { plans } from "../../data/siteData";
 import api from "../../services/http/api";
 import { homeForRole } from "../../lib/roles";
+import { trackEvent } from "../../lib/analytics";
 import { PASSWORD_RULES, failedPasswordRules, passwordStrength } from "../../lib/password";
 import { BrandLogo } from "../../components/common/BrandLogo";
 
@@ -56,6 +57,7 @@ export function Login() {
       const { data } = await api.post("/auth/login", { email, password });
       localStorage.setItem("accessToken", data.accessToken);
       login(data.user);
+      trackEvent("login", { method: "email" });
       toast.success("Welcome back.");
       navigate(homeForRole(data.user.role));
     } catch {
@@ -99,6 +101,7 @@ export function Signup() {
       const selectedPlan = availablePlans.find((plan) => plan.name === selected);
       if (!selectedPlan) throw new Error("Plan not found");
       await api.post("/subscriptions/me", { planId: selectedPlan.id });
+      trackEvent("subscribe", { plan_name: selectedPlan.name, value: selectedPlan.price, currency: "USD" });
       toast.success(`You're on the ${selected} plan.`);
       navigate(homeForRole(user.role));
     } catch (caught) {
@@ -129,6 +132,8 @@ export function Signup() {
       });
       localStorage.setItem("accessToken", data.accessToken);
       login(data.user);
+      trackEvent("sign_up", { method: "email" });
+      if (selectedPlan) trackEvent("subscribe", { plan_name: selectedPlan.name, value: selectedPlan.price, currency: "USD" });
       toast.success("Your workspace is ready.");
       navigate("/verify-email");
     } catch (error) {
@@ -146,6 +151,12 @@ export function Signup() {
     }
   };
 
+  const goToAccountStep = () => {
+    const localPlan = plans.find((plan) => plan.name === selected);
+    trackEvent("begin_checkout", { plan_name: selected, value: localPlan?.monthly, currency: "USD" });
+    setStep(2);
+  };
+
   const showPlanStep = step === 1 || isGoogleFlow;
 
   return <AuthShell title={isGoogleFlow ? "Choose your plan" : (step === 1 ? "Choose your starting point" : "Create your account")} copy={isGoogleFlow ? "Pick a plan to unlock your EkSaha dashboard." : "You can switch plans or service priorities whenever your business needs change."}>
@@ -154,7 +165,7 @@ export function Signup() {
         <div className="flex items-center justify-between"><span className="font-bold">{plan.name}</span><span className="font-extrabold">${plan.monthly}/mo</span></div>
         <p className="mt-1 text-xs text-muted">{plan.description}</p>
       </button>)}
-      <Button onClick={isGoogleFlow ? attachPlan : () => setStep(2)} className="mt-3 w-full">Continue with {selected}<ArrowRight size={16} /></Button>
+      <Button onClick={isGoogleFlow ? attachPlan : goToAccountStep} className="mt-3 w-full">Continue with {selected}<ArrowRight size={16} /></Button>
     </div> : <form onSubmit={submit} className="mt-8 space-y-5">
       <label className="block text-sm font-semibold">Full name<input name="name" required className="input mt-2" placeholder="Your full name" /></label>
       <label className="block text-sm font-semibold">Email<input name="email" required type="email" className="input mt-2" placeholder="your@email.com" /></label>

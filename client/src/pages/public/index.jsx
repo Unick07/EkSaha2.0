@@ -6,6 +6,7 @@ import { Button, SectionHeading } from "../../components/common/ui";
 import Turnstile from "../../components/common/Turnstile";
 import { services } from "../../data/siteData";
 import api from "../../services/http/api";
+import { trackEvent } from "../../lib/analytics";
 import { formatPostDate, usePublishedPosts } from "./blogData";
 
 export function ServicePage() {
@@ -47,6 +48,7 @@ export function Contact() {
     setSubmitting(true);
     try {
       await api.post("/contact", { ...form, turnstileToken });
+      trackEvent("generate_lead", { service: form.service });
       toast.success("Thanks — we’ll be in touch within one business day.");
       setForm(emptyContactForm);
       setTurnstileToken("");

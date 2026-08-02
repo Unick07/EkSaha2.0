@@ -1,10 +1,11 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import PublicLayout from "../layouts/PublicLayout";
 import AppShell from "../layouts/AppShell";
 import { PageLoader } from "../components/common/ui";
 import BackToTop from "../components/common/BackToTop";
 import { useAppStore } from "../store/useAppStore";
+import { trackPageView } from "../lib/analytics";
 // Public marketing pages are bundled eagerly, not behind React.lazy: lazy-
 // loading them let <main> stay at the Suspense fallback's small min-height
 // while Navbar/Footer already rendered, so Footer would jump hundreds of
@@ -44,6 +45,7 @@ const ResourceManager = from(adminPages, "ResourceManager");
 const AdminSettings = from(adminPages, "AdminSettings");
 
 export default function App() {
+  const location = useLocation();
   const restoreSession = useAppStore((state) => state.restoreSession);
   const theme = useAppStore((state) => state.theme);
   const themePreference = useAppStore((state) => state.themePreference);
@@ -52,6 +54,10 @@ export default function App() {
   useEffect(() => {
     restoreSession();
   }, [restoreSession]);
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (themePreference !== "system") return undefined;

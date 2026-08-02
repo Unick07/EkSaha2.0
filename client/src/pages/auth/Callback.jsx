@@ -5,6 +5,7 @@ import { PageLoader } from "../../components/common/ui";
 import { useAuth } from "../../hooks/useAuth";
 import api from "../../services/http/api";
 import { homeForRole } from "../../lib/roles";
+import { trackEvent } from "../../lib/analytics";
 
 export default function Callback() {
   const [searchParams] = useSearchParams();
@@ -29,6 +30,7 @@ export default function Callback() {
     api.get("/auth/me")
       .then(({ data }) => {
         login(data);
+        trackEvent("login", { method: "google" });
         toast.success("Welcome to EkSaha.");
         navigate(homeForRole(data.role || role), { replace: true });
       })

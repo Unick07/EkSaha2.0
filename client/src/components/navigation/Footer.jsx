@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { BrandLogo } from "../common/BrandLogo";
 import Turnstile from "../common/Turnstile";
 import api from "../../services/http/api";
+import { trackEvent } from "../../lib/analytics";
 
 export default function Footer() {
   const [email, setEmail] = useState("");
@@ -17,6 +18,7 @@ export default function Footer() {
     setSubscribing(true);
     try {
       const { data } = await api.post("/newsletter", { email, turnstileToken });
+      trackEvent("newsletter_signup");
       toast.success(data?.message || "You're on the list.");
       setEmail("");
       setTurnstileToken("");
