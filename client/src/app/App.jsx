@@ -105,8 +105,6 @@ export default function App() {
       <Route path="about" element={<About/>}/>
       <Route path="insights" element={<Blog/>}/>
       <Route path="insights/:slug" element={<BlogPost/>}/>
-      <Route path="blog" element={<Blog/>}/>
-      <Route path="blog/:slug" element={<BlogPost/>}/>
       <Route path="contact" element={<Contact/>}/>
       <Route path="*" element={<NotFound/>}/>
     </Route>
