@@ -2,9 +2,25 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, ChevronDown, Play, Star } from "lucide-react";
 import { Button, FadeIn, PlanCard, SectionHeading } from "../../components/common/ui";
-import Seo from "../../components/common/Seo";
-import { features, plans, services, testimonials, trustedCompanies } from "../../data/siteData";
+import Seo, { SITE_URL } from "../../components/common/Seo";
+import JsonLd from "../../components/common/JsonLd";
+import { features, plans, services, social, testimonials, trustedCompanies } from "../../data/siteData";
 import { useAppStore } from "../../store/useAppStore";
+
+// No LocalBusiness/streetAddress/telephone: EkSaha has no walk-in premises
+// and no dedicated business line yet. areaServed is plain Text, which
+// schema.org's Organization type accepts directly - no need to model Sydney
+// as a nested Place hierarchy for a single descriptive string.
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "EkSaha",
+  url: SITE_URL,
+  logo: `${SITE_URL}/brand/eksaha-icon.svg`,
+  description: "SEO, web, paid media and IT support in one flexible subscription for growing businesses.",
+  areaServed: "Sydney, New South Wales, AU",
+  sameAs: social.map((item) => item.url),
+};
 
 const faqs = [
   ["What does “unlimited requests” mean?", "Add as many requests as you like to your workspace. We work through them by priority, with most tasks delivered in two to five business days."],
@@ -80,6 +96,7 @@ export default function Home() {
       description="SEO, web, paid media and IT support in one flexible subscription. Senior specialists, clear priorities, measurable outcomes. Start in 5 days."
       path="/"
     />
+    <JsonLd data={organizationSchema} />
     <section className="relative bg-ink pb-24 pt-20 text-white sm:pt-28 lg:pb-32 lg:pt-36">
       <div className="grid-mask absolute inset-0 opacity-80" />
       <div className="absolute left-[10%] top-20 size-80 rounded-full bg-brand-teal/20 blur-[100px]" />

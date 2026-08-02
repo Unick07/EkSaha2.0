@@ -1,4 +1,13 @@
-import { BarChart3, Braces, Headphones, Search, ShieldCheck, Sparkles, Target, Zap } from "lucide-react";
+import { BarChart3, Braces, Facebook, Headphones, Instagram, Linkedin, Search, ShieldCheck, Sparkles, Target, Zap } from "lucide-react";
+
+// Single source of truth for EkSaha's social profiles - Footer.jsx and the
+// Organization JSON-LD's sameAs both read from this array so the URLs can
+// never drift apart between the two consumers.
+export const social = [
+  { label: "LinkedIn", url: "https://www.linkedin.com/company/eksaha", icon: Linkedin },
+  { label: "Instagram", url: "https://www.instagram.com/ek_saha/", icon: Instagram },
+  { label: "Facebook", url: "https://www.facebook.com/profile.php?id=61592316542831", icon: Facebook },
+];
 
 export const services = [
   {
