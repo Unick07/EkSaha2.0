@@ -10,6 +10,7 @@ import { handleUsers } from "./routes/users.js";
 import { handleNotifications } from "./routes/notifications.js";
 import { handleImages } from "./routes/images.js";
 import { handlePublicForms } from "./routes/public.js";
+import { handleSitemap } from "./routes/sitemap.js";
 import { all, first, generateId, intBool, normalizePost, nowIso, run } from "./lib/db.js";
 import { corsHeaders, error, json, readJson } from "./lib/http.js";
 
@@ -125,6 +126,10 @@ export default {
 
     if (url.pathname === "/health") {
       return json({ status: "ok", database: env.DB ? "connected" : "missing" }, {}, env, request);
+    }
+
+    if (url.pathname === "/sitemap.xml") {
+      return handleSitemap(env);
     }
 
     return serveAsset(request, env);
