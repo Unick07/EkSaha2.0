@@ -192,6 +192,7 @@ export async function handleAuth(request, env, path) {
       if (!email) throw new Error("Google account has no email");
 
       let user = await first(env.DB, "SELECT * FROM users WHERE email = ?", [email]);
+      const isNewUser = !user;
       if (!user) {
         const id = generateId();
         const timestamp = nowIso();
@@ -211,7 +212,7 @@ export async function handleAuth(request, env, path) {
 
       const tokens = await tokensFor(user, env);
       const headers = new Headers({
-        Location: `${clientUrl}/auth/callback?token=${encodeURIComponent(tokens.accessToken)}&role=${encodeURIComponent(user.role)}`,
+        Location: `${clientUrl}/auth/callback?token=${encodeURIComponent(tokens.accessToken)}&role=${encodeURIComponent(user.role)}&isNewUser=${isNewUser}`,
       });
       headers.append("Set-Cookie", setCookie("refreshToken", tokens.refreshToken, { maxAge: refreshMaxAge }));
       headers.append("Set-Cookie", clearCookie("googleOAuthState"));

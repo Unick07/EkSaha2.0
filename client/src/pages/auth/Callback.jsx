@@ -19,6 +19,7 @@ export default function Callback() {
 
     const token = searchParams.get("token");
     const role = searchParams.get("role");
+    const isNewUser = searchParams.get("isNewUser") === "true";
 
     if (!token) {
       toast.error("Google sign-in failed. Please try again.");
@@ -30,7 +31,7 @@ export default function Callback() {
     api.get("/auth/me")
       .then(({ data }) => {
         login(data);
-        trackEvent("login", { method: "google" });
+        trackEvent(isNewUser ? "sign_up" : "login", { method: "google" });
         toast.success("Welcome to EkSaha.");
         navigate(homeForRole(data.role || role), { replace: true });
       })
