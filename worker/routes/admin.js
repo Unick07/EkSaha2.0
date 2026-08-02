@@ -13,15 +13,17 @@ export async function handleAdmin(request, env, path) {
   await requireRole(request, env, ["admin", "support", "billing"]);
 
   if (request.method === "GET" && path === "/admin/stats") {
-    const [users, subscriptions, tickets, invoices, posts] = await Promise.all([
-      first(env.DB, "SELECT COUNT(*) AS count FROM users"),
+    const [clients, teamMembers, subscriptions, tickets, invoices, posts] = await Promise.all([
+      first(env.DB, "SELECT COUNT(*) AS count FROM users WHERE role = 'user'"),
+      first(env.DB, `SELECT COUNT(*) AS count FROM users WHERE role IN (${TEAM_ROLES.map(() => "?").join(",")})`, TEAM_ROLES),
       first(env.DB, "SELECT COUNT(*) AS count FROM subscriptions"),
       first(env.DB, "SELECT COUNT(*) AS count FROM tickets WHERE status != 'resolved'"),
       first(env.DB, "SELECT COALESCE(SUM(amount), 0) AS total FROM invoices WHERE status = 'paid'"),
       first(env.DB, "SELECT COUNT(*) AS count FROM blog_posts WHERE published = 1"),
     ]);
     return json({
-      users: users.count,
+      clients: clients.count,
+      teamMembers: teamMembers.count,
       subscriptions: subscriptions.count,
       openTickets: tickets.count,
       paidInvoiceTotal: invoices.total,
