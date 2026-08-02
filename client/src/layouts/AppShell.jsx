@@ -4,6 +4,7 @@ import { useAppStore } from "../store/useAppStore";
 import { useAuth } from "../hooks/useAuth";
 import { Modal } from "../components/dashboard/Modal";
 import { BrandLogo } from "../components/common/BrandLogo";
+import Noindex from "../components/common/Noindex";
 import { homeForRole, ticketsRouteForRole } from "../lib/roles";
 import { ticketNumber, timeAgo } from "../lib/tickets";
 import api from "../services/http/api";
@@ -80,6 +81,7 @@ export default function AppShell({ variant = "user" }) {
   };
 
   return <div className="min-h-screen bg-background text-text">
+    <Noindex/>
     {sidebarOpen && <button aria-label="Close sidebar overlay" className="fixed inset-0 z-40 bg-ink/60 lg:hidden" onClick={() => setSidebarOpen(false)} />}
     <aside className={`fixed inset-y-0 left-0 z-50 flex transform flex-col border-r border-border bg-surface p-4 text-text shadow-2xl transition-all duration-300 lg:translate-x-0 ${collapsed ? "lg:w-20" : "w-72"} ${sidebarOpen ? "translate-x-0 w-72" : "-translate-x-full"}`}>
       <div className={`flex flex-shrink-0 items-center ${collapsed ? "justify-center" : "justify-between"}`}><Link to="/" aria-label="EkSaha home" className="inline-flex rounded-lg p-1"><BrandLogo compact={collapsed} size="sm" alt="" /></Link><button className="icon-button lg:hidden" onClick={() => setSidebarOpen(false)}><X/></button></div>

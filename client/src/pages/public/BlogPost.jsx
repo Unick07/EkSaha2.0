@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Link, useParams } from "react-router-dom";
 import { AlertTriangle, ArrowLeft, ArrowRight, Calendar, Check, CheckCircle2, Clock, Copy, Globe, Info, Lightbulb, Megaphone, Search, ShieldCheck, Sparkles, Target } from "lucide-react";
 import { Button } from "../../components/common/ui";
+import Seo from "../../components/common/Seo";
 import { services } from "../../data/siteData";
 import { formatPostDate, usePublishedPosts } from "./blogData";
 import NotFound from "./NotFound";
@@ -384,6 +385,13 @@ export default function BlogPost() {
   const related = [...others.filter((item) => item.category === post.category), ...others.filter((item) => item.category !== post.category)].slice(0, 3);
 
   return <article>
+    <Seo
+      title={post.title}
+      description={post.excerpt}
+      path={`/insights/${post.slug}`}
+      image={post.image || undefined}
+      type="article"
+    />
     <ReadingProgressBar />
 
     <header className="relative overflow-hidden bg-ink py-7 text-white sm:py-9">

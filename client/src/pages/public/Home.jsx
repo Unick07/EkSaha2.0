@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, ChevronDown, Play, Star } from "lucide-react";
 import { Button, FadeIn, PlanCard, SectionHeading } from "../../components/common/ui";
+import Seo from "../../components/common/Seo";
 import { features, plans, services, testimonials, trustedCompanies } from "../../data/siteData";
 import { useAppStore } from "../../store/useAppStore";
 
@@ -74,6 +75,11 @@ export default function Home() {
   const { billing, setBilling } = useAppStore();
   const [faq, setFaq] = useState(0);
   return <div className="overflow-hidden">
+    <Seo
+      title="On-Demand SEO, Web, Advertising & IT Support"
+      description="SEO, web, paid media and IT support in one flexible subscription. Senior specialists, clear priorities, measurable outcomes. Start in 5 days."
+      path="/"
+    />
     <section className="relative bg-ink pb-24 pt-20 text-white sm:pt-28 lg:pb-32 lg:pt-36">
       <div className="grid-mask absolute inset-0 opacity-80" />
       <div className="absolute left-[10%] top-20 size-80 rounded-full bg-brand-teal/20 blur-[100px]" />

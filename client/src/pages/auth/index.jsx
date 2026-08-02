@@ -8,11 +8,13 @@ import { plans } from "../../data/siteData";
 import api from "../../services/http/api";
 import { homeForRole } from "../../lib/roles";
 import { trackEvent } from "../../lib/analytics";
+import Noindex from "../../components/common/Noindex";
 import { PASSWORD_RULES, failedPasswordRules, passwordStrength } from "../../lib/password";
 import { BrandLogo } from "../../components/common/BrandLogo";
 
 export function AuthShell({ title, copy, children }) {
   return <div className="grid min-h-screen bg-background text-text lg:grid-cols-2">
+    <Noindex/>
     <div className="hidden bg-surface p-12 lg:flex lg:flex-col lg:justify-between">
       <Link to="/" aria-label="EkSaha home" className="inline-flex"><BrandLogo alt="" /></Link>
       <div>

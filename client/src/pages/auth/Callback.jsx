@@ -6,6 +6,7 @@ import { useAuth } from "../../hooks/useAuth";
 import api from "../../services/http/api";
 import { homeForRole } from "../../lib/roles";
 import { trackEvent } from "../../lib/analytics";
+import Noindex from "../../components/common/Noindex";
 
 export default function Callback() {
   const [searchParams] = useSearchParams();
@@ -42,5 +43,5 @@ export default function Callback() {
       });
   }, [searchParams, navigate, login]);
 
-  return <PageLoader/>;
+  return <><Noindex/><PageLoader/></>;
 }
