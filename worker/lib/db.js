@@ -134,6 +134,19 @@ export function normalizeService(row) {
   };
 }
 
+export function normalizeLead(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    serviceInterest: row.service_interest ?? row.serviceInterest ?? null,
+    message: row.message,
+    status: row.status,
+    createdAt: row.created_at ?? row.createdAt ?? null,
+  };
+}
+
 export function normalizeInvoice(row) {
   if (!row) return null;
   return {

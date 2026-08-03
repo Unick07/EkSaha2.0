@@ -3,4 +3,14 @@ Allow: /
 Disallow: /api/
 
 # Private app pages remain crawlable so search engines can read their noindex directives.
+Disallow: /admin
+Disallow: /support
+Disallow: /billing
+Disallow: /dashboard
+Disallow: /login
+Disallow: /signup
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /auth
+
 Sitemap: https://eksaha.com/sitemap.xml

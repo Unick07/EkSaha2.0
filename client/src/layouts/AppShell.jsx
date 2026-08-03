@@ -1,16 +1,17 @@
 import { Link, NavLink, Outlet, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Bell, BookOpen, CheckCheck, CreditCard, FileText, Headphones, LayoutDashboard, LogOut, Menu, MessageSquarePlus, MessageSquareReply, Moon, Package, PanelLeftClose, PanelLeftOpen, Settings, ShieldCheck, Sun, Users, X } from "lucide-react";
+import { Bell, BookOpen, CheckCheck, CreditCard, FileText, Headphones, LayoutDashboard, LogOut, Mail, Menu, MessageSquarePlus, MessageSquareReply, Moon, Package, PanelLeftClose, PanelLeftOpen, Settings, ShieldCheck, Sun, Users, X } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useAuth } from "../hooks/useAuth";
 import { Modal } from "../components/dashboard/Modal";
 import { BrandLogo } from "../components/common/BrandLogo";
+import Noindex from "../components/common/Noindex";
 import { homeForRole, ticketsRouteForRole } from "../lib/roles";
 import { ticketNumber, timeAgo } from "../lib/tickets";
 import api from "../services/http/api";
 import { useEffect, useState } from "react";
 
 const userLinks = [{ to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true }, { to: "/dashboard/services", label: "My services", icon: Package }, { to: "/dashboard/tickets", label: "Support tickets", icon: Headphones, ticketBadge: true }, { to: "/dashboard/invoices", label: "Invoices", icon: FileText }, { to: "/dashboard/settings", label: "Account settings", icon: Settings }];
-const adminLinks = [{ to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true }, { to: "/admin/users", label: "Users", icon: Users }, { to: "/admin/team", label: "Team", icon: ShieldCheck }, { to: "/admin/subscriptions", label: "Subscriptions", icon: CreditCard }, { to: "/admin/services", label: "Services", icon: Package }, { to: "/admin/tickets", label: "Tickets", icon: Headphones, ticketBadge: true }, { to: "/admin/blog", label: "Blog", icon: BookOpen }, { to: "/admin/invoices", label: "Invoices", icon: FileText }, { to: "/admin/settings", label: "Settings", icon: Settings }];
+const adminLinks = [{ to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true }, { to: "/admin/users", label: "Users", icon: Users }, { to: "/admin/team", label: "Team", icon: ShieldCheck }, { to: "/admin/subscriptions", label: "Subscriptions", icon: CreditCard }, { to: "/admin/services", label: "Services", icon: Package }, { to: "/admin/leads", label: "Leads", icon: Mail }, { to: "/admin/tickets", label: "Tickets", icon: Headphones, ticketBadge: true }, { to: "/admin/blog", label: "Blog", icon: BookOpen }, { to: "/admin/invoices", label: "Invoices", icon: FileText }, { to: "/admin/settings", label: "Settings", icon: Settings }];
 const supportLinks = [{ to: "/support/users", label: "Users", icon: Users, end: true }, { to: "/support/services", label: "Services", icon: Package }, { to: "/support/tickets", label: "Tickets", icon: Headphones, ticketBadge: true }, { to: "/support/blog", label: "Blog", icon: BookOpen }, { to: "/support/settings", label: "Account settings", icon: Settings }];
 const billingLinks = [{ to: "/billing/subscriptions", label: "Subscriptions", icon: CreditCard, end: true }, { to: "/billing/services", label: "Services", icon: Package }, { to: "/billing/invoices", label: "Invoices", icon: FileText }, { to: "/billing/tickets", label: "Billing tickets", icon: Headphones, ticketBadge: true }, { to: "/billing/users", label: "Users (View only)", icon: Users }, { to: "/billing/settings", label: "Account settings", icon: Settings }];
 
@@ -80,6 +81,7 @@ export default function AppShell({ variant = "user" }) {
   };
 
   return <div className="min-h-screen bg-background text-text">
+    <Noindex/>
     {sidebarOpen && <button aria-label="Close sidebar overlay" className="fixed inset-0 z-40 bg-ink/60 lg:hidden" onClick={() => setSidebarOpen(false)} />}
     <aside className={`fixed inset-y-0 left-0 z-50 flex transform flex-col border-r border-border bg-surface p-4 text-text shadow-2xl transition-all duration-300 lg:translate-x-0 ${collapsed ? "lg:w-20" : "w-72"} ${sidebarOpen ? "translate-x-0 w-72" : "-translate-x-full"}`}>
       <div className={`flex flex-shrink-0 items-center ${collapsed ? "justify-center" : "justify-between"}`}><Link to="/" aria-label="EkSaha home" className="inline-flex rounded-lg p-1"><BrandLogo compact={collapsed} size="sm" alt="" /></Link><button className="icon-button lg:hidden" onClick={() => setSidebarOpen(false)}><X/></button></div>

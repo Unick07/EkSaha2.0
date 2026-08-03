@@ -21,6 +21,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Button, PlanCard } from "../../components/common/ui";
+import Seo from "../../components/common/Seo";
 import { plans } from "../../data/siteData";
 import { audienceOptions, individualPricing, organizationComparison, pricingFaqs } from "../../data/pricingData";
 import { useAppStore } from "../../store/useAppStore";
@@ -302,6 +303,11 @@ export default function Pricing() {
   const [audience, setAudience] = useState("individuals");
   const reduceMotion = useReducedMotion();
   return <>
+    <Seo
+      title="Pricing"
+      description="Simple subscription pricing for SEO, web, advertising and IT support. Build a plan around your priorities, with no long-term contracts."
+      path="/pricing"
+    />
     <section className="relative overflow-hidden bg-ink pb-20 pt-16 text-white sm:pb-24 sm:pt-20">
       <div className="grid-mask absolute inset-0 opacity-70" aria-hidden="true" />
       <div className="absolute -left-32 top-10 size-96 rounded-full bg-primary/20 blur-3xl" aria-hidden="true" />

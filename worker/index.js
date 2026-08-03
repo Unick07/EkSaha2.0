@@ -9,6 +9,8 @@ import { handleServices } from "./routes/services.js";
 import { handleUsers } from "./routes/users.js";
 import { handleNotifications } from "./routes/notifications.js";
 import { handleImages } from "./routes/images.js";
+import { handlePublicForms } from "./routes/public.js";
+import { handleSitemap } from "./routes/sitemap.js";
 import { all, first, generateId, intBool, normalizePost, nowIso, run } from "./lib/db.js";
 import { corsHeaders, error, json, readJson } from "./lib/http.js";
 import { createArticleSeo, injectSeoAndFallback, renderArticleFallback } from "./lib/seo.js";
@@ -37,6 +39,7 @@ async function routeApi(request, env) {
     (req, e) => handleTickets(req, e, path),
     (req, e) => handleInvoices(req, e, path),
     (req, e) => handleImages(req, e, path),
+    (req, e) => handlePublicForms(req, e, path),
     (req, e) => handleDemo(req, e, path),
   ];
 
@@ -382,6 +385,19 @@ export default {
         if (staticArticle.status !== 404) return staticArticle;
         return serveDynamicInsight(request, env, insightSlug);
       }
+    if (url.pathname === "/sitemap.xml") {
+      return handleSitemap(env);
+    }
+
+    // /insights is canonical; /blog was a duplicate route to the same
+    // content (client/src/app/App.jsx used to mount Blog/BlogPost at both).
+    // Redirecting here means old /blog links and any already-indexed pages
+    // 301 straight to their /insights equivalent instead of 404ing now that
+    // the client-side route is gone.
+    const blogMatch = url.pathname.match(/^\/blog(?:\/([^/]+))?$/);
+    if (blogMatch) {
+      const target = blogMatch[1] ? `/insights/${blogMatch[1]}` : "/insights";
+      return Response.redirect(`${url.origin}${target}${url.search}`, 301);
     }
 
     return serveAsset(request, env);

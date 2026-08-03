@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Link, useParams } from "react-router-dom";
 import { AlertTriangle, ArrowLeft, ArrowRight, Calendar, Check, CheckCircle2, Clock, Copy, Globe, Info, Lightbulb, Megaphone, Search, ShieldCheck, Sparkles, Target } from "lucide-react";
 import { Button, PageLoader } from "../../components/common/ui";
+import Seo from "../../components/common/Seo";
 import { services } from "../../data/siteData";
 import { createArticleSeo } from "../../seo/metadata";
 import { useSeo } from "../../seo/useSeo";
@@ -426,6 +427,13 @@ export default function BlogPost() {
   const related = [...others.filter((item) => item.category === post.category), ...others.filter((item) => item.category !== post.category)].slice(0, 3);
 
   return <article>
+    <Seo
+      title={post.title}
+      description={post.excerpt}
+      path={`/insights/${post.slug}`}
+      image={post.image || undefined}
+      type="article"
+    />
     <ReadingProgressBar />
 
     <header className="relative overflow-hidden bg-ink py-7 text-white sm:py-9">
@@ -449,7 +457,7 @@ export default function BlogPost() {
     </header>
 
     {post.image && <div className="container-shell max-w-4xl pt-10">
-      <img src={post.image} alt={post.title} loading="lazy" className="h-[260px] w-full rounded-2xl object-cover shadow-lg sm:h-[380px]" />
+      <img src={post.image} alt={post.title} loading="eager" fetchPriority="high" className="h-[260px] w-full rounded-2xl object-cover shadow-lg sm:h-[380px]" />
     </div>}
 
     <div className="container-shell py-14 sm:py-16">

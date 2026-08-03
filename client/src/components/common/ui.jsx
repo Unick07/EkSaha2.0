@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { useAppStore } from "../../store/useAppStore";
 import api from "../../services/http/api";
 import { homeForRole } from "../../lib/roles";
+import { trackEvent } from "../../lib/analytics";
 
 export function Button({ children, to, variant = "primary", className = "", ...props }) {
   const styles = {
@@ -44,6 +45,7 @@ export function PlanCard({ plan, billing = "monthly" }) {
       const matchedPlan = availablePlans.find((item) => item.name === plan.name);
       if (!matchedPlan) throw new Error("Plan not found");
       await api.post("/subscriptions/me", { planId: matchedPlan.id });
+      trackEvent("subscribe", { plan_name: plan.name, value: price, currency: "USD" });
       toast.success(`You're on the ${plan.name} plan.`);
       navigate(homeForRole(user.role));
     } catch (caught) {

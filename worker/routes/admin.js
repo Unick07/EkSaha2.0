@@ -1,6 +1,8 @@
 import { hashPassword, requireRole } from "../lib/auth.js";
-import { all, first, generateId, normalizeUser, nowIso, run } from "../lib/db.js";
+import { all, first, generateId, normalizeLead, normalizeUser, nowIso, run } from "../lib/db.js";
 import { error, json, readJson } from "../lib/http.js";
+
+const LEAD_STATUSES = ["new", "contacted", "converted", "closed"];
 
 const TEAM_ROLES = ["admin", "support", "billing"];
 const IMAGE_EXT_BY_TYPE = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
@@ -11,15 +13,17 @@ export async function handleAdmin(request, env, path) {
   await requireRole(request, env, ["admin", "support", "billing"]);
 
   if (request.method === "GET" && path === "/admin/stats") {
-    const [users, subscriptions, tickets, invoices, posts] = await Promise.all([
-      first(env.DB, "SELECT COUNT(*) AS count FROM users"),
+    const [clients, teamMembers, subscriptions, tickets, invoices, posts] = await Promise.all([
+      first(env.DB, "SELECT COUNT(*) AS count FROM users WHERE role = 'user'"),
+      first(env.DB, `SELECT COUNT(*) AS count FROM users WHERE role IN (${TEAM_ROLES.map(() => "?").join(",")})`, TEAM_ROLES),
       first(env.DB, "SELECT COUNT(*) AS count FROM subscriptions"),
       first(env.DB, "SELECT COUNT(*) AS count FROM tickets WHERE status != 'resolved'"),
       first(env.DB, "SELECT COALESCE(SUM(amount), 0) AS total FROM invoices WHERE status = 'paid'"),
       first(env.DB, "SELECT COUNT(*) AS count FROM blog_posts WHERE published = 1"),
     ]);
     return json({
-      users: users.count,
+      clients: clients.count,
+      teamMembers: teamMembers.count,
       subscriptions: subscriptions.count,
       openTickets: tickets.count,
       paidInvoiceTotal: invoices.total,
@@ -192,6 +196,24 @@ export async function handleAdmin(request, env, path) {
       ORDER BY subscriptions.created_at DESC
     `);
     return json(rows, {}, env, request);
+  }
+
+  if (request.method === "GET" && path === "/admin/leads") {
+    const rows = await all(env.DB, "SELECT * FROM leads ORDER BY created_at DESC");
+    return json(rows.map(normalizeLead), {}, env, request);
+  }
+
+  const leadId = path.match(/^\/admin\/leads\/([^/]+)$/)?.[1];
+  if (request.method === "PATCH" && leadId) {
+    const existing = await first(env.DB, "SELECT * FROM leads WHERE id = ?", [leadId]);
+    if (!existing) return error("Lead not found", 404, env, request);
+    const body = await readJson(request);
+    const status = (body.status || "").toLowerCase();
+    if (!LEAD_STATUSES.includes(status)) {
+      return error(`Status must be one of: ${LEAD_STATUSES.join(", ")}`, 400, env, request);
+    }
+    await run(env.DB, "UPDATE leads SET status = ? WHERE id = ?", [status, leadId]);
+    return json(normalizeLead(await first(env.DB, "SELECT * FROM leads WHERE id = ?", [leadId])), {}, env, request);
   }
 
   return null;

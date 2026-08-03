@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Navigate, Route, Routes, useParams } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import PublicLayout from "../layouts/PublicLayout";
 import AppShell from "../layouts/AppShell";
 import { PageLoader } from "../components/common/ui";
@@ -7,9 +7,19 @@ import BackToTop from "../components/common/BackToTop";
 import RouteSeo from "../seo/RouteSeo";
 import { useAppStore } from "../store/useAppStore";
 import { useAdminStore } from "../store/useAdminStore";
+import { trackPageView } from "../lib/analytics";
+// Public marketing pages are bundled eagerly, not behind React.lazy: lazy-
+// loading them let <main> stay at the Suspense fallback's small min-height
+// while Navbar/Footer already rendered, so Footer would jump hundreds of
+// pixels once the chunk resolved (measured as a 0.4 CLS hit on "#root>footer"
+// in Cloudflare Web Analytics) and delayed the hero text's first paint
+// behind an extra chunk fetch (measured P75 LCP of 7.3s). Shipping them in
+// the main bundle removes that async gap entirely for the pages real
+// visitors actually land on.
+import Home from "../pages/public/Home";
+import { ServicePage, Pricing, About, Blog, BlogPost, Contact, NotFound } from "../pages/public";
 
 const from = (loader, name) => lazy(() => loader().then((module) => ({ default: module[name] })));
-const publicPages = () => import("../pages/public");
 const authPages = () => import("../pages/auth");
 const dashboardPages = () => import("../pages/dashboard");
 const adminPages = () => import("../pages/admin");
@@ -41,6 +51,7 @@ const AdminSubscriptions = from(adminPages, "AdminSubscriptions");
 const AdminTickets = from(adminPages, "AdminTickets");
 const AdminTeam = from(adminPages, "AdminTeam");
 const AdminServices = from(adminPages, "AdminServices");
+const AdminLeads = from(adminPages, "AdminLeads");
 const AdminInvoices = from(adminPages, "AdminInvoices");
 const ResourceManager = from(adminPages, "ResourceManager");
 const AdminSettings = from(adminPages, "AdminSettings");
@@ -51,6 +62,7 @@ function LegacyBlogPostRedirect() {
 }
 
 export default function App() {
+  const location = useLocation();
   const restoreSession = useAppStore((state) => state.restoreSession);
   const theme = useAppStore((state) => state.theme);
   const themePreference = useAppStore((state) => state.themePreference);
@@ -73,6 +85,10 @@ export default function App() {
       active = false;
     };
   }, [restoreSession]);
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (themePreference !== "system") return undefined;
@@ -145,6 +161,7 @@ export default function App() {
       <Route path="users" element={<AdminUsers/>}/>
       <Route path="subscriptions" element={<AdminSubscriptions/>}/>
       <Route path="services" element={<AdminServices mode="admin"/>}/>
+      <Route path="leads" element={<AdminLeads/>}/>
       <Route path="tickets" element={<AdminTickets/>}/>
       <Route path="team" element={<AdminTeam/>}/>
       <Route path="blog" element={<ResourceManager type="Blog"/>}/>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Activity, CircleDollarSign, FileText, TicketCheck, Users as UsersIcon } from "lucide-react";
+import { Activity, CircleDollarSign, FileText, ShieldCheck, TicketCheck, Users as UsersIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import toast from "react-hot-toast";
@@ -17,7 +17,7 @@ export default function Overview() {
     let active = true;
     setLoading(true);
     setError("");
-    Promise.all([api.get("/admin/stats"), api.get("/admin/users")])
+    Promise.all([api.get("/admin/stats"), api.get("/admin/users", { params: { roles: "user" } })])
       .then(([statsResponse, usersResponse]) => {
         if (!active) return;
         setStats(statsResponse.data);
@@ -40,21 +40,28 @@ export default function Overview() {
   if (error) return <div className="panel border-red-200 bg-red-50 p-6 text-sm font-semibold text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{error}</div>;
 
   const kpis = [
-    [UsersIcon, stats?.users ?? 0, "Total users"],
+    [UsersIcon, stats?.clients ?? 0, "Clients", "/admin/users"],
+    [ShieldCheck, stats?.teamMembers ?? 0, "Team", "/admin/team"],
     [Activity, stats?.subscriptions ?? 0, "Subscriptions"],
     [CircleDollarSign, `$${Number(stats?.paidInvoiceTotal || 0).toLocaleString()}`, "Paid invoices"],
     [TicketCheck, stats?.openTickets ?? 0, "Open tickets"],
     [FileText, stats?.publishedPosts ?? 0, "Published posts"],
   ];
   const chartData = [
-    { label: "Users", value: stats?.users ?? 0 },
+    { label: "Clients", value: stats?.clients ?? 0 },
+    { label: "Team", value: stats?.teamMembers ?? 0 },
     { label: "Subscriptions", value: stats?.subscriptions ?? 0 },
     { label: "Open tickets", value: stats?.openTickets ?? 0 },
     { label: "Posts", value: stats?.publishedPosts ?? 0 },
   ];
 
   return <div className="space-y-7">
-    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-5">{kpis.map(([Icon, value, label]) => <div className="panel p-5" key={label}><span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary"><Icon size={20}/></span><div className="mt-5 text-2xl font-extrabold">{value}</div><div className="mt-1 text-sm text-muted">{label}</div></div>)}</div>
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">{kpis.map(([Icon, value, label, to]) => {
+      const content = <><span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary"><Icon size={20}/></span><div className="mt-5 text-2xl font-extrabold">{value}</div><div className="mt-1 text-sm text-muted">{label}</div></>;
+      return to
+        ? <Link className="panel p-5 transition hover:border-primary/40" to={to} key={label}>{content}</Link>
+        : <div className="panel p-5" key={label}>{content}</div>;
+    })}</div>
     <div className="panel p-6"><div><h2 className="font-bold">Database overview</h2><p className="mt-1 text-xs text-muted">Live totals from D1.</p></div><div className="mt-7 h-72"><ResponsiveContainer width="100%" height="100%"><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#028B7F26"/><XAxis dataKey="label" axisLine={false} tickLine={false} fontSize={11}/><YAxis axisLine={false} tickLine={false} fontSize={11}/><Tooltip/><Bar dataKey="value" fill="#028B7F" radius={[6, 6, 0, 0]}/></BarChart></ResponsiveContainer></div></div>
     <div className="panel overflow-hidden"><div className="flex items-center justify-between p-6"><h2 className="font-bold">Recent signups</h2><Link className="text-sm font-bold text-primary" to="/admin/users">View all</Link></div><div className="overflow-x-auto"><table className="w-full min-w-[680px] text-left text-sm"><thead className="bg-surface-raised/60 text-xs uppercase text-muted"><tr><th className="p-5">User</th><th>Role</th><th>Plan</th><th>Created</th></tr></thead><tbody>{users.slice(0, 4).map((user) => <tr className="border-t border-border" key={user.id}><td className="p-5"><div className="font-semibold">{user.name}</div><div className="text-xs text-muted/75">{user.email}</div></td><td className="capitalize">{user.role}</td><td>{user.plan || "No plan"}</td><td>{formatDate(user.createdAt)}</td></tr>)}</tbody></table>{users.length === 0 && <div className="border-t border-border p-6 text-sm text-muted">No users found.</div>}</div></div>
   </div>;

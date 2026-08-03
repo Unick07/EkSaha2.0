@@ -5,6 +5,8 @@ import { PageLoader } from "../../components/common/ui";
 import { useAuth } from "../../hooks/useAuth";
 import api from "../../services/http/api";
 import { homeForRole } from "../../lib/roles";
+import { trackEvent } from "../../lib/analytics";
+import Noindex from "../../components/common/Noindex";
 
 export default function Callback() {
   const [searchParams] = useSearchParams();
@@ -18,6 +20,7 @@ export default function Callback() {
 
     const token = searchParams.get("token");
     const role = searchParams.get("role");
+    const isNewUser = searchParams.get("isNewUser") === "true";
 
     if (!token) {
       toast.error("Google sign-in failed. Please try again.");
@@ -29,6 +32,7 @@ export default function Callback() {
     api.get("/auth/me")
       .then(({ data }) => {
         login(data);
+        trackEvent(isNewUser ? "sign_up" : "login", { method: "google" });
         toast.success("Welcome to EkSaha.");
         navigate(homeForRole(data.role || role), { replace: true });
       })
@@ -39,5 +43,5 @@ export default function Callback() {
       });
   }, [searchParams, navigate, login]);
 
-  return <PageLoader/>;
+  return <><Noindex/><PageLoader/></>;
 }

@@ -1,8 +1,13 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowRight, Calendar, Clock, Mail, MapPin, Phone, Send } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button, SectionHeading } from "../../components/common/ui";
+import Turnstile from "../../components/common/Turnstile";
+import Seo from "../../components/common/Seo";
 import { services } from "../../data/siteData";
+import api from "../../services/http/api";
+import { trackEvent } from "../../lib/analytics";
 import { formatPostDate, usePublishedPosts } from "./blogData";
 import NotFound from "./NotFound";
 import { PUBLIC_EMAIL, PUBLIC_LOCATION_DISPLAY, PUBLIC_PHONE, PUBLIC_PHONE_DISPLAY, TEAM_MEMBERS } from "../../seo/siteConfig";
@@ -13,6 +18,7 @@ export function ServicePage() {
   if (!service) return <NotFound />;
   const Icon = service.icon;
   return <>
+    <Seo title={service.title} description={service.short} path={`/services/${service.slug}`} />
     <section className="bg-ink py-24 text-white"><div className="container-shell grid items-center gap-12 lg:grid-cols-2"><div><span className="eyebrow">EkSaha / {service.slug}</span><h1 className="text-5xl font-extrabold tracking-[-.05em] sm:text-6xl">{service.title}</h1><p className="mt-6 max-w-xl text-lg leading-8 text-on-brand-muted">{service.short}</p><div className="mt-8 flex gap-3"><Button to="/contact">Talk to a specialist <ArrowRight size={16} /></Button><Button to="/pricing" variant="secondary" className="border-primary-foreground/25 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20">View plans</Button></div></div><div className="relative mx-auto grid aspect-square w-full max-w-md place-items-center rounded-[3rem] border border-white/10 bg-white/5"><div className={`absolute inset-12 rounded-full bg-gradient-to-br ${service.accent} opacity-20 blur-3xl`} /><Icon className="relative text-white" size={110} strokeWidth={1.2} /><div className="absolute bottom-6 left-6 right-6 rounded-2xl border border-white/10 bg-ink/70 p-5 backdrop-blur"><div className="text-3xl font-extrabold">{service.metric}</div><div className="text-sm text-on-brand-muted">{service.metricLabel}</div></div></div></div></section>
     <section className="py-24"><div className="container-shell"><SectionHeading eyebrow="What’s included" title="A complete system, not a collection of tasks." /><div className="mt-12 grid gap-5 md:grid-cols-2">{service.features.map((feature, index) => <div key={feature} className="panel flex items-center gap-5 p-6"><span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/10 font-bold text-primary">0{index + 1}</span><div><h3 className="font-bold">{feature}</h3><p className="mt-1 text-sm text-muted">Strategy, execution and reporting handled by a specialist in your workspace.</p></div></div>)}</div></div></section>
     <section className="bg-surface-raised/60 py-24"><div className="container-shell grid gap-10 lg:grid-cols-2"><div><SectionHeading eyebrow="Our toolkit" title="Powered by proven tools and sharp judgment." /><div className="mt-8 flex flex-wrap gap-3">{service.tools.map(tool => <span className="rounded-xl border border-border bg-surface px-4 py-3 text-sm font-bold" key={tool}>{tool}</span>)}</div></div><div className="rounded-3xl bg-ink p-8 text-white"><div className="text-sm text-primary">Delivery focus</div><div className="mt-4 text-5xl font-extrabold">{service.metric}</div><p className="mt-4 leading-7 text-on-brand-muted">Built through a focused roadmap, regular iteration and transparent performance reporting.</p><Button to="/contact" className="mt-7">Build my roadmap</Button></div></div></section>
@@ -23,19 +29,59 @@ export { default as Pricing } from "./Pricing";
 
 export function About() {
   const values = [["Clarity over theatre", "Useful work, plain language and an honest view of what moves the needle."], ["Own the outcome", "We care about the result after the deliverable, not just the handoff."], ["Small teams, senior people", "Lean collaboration with experienced specialists close to the work."]];
-  return <><section className="py-24 sm:py-32"><div className="container-shell grid items-end gap-12 lg:grid-cols-2"><div><span className="eyebrow">About EkSaha</span><h1 className="text-5xl font-extrabold tracking-[-.05em] sm:text-6xl">Technology should create leverage, not overhead.</h1></div><p className="text-lg leading-8 text-muted">We started EkSaha to give ambitious small teams access to the digital capability usually reserved for much larger companies. One experienced team, one clear subscription, zero agency fog.</p></div></section><section className="bg-ink py-24 text-white"><div className="container-shell grid gap-5 lg:grid-cols-3">{values.map(([title, copy], i) => <div className="rounded-3xl border border-white/10 bg-white/5 p-7" key={title}><div className="text-sm font-bold text-primary">0{i+1}</div><h2 className="mt-10 text-xl font-bold">{title}</h2><p className="mt-3 text-sm leading-6 text-on-brand-muted">{copy}</p></div>)}</div></section><section className="py-24"><div className="container-shell"><SectionHeading eyebrow="Our founders" title="Building practical digital capability for growing businesses." /><div className="mt-12 grid max-w-3xl gap-5 sm:grid-cols-2">{TEAM_MEMBERS.map((person, i) => <article className="panel overflow-hidden" key={person.name}><div className={`aspect-[4/3] bg-gradient-to-br ${services[i].accent} opacity-80`} aria-hidden="true" /><div className="p-5"><h2 className="font-bold">{person.name}</h2><p className="mt-1 text-sm text-muted">{person.role}</p></div></article>)}</div></div></section></>;
+  return <>
+    <Seo
+      title="About Us"
+      description="EkSaha gives ambitious small teams access to senior SEO, web, advertising and IT specialists through one flexible subscription."
+      path="/about"
+    />
+    <section className="py-24 sm:py-32"><div className="container-shell grid items-end gap-12 lg:grid-cols-2"><div><span className="eyebrow">About EkSaha</span><h1 className="text-5xl font-extrabold tracking-[-.05em] sm:text-6xl">Technology should create leverage, not overhead.</h1></div><p className="text-lg leading-8 text-muted">We started EkSaha to give ambitious small teams access to the digital capability usually reserved for much larger companies. One experienced team, one clear subscription, zero agency fog.</p></div></section><section className="bg-ink py-24 text-white"><div className="container-shell grid gap-5 lg:grid-cols-3">{values.map(([title, copy], i) => <div className="rounded-3xl border border-white/10 bg-white/5 p-7" key={title}><div className="text-sm font-bold text-primary">0{i+1}</div><h2 className="mt-10 text-xl font-bold">{title}</h2><p className="mt-3 text-sm leading-6 text-on-brand-muted">{copy}</p></div>)}</div></section><section className="py-24"><div className="container-shell"><SectionHeading eyebrow="Our team" title="Specialists who stay close to the work." /><div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{["Amelia / Strategy", "Noah / Engineering", "Lina / Growth", "Sam / Client success"].map((person, i) => <div className="panel overflow-hidden" key={person}><div className={`aspect-[4/3] bg-gradient-to-br ${services[i].accent} opacity-80`} /><div className="p-5 font-bold">{person}</div></div>)}</div></div></section></>;
 }
 
 export function Blog() {
   const publishedPosts = usePublishedPosts();
-  return <><section className="bg-surface-raised/60 py-24 text-center"><div className="container-shell"><span className="eyebrow">EkSaha field notes</span><h1 className="text-5xl font-extrabold tracking-[-.05em]">Ideas for better digital operations.</h1><p className="mx-auto mt-5 max-w-xl text-muted">Practical thinking on growth, websites and resilient IT for small teams.</p></div></section><section className="py-20"><div className="container-shell grid gap-6 lg:grid-cols-3">{publishedPosts.map((post, i) => <Link to={`/insights/${post.slug}`} className="panel group overflow-hidden" key={`${post.source}-${post.slug}`}>{post.image ? <img src={post.image} alt={post.title} loading="lazy" className="h-48 w-full object-cover" /> : <div className={`h-48 bg-gradient-to-br ${services[i % services.length].accent}`} />}<div className="p-6"><div className="text-xs font-bold uppercase tracking-wider text-primary">{post.category}</div><h2 className="mt-3 text-xl font-bold leading-7 group-hover:text-primary">{post.title}</h2><p className="mt-3 text-sm leading-6 text-muted">{post.excerpt}</p><div className="mt-6 flex gap-4 text-xs text-muted/75"><span className="flex gap-1"><Calendar size={13}/>{formatPostDate(post.date)}</span><span className="flex gap-1"><Clock size={13}/>{post.read}</span></div></div></Link>)}</div>{publishedPosts.length === 0 && <div className="container-shell"><div className="panel p-10 text-center text-muted">No published insights yet.</div></div>}</section></>;
+  return <>
+    <Seo
+      title="Insights"
+      description="Practical thinking on growth, websites and resilient IT for small teams."
+      path="/insights"
+    />
+    <section className="bg-surface-raised/60 py-24 text-center"><div className="container-shell"><span className="eyebrow">EkSaha field notes</span><h1 className="text-5xl font-extrabold tracking-[-.05em]">Ideas for better digital operations.</h1><p className="mx-auto mt-5 max-w-xl text-muted">Practical thinking on growth, websites and resilient IT for small teams.</p></div></section><section className="py-20"><div className="container-shell grid gap-6 lg:grid-cols-3">{publishedPosts.map((post, i) => <Link to={`/insights/${post.slug}`} className="panel group overflow-hidden" key={`${post.source}-${post.slug}`}>{post.image ? <img src={post.image} alt={post.title} loading="lazy" className="h-48 w-full object-cover" /> : <div className={`h-48 bg-gradient-to-br ${services[i % services.length].accent}`} />}<div className="p-6"><div className="text-xs font-bold uppercase tracking-wider text-primary">{post.category}</div><h2 className="mt-3 text-xl font-bold leading-7 group-hover:text-primary">{post.title}</h2><p className="mt-3 text-sm leading-6 text-muted">{post.excerpt}</p><div className="mt-6 flex gap-4 text-xs text-muted/75"><span className="flex gap-1"><Calendar size={13}/>{formatPostDate(post.date)}</span><span className="flex gap-1"><Clock size={13}/>{post.read}</span></div></div></Link>)}</div>{publishedPosts.length === 0 && <div className="container-shell"><div className="panel p-10 text-center text-muted">No published insights yet.</div></div>}</section></>;
 }
 
 export { default as BlogPost } from "./BlogPost";
 
+const emptyContactForm = { name: "", email: "", service: "SEO & organic growth", message: "" };
+
 export function Contact() {
-  const submit = e => { e.preventDefault(); e.currentTarget.reset(); toast.success("Thanks — we’ll be in touch within one business day."); };
-  return <section className="py-24"><div className="container-shell grid gap-14 lg:grid-cols-[.8fr_1.2fr]"><div><span className="eyebrow">Let’s talk</span><h1 className="text-5xl font-extrabold tracking-[-.05em]">What are you trying to move forward?</h1><p className="mt-6 text-lg leading-8 text-muted">Tell us about the goal, the friction, or the idea. We’ll come back with a clear point of view.</p><div className="mt-10 space-y-5 text-sm"><a className="flex gap-3 hover:text-primary" href={`mailto:${PUBLIC_EMAIL}`}><Mail className="text-electric" size={19}/>{PUBLIC_EMAIL}</a><a className="flex gap-3 hover:text-primary" href={`tel:${PUBLIC_PHONE}`}><Phone className="text-electric" size={19}/>{PUBLIC_PHONE_DISPLAY}</a><div className="flex gap-3"><MapPin className="shrink-0 text-electric" size={19}/>{PUBLIC_LOCATION_DISPLAY}</div></div></div><form onSubmit={submit} className="panel grid gap-5 p-7 sm:grid-cols-2"><label className="text-sm font-semibold">Name<input required className="input mt-2" placeholder="Your name"/></label><label className="text-sm font-semibold">Work email<input required type="email" className="input mt-2" placeholder="you@company.com"/></label><label className="text-sm font-semibold sm:col-span-2">What can we help with?<select className="input mt-2"><option>SEO & organic growth</option><option>Website design & development</option><option>Digital advertising</option><option>IT support</option><option>A combination</option></select></label><label className="text-sm font-semibold sm:col-span-2">Tell us a little more<textarea required className="input mt-2 min-h-36 resize-none" placeholder="Goals, timing, current challenges..."/></label><Button className="sm:col-span-2">Send inquiry <Send size={16}/></Button></form></div></section>;
+  const [form, setForm] = useState(emptyContactForm);
+  const [submitting, setSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileKey, setTurnstileKey] = useState(0);
+  const setField = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setSubmitting(true);
+    try {
+      await api.post("/contact", { ...form, turnstileToken });
+      trackEvent("generate_lead", { service: form.service });
+      toast.success("Thanks — we’ll be in touch within one business day.");
+      setForm(emptyContactForm);
+      setTurnstileToken("");
+      setTurnstileKey((key) => key + 1);
+    } catch (caught) {
+      toast.error(caught.response?.data?.message || "Could not send your message. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return <><Seo
+    title="Contact Us"
+    description="Tell us about your goal and we'll come back with a clear point of view. Book a free 30-minute call with EkSaha."
+    path="/contact"
+  /><section className="py-24"><div className="container-shell grid gap-14 lg:grid-cols-[.8fr_1.2fr]"><div><span className="eyebrow">Let’s talk</span><h1 className="text-5xl font-extrabold tracking-[-.05em]">What are you trying to move forward?</h1><p className="mt-6 text-lg leading-8 text-muted">Tell us about the goal, the friction, or the idea. We’ll come back with a clear point of view.</p><div className="mt-10 space-y-5 text-sm"><div className="flex gap-3"><Mail className="text-electric" size={19}/>hello@eksaha.com</div><div className="flex gap-3"><Phone className="text-electric" size={19}/>+1 (555) 014-8820</div><div className="flex gap-3"><MapPin className="text-electric" size={19}/>Remote-first · working worldwide</div></div></div><form onSubmit={submit} className="panel grid gap-5 p-7 sm:grid-cols-2"><label className="text-sm font-semibold">Name<input required className="input mt-2" placeholder="Your name" value={form.name} onChange={setField("name")}/></label><label className="text-sm font-semibold">Work email<input required type="email" className="input mt-2" placeholder="you@company.com" value={form.email} onChange={setField("email")}/></label><label className="text-sm font-semibold sm:col-span-2">What can we help with?<select className="input mt-2" value={form.service} onChange={setField("service")}><option>SEO & organic growth</option><option>Website design & development</option><option>Digital advertising</option><option>IT support</option><option>A combination</option></select></label><label className="text-sm font-semibold sm:col-span-2">Tell us a little more<textarea required className="input mt-2 min-h-36 resize-none" placeholder="Goals, timing, current challenges..." value={form.message} onChange={setField("message")}/></label><div className="sm:col-span-2"><Turnstile key={turnstileKey} onVerify={setTurnstileToken}/></div><Button disabled={submitting || !turnstileToken} className="sm:col-span-2">{submitting ? "Sending..." : "Send inquiry"} <Send size={16}/></Button></form></div></section></>;
 }
 
 export { default as NotFound } from "./NotFound";
