@@ -9,16 +9,19 @@ import { services } from "../../data/siteData";
 import api from "../../services/http/api";
 import { trackEvent } from "../../lib/analytics";
 import { formatPostDate, usePublishedPosts } from "./blogData";
+import NotFound from "./NotFound";
+import { PUBLIC_EMAIL, PUBLIC_LOCATION_DISPLAY, PUBLIC_PHONE, PUBLIC_PHONE_DISPLAY, TEAM_MEMBERS } from "../../seo/siteConfig";
 
 export function ServicePage() {
   const { slug } = useParams();
-  const service = services.find((item) => item.slug === slug) || services[0];
+  const service = services.find((item) => item.slug === slug);
+  if (!service) return <NotFound />;
   const Icon = service.icon;
   return <>
     <Seo title={service.title} description={service.short} path={`/services/${service.slug}`} />
     <section className="bg-ink py-24 text-white"><div className="container-shell grid items-center gap-12 lg:grid-cols-2"><div><span className="eyebrow">EkSaha / {service.slug}</span><h1 className="text-5xl font-extrabold tracking-[-.05em] sm:text-6xl">{service.title}</h1><p className="mt-6 max-w-xl text-lg leading-8 text-on-brand-muted">{service.short}</p><div className="mt-8 flex gap-3"><Button to="/contact">Talk to a specialist <ArrowRight size={16} /></Button><Button to="/pricing" variant="secondary" className="border-primary-foreground/25 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20">View plans</Button></div></div><div className="relative mx-auto grid aspect-square w-full max-w-md place-items-center rounded-[3rem] border border-white/10 bg-white/5"><div className={`absolute inset-12 rounded-full bg-gradient-to-br ${service.accent} opacity-20 blur-3xl`} /><Icon className="relative text-white" size={110} strokeWidth={1.2} /><div className="absolute bottom-6 left-6 right-6 rounded-2xl border border-white/10 bg-ink/70 p-5 backdrop-blur"><div className="text-3xl font-extrabold">{service.metric}</div><div className="text-sm text-on-brand-muted">{service.metricLabel}</div></div></div></div></section>
     <section className="py-24"><div className="container-shell"><SectionHeading eyebrow="What’s included" title="A complete system, not a collection of tasks." /><div className="mt-12 grid gap-5 md:grid-cols-2">{service.features.map((feature, index) => <div key={feature} className="panel flex items-center gap-5 p-6"><span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/10 font-bold text-primary">0{index + 1}</span><div><h3 className="font-bold">{feature}</h3><p className="mt-1 text-sm text-muted">Strategy, execution and reporting handled by a specialist in your workspace.</p></div></div>)}</div></div></section>
-    <section className="bg-surface-raised/60 py-24"><div className="container-shell grid gap-10 lg:grid-cols-2"><div><SectionHeading eyebrow="Our toolkit" title="Powered by proven tools and sharp judgment." /><div className="mt-8 flex flex-wrap gap-3">{service.tools.map(tool => <span className="rounded-xl border border-border bg-surface px-4 py-3 text-sm font-bold" key={tool}>{tool}</span>)}</div></div><div className="rounded-3xl bg-ink p-8 text-white"><div className="text-sm text-primary">Recent client result</div><div className="mt-4 text-5xl font-extrabold">{service.metric}</div><p className="mt-4 leading-7 text-on-brand-muted">Achieved through a focused 90-day roadmap, weekly iteration and transparent performance reporting.</p><Button to="/contact" className="mt-7">Build my roadmap</Button></div></div></section>
+    <section className="bg-surface-raised/60 py-24"><div className="container-shell grid gap-10 lg:grid-cols-2"><div><SectionHeading eyebrow="Our toolkit" title="Powered by proven tools and sharp judgment." /><div className="mt-8 flex flex-wrap gap-3">{service.tools.map(tool => <span className="rounded-xl border border-border bg-surface px-4 py-3 text-sm font-bold" key={tool}>{tool}</span>)}</div></div><div className="rounded-3xl bg-ink p-8 text-white"><div className="text-sm text-primary">Delivery focus</div><div className="mt-4 text-5xl font-extrabold">{service.metric}</div><p className="mt-4 leading-7 text-on-brand-muted">Built through a focused roadmap, regular iteration and transparent performance reporting.</p><Button to="/contact" className="mt-7">Build my roadmap</Button></div></div></section>
   </>;
 }
 
@@ -82,3 +85,4 @@ export function Contact() {
 }
 
 export { default as NotFound } from "./NotFound";
+export { Privacy, Terms } from "./Legal";

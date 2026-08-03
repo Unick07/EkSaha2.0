@@ -50,6 +50,7 @@ export const useAdminStore = create(
     {
       name: "eksaha-admin-dashboard",
       version: 2,
+      skipHydration: true,
       migrate: () => emptyAdminState,
     },
   ),

@@ -10,7 +10,7 @@ const BRAND_ASSETS = {
 };
 
 function LogoImage({ compact, tone, alt, sizeClass, imageClassName }) {
-  const dimensions = compact ? { width: 36, height: 36 } : { width: 132, height: 32 };
+  const dimensions = compact ? { width: 40, height: 40 } : { width: 160, height: 60 };
 
   return (
     <img
@@ -31,7 +31,7 @@ export function BrandLogo({
   className = "",
   imageClassName = "",
 }) {
-  const sizeClass = compact ? "size-9" : size === "sm" ? "h-7 w-auto" : "h-8 w-auto";
+  const sizeClass = compact ? "size-10" : size === "sm" ? "h-12 w-auto" : "h-14 w-auto";
 
   return (
     <span className={`inline-flex shrink-0 items-center ${className}`}>
