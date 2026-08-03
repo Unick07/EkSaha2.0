@@ -1,10 +1,12 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 import PublicLayout from "../layouts/PublicLayout";
 import AppShell from "../layouts/AppShell";
 import { PageLoader } from "../components/common/ui";
 import BackToTop from "../components/common/BackToTop";
+import RouteSeo from "../seo/RouteSeo";
 import { useAppStore } from "../store/useAppStore";
+import { useAdminStore } from "../store/useAdminStore";
 import { trackPageView } from "../lib/analytics";
 // Public marketing pages are bundled eagerly, not behind React.lazy: lazy-
 // loading them let <main> stay at the Suspense fallback's small min-height
@@ -15,7 +17,17 @@ import { trackPageView } from "../lib/analytics";
 // the main bundle removes that async gap entirely for the pages real
 // visitors actually land on.
 import Home from "../pages/public/Home";
-import { ServicePage, Pricing, About, Blog, BlogPost, Contact, NotFound } from "../pages/public";
+import {
+  ServicePage,
+  Pricing,
+  About,
+  Blog,
+  BlogPost,
+  Contact,
+  Privacy,
+  Terms,
+  NotFound,
+} from "../pages/public";
 
 const from = (loader, name) => lazy(() => loader().then((module) => ({ default: module[name] })));
 const authPages = () => import("../pages/auth");
@@ -44,6 +56,11 @@ const AdminInvoices = from(adminPages, "AdminInvoices");
 const ResourceManager = from(adminPages, "ResourceManager");
 const AdminSettings = from(adminPages, "AdminSettings");
 
+function LegacyBlogPostRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/insights/${slug}`} replace />;
+}
+
 export default function App() {
   const location = useLocation();
   const restoreSession = useAppStore((state) => state.restoreSession);
@@ -52,7 +69,21 @@ export default function App() {
   const syncThemeWithSystem = useAppStore((state) => state.syncThemeWithSystem);
 
   useEffect(() => {
-    restoreSession();
+    let active = true;
+    const hydrateStores = async () => {
+      try {
+        await Promise.all([
+          useAppStore.persist.rehydrate(),
+          useAdminStore.persist.rehydrate(),
+        ]);
+      } finally {
+        if (active) await restoreSession();
+      }
+    };
+    hydrateStores();
+    return () => {
+      active = false;
+    };
   }, [restoreSession]);
 
   useEffect(() => {
@@ -97,7 +128,7 @@ export default function App() {
     themeColor?.setAttribute("content", darkMode ? "#111827" : "#F6FAF9");
   }, [theme]);
 
-  return <><Suspense fallback={<PageLoader/>}><Routes>
+  return <><RouteSeo/><Suspense fallback={<PageLoader/>}><Routes>
     <Route element={<PublicLayout/>}>
       <Route index element={<Home/>}/>
       <Route path="services/:slug" element={<ServicePage/>}/>
@@ -105,7 +136,11 @@ export default function App() {
       <Route path="about" element={<About/>}/>
       <Route path="insights" element={<Blog/>}/>
       <Route path="insights/:slug" element={<BlogPost/>}/>
+      <Route path="blog" element={<Navigate to="/insights" replace/>}/>
+      <Route path="blog/:slug" element={<LegacyBlogPostRedirect/>}/>
       <Route path="contact" element={<Contact/>}/>
+      <Route path="privacy" element={<Privacy/>}/>
+      <Route path="terms" element={<Terms/>}/>
       <Route path="*" element={<NotFound/>}/>
     </Route>
     <Route path="/login" element={<Login/>}/>

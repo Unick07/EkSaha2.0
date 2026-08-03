@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+
+# Private app pages remain crawlable so search engines can read their noindex directives.
 Disallow: /admin
 Disallow: /support
 Disallow: /billing

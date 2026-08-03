@@ -2,12 +2,12 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import api from "../services/http/api";
 
-const getSystemTheme = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-
 export const useAppStore = create(
   persist(
     (set, get) => ({
-      theme: getSystemTheme(),
+      // Keep the first client render identical to the server render. The
+      // persisted/system preference is applied immediately after hydration.
+      theme: "light",
       themePreference: "system",
       user: null,
       sessionChecked: false,
@@ -51,6 +51,7 @@ export const useAppStore = create(
     }),
     {
       name: "eksaha-app",
+      skipHydration: true,
       partialize: ({ theme, themePreference, user, sidebarCollapsed }) => ({ theme, themePreference, user, sidebarCollapsed }),
     },
   ),

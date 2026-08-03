@@ -11,5 +11,8 @@
     "start": "npm run start -w server",
     "lint": "npm run lint -w client",
     "check": "npm run lint && npm run build"
+  },
+  "devDependencies": {
+    "wrangler": "^4.115.0"
   }
 }

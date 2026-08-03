@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { X } from "lucide-react";
+import { Button } from "../common/ui";
 
 export function Modal({ open, onClose, title, description, children, size = "md" }) {
   useEffect(() => {
@@ -42,7 +43,9 @@ export function ConfirmDialog({ open, onClose, onConfirm, title, description, co
     <Modal open={open} onClose={onClose} title={title} description={description} size="sm">
       <div className="flex justify-end gap-3">
         <button className="soft-button" onClick={onClose}>Cancel</button>
-        <button className={danger ? "danger-button" : "inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground transition hover:bg-primary/90"} onClick={onConfirm}>{confirmLabel}</button>
+        {danger
+          ? <button className="danger-button" onClick={onConfirm}>{confirmLabel}</button>
+          : <Button onClick={onConfirm}>{confirmLabel}</Button>}
       </div>
     </Modal>
   );
