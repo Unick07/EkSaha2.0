@@ -2,7 +2,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Building2, CheckCircle2, ChevronDown, Play, Star, UserRound } from "lucide-react";
 import { Button, FadeIn, PlanCard, SectionHeading } from "../../components/common/ui";
-import { features, plans, services, testimonials, trustedCompanies } from "../../data/siteData";
 import { audienceOptions, individualPricing } from "../../data/pricingData";
 import Seo, { SITE_URL } from "../../components/common/Seo";
 import JsonLd from "../../components/common/JsonLd";
