@@ -101,14 +101,14 @@ export default function App() {
     return () => colorScheme.removeEventListener("change", applySystemTheme);
   }, [syncThemeWithSystem, themePreference]);
 
-  // The favicon always follows the browser/device color scheme, independent
-  // of a manual in-app theme override, so it stays legible in the browser UI.
+  // The favicon follows the browser/device color scheme independently from
+  // any manual in-app theme override, so it stays legible in browser chrome.
   useEffect(() => {
     const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
     const applySystemFavicon = (event) => {
       document.getElementById("app-favicon")?.setAttribute(
         "href",
-        event.matches ? "/brand/eksaha-icon-white.svg" : "/brand/eksaha-icon.svg",
+        event.matches ? "/site-icon-dark.svg" : "/site-icon.svg",
       );
     };
 

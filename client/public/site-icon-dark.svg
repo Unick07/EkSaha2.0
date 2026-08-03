@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
+  <title id="title">EkSaha monogram for dark backgrounds</title>
+  <desc id="desc">Light circular ES monogram with teal square accent.</desc>
+  <style>
+    :root {
+      --eksaha-primary: #F4F7FA;
+      --eksaha-accent: #0FA89E;
+    }
+    .primary-fill { fill: #F4F7FA; fill: var(--eksaha-primary, #F4F7FA); }
+    .primary-stroke { fill: none; stroke: #F4F7FA; stroke: var(--eksaha-primary, #F4F7FA); }
+    .accent-fill { fill: #0FA89E; fill: var(--eksaha-accent, #0FA89E); }
+  </style>
+  <g id="monogram-icon" data-layer="Monogram Icon">
+    <path id="open-circle" class="primary-stroke" d="M185.26 36.47A106 106 0 1 0 220.80 87.24" stroke-width="14"/>
+    <g id="monogram-letters" data-layer="ES" transform="translate(-21.5 -5) scale(1.25)">
+      <path id="monogram-e" class="primary-fill" d="M53.12 135V64.93H105.08V76.78H67.27V92.31H102.45V104.12H67.27V123.19H106.42V135Z"/>
+      <path id="monogram-s" class="accent-fill" d="M116.54 112.2 130.3 110.86Q131.55 117.79 135.35 121.04Q139.15 124.29 145.6 124.29Q152.44 124.29 155.9 121.4Q159.37 118.51 159.37 114.64Q159.37 112.15 157.91 110.41Q156.45 108.66 152.82 107.37Q150.33 106.51 141.49 104.31Q130.11 101.49 125.52 97.38Q119.07 91.6 119.07 83.28Q119.07 77.93 122.11 73.27Q125.14 68.61 130.85 66.17Q136.57 63.73 144.64 63.73Q157.84 63.73 164.5 69.51Q171.17 75.3 171.51 84.95L157.36 85.57Q156.45 80.17 153.46 77.81Q150.48 75.44 144.5 75.44Q138.33 75.44 134.84 77.97Q132.6 79.6 132.6 82.32Q132.6 84.81 134.7 86.58Q137.38 88.83 147.7 91.26Q158.03 93.7 162.97 96.31Q167.92 98.91 170.72 103.43Q173.51 107.95 173.51 114.59Q173.51 120.61 170.17 125.87Q166.82 131.13 160.7 133.69Q154.59 136.24 145.46 136.24Q132.17 136.24 125.05 130.1Q117.92 123.96 116.54 112.2Z"/>
+    </g>
+    <rect id="orbit-accent" class="accent-fill" x="195" y="43" width="24" height="24" rx="1.5"/>
+  </g>
+</svg>

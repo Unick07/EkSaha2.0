@@ -23,7 +23,11 @@
     <meta data-seo="twitter:image" name="twitter:image" content="https://eksaha.com/brand/eksaha-social-card.png" />
     <meta data-seo="twitter:image:alt" name="twitter:image:alt" content="EkSaha on-demand digital team" />
     <!--seo:end-->
-    <link id="app-favicon" rel="icon" type="image/svg+xml" href="/brand/eksaha-icon.svg" />
+    <link id="app-favicon" rel="icon" type="image/svg+xml" sizes="any" href="/site-icon.svg" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-4Y19V7DDGV"></script>
     <script>
@@ -52,12 +56,10 @@
         const appDarkMode = preference === "manual"
           ? savedTheme === "dark"
           : systemDarkMode;
-        const favicon = document.getElementById("app-favicon");
         const themeColor = document.querySelector('meta[name="theme-color"]');
 
         document.documentElement.classList.toggle("dark", appDarkMode);
         document.documentElement.style.colorScheme = appDarkMode ? "dark" : "light";
-        favicon.href = systemDarkMode ? "/brand/eksaha-icon-white.svg" : "/brand/eksaha-icon.svg";
         themeColor.content = appDarkMode ? "#111827" : "#F6FAF9";
       })();
     </script>

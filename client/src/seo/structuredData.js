@@ -21,7 +21,10 @@ function organizationReference(origin) {
     })),
     logo: {
       "@type": "ImageObject",
-      url: `${origin}/brand/eksaha-icon.svg`,
+      url: `${origin}/icons/icon-512.png`,
+      contentUrl: `${origin}/icons/icon-512.png`,
+      width: 512,
+      height: 512,
     },
   };
 }

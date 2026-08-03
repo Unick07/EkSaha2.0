@@ -17,7 +17,7 @@ const organizationSchema = {
   "@type": "Organization",
   name: "EkSaha",
   url: SITE_URL,
-  logo: `${SITE_URL}/brand/eksaha-icon.svg`,
+  logo: `${SITE_URL}/icons/icon-512.png`,
   description: "SEO, web, paid media and IT support in one flexible subscription for growing businesses.",
   areaServed: "Sydney, New South Wales, AU",
   sameAs: social.map((item) => item.url),
