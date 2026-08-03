@@ -385,19 +385,6 @@ export default {
         if (staticArticle.status !== 404) return staticArticle;
         return serveDynamicInsight(request, env, insightSlug);
       }
-    if (url.pathname === "/sitemap.xml") {
-      return handleSitemap(env);
-    }
-
-    // /insights is canonical; /blog was a duplicate route to the same
-    // content (client/src/app/App.jsx used to mount Blog/BlogPost at both).
-    // Redirecting here means old /blog links and any already-indexed pages
-    // 301 straight to their /insights equivalent instead of 404ing now that
-    // the client-side route is gone.
-    const blogMatch = url.pathname.match(/^\/blog(?:\/([^/]+))?$/);
-    if (blogMatch) {
-      const target = blogMatch[1] ? `/insights/${blogMatch[1]}` : "/insights";
-      return Response.redirect(`${url.origin}${target}${url.search}`, 301);
     }
 
     return serveAsset(request, env);

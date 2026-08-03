@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 import PublicLayout from "../layouts/PublicLayout";
 import AppShell from "../layouts/AppShell";
 import { PageLoader } from "../components/common/ui";
@@ -17,22 +17,22 @@ import { trackPageView } from "../lib/analytics";
 // the main bundle removes that async gap entirely for the pages real
 // visitors actually land on.
 import Home from "../pages/public/Home";
-import { ServicePage, Pricing, About, Blog, BlogPost, Contact, NotFound } from "../pages/public";
+import {
+  ServicePage,
+  Pricing,
+  About,
+  Blog,
+  BlogPost,
+  Contact,
+  Privacy,
+  Terms,
+  NotFound,
+} from "../pages/public";
 
 const from = (loader, name) => lazy(() => loader().then((module) => ({ default: module[name] })));
 const authPages = () => import("../pages/auth");
 const dashboardPages = () => import("../pages/dashboard");
 const adminPages = () => import("../pages/admin");
-const Home = lazy(() => import("../pages/public/Home"));
-const ServicePage = from(publicPages, "ServicePage");
-const Pricing = from(publicPages, "Pricing");
-const About = from(publicPages, "About");
-const Blog = from(publicPages, "Blog");
-const BlogPost = from(publicPages, "BlogPost");
-const Contact = from(publicPages, "Contact");
-const Privacy = from(publicPages, "Privacy");
-const Terms = from(publicPages, "Terms");
-const NotFound = from(publicPages, "NotFound");
 const Login = from(authPages, "Login");
 const Signup = from(authPages, "Signup");
 const ForgotPassword = from(authPages, "ForgotPassword");
